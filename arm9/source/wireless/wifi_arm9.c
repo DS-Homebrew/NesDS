@@ -318,31 +318,87 @@ u16 Wifi_RxReadOffset(s32 base, s32 offset) {
 	return WifiData->rxbufData[base];
 }
 
+//Wifi_RawTxFrame from: http://www.youwrite.com/greenacorn/jmedia/wifi_rawtxframe.c
 // datalen = size of packet from beginning of 802.11 header to end, but not including CRC.
 int Wifi_RawTxFrame(u16 datalen, u16 rate, u16 * data) {
-	Wifi_TxHeader txh;
-	int sizeneeded;
-	int base;
-	sizeneeded=(datalen+12+1)/2;
-	if(sizeneeded>Wifi_TxBufferWordsAvailable()) {WifiData->stats[WSTAT_TXQUEUEDREJECTED]++; return -1; }
-	txh.enable_flags=0;
-	txh.unknown=0;
-	txh.countup=0;
-	txh.beaconfreq=0;
-	txh.tx_rate=rate;
-	txh.tx_length=datalen+4;
-	base = WifiData->txbufOut;
-	Wifi_TxBufferWrite(base,6,(u16 *)&txh);
-	base += 6;
-	if(base>=(WIFI_TXBUFFER_SIZE/2)) base -= WIFI_TXBUFFER_SIZE/2;
-	Wifi_TxBufferWrite(base,(datalen+1)/2,data);
-	base += (datalen+1)/2;
-	if(base>=(WIFI_TXBUFFER_SIZE/2)) base -= WIFI_TXBUFFER_SIZE/2;
-	WifiData->txbufOut=base;
+	int base,framelen, hdrlen, writelen;
+	int copytotal, copyexpect;
+	u16 framehdr[6 + 12 + 2];
+	framelen=datalen + 8 + (WifiData->wepmode7 ? 4 : 0);
+
+	if(framelen + 40>Wifi_TxBufferWordsAvailable()*2) { // error, can't send this much!
+		SGIP_DEBUG_MESSAGE(("Transmit:err_space"));
+		return -1; //?
+	}
+ 
+	framehdr[0]=0;
+	framehdr[1]=0;
+	framehdr[2]=0;
+	framehdr[3]=0;
+	framehdr[4]=0; // rate, will be filled in by the arm7.
+	hdrlen=18;
+	framehdr[6]=0x0208;
+	framehdr[7]=0;
+
+	// MACs.
+	memset(framehdr + 8, 0xFF, 18);
+
+	if(WifiData->wepmode7)
+	{
+		framehdr[6] |=0x4000;
+		hdrlen=20;
+	}
+	framehdr[17] = 0;
+	framehdr[18] = 0; // wep IV, will be filled in if needed on the arm7 side.
+	framehdr[19] = 0;
+
+	framehdr[5]=framelen+hdrlen * 2 - 12 + 4;
+	copyexpect= ((framelen+hdrlen * 2 - 12 + 4) + 12 - 4 + 1)/2;
+	copytotal=0;
+
 	WifiData->stats[WSTAT_TXQUEUEDPACKETS]++;
-	WifiData->stats[WSTAT_TXQUEUEDBYTES]+=sizeneeded;
-   if(synchandler) synchandler();
-   return 0;
+	WifiData->stats[WSTAT_TXQUEUEDBYTES] += framelen + hdrlen * 2;
+
+	base = WifiData->txbufOut;
+	Wifi_TxBufferWrite(base,hdrlen,framehdr);
+	base += hdrlen;
+	copytotal += hdrlen;
+	if(base >= (WIFI_TXBUFFER_SIZE / 2)) base -= WIFI_TXBUFFER_SIZE / 2;
+
+	// add LLC header
+	framehdr[0]=0xAAAA;
+	framehdr[1]=0x0003;
+	framehdr[2]=0x0000;
+	unsigned short protocol = 0x08FE;
+	framehdr[3] = ((protocol >> 8) & 0xFF) | ((protocol << 8) & 0xFF00);
+
+	Wifi_TxBufferWrite(base, 4, framehdr);
+	base += 4;
+	copytotal += 4;
+	if(base>=(WIFI_TXBUFFER_SIZE/2)) base -= WIFI_TXBUFFER_SIZE/2;
+
+	writelen = datalen;
+	if(writelen) {
+		Wifi_TxBufferWrite(base,(writelen+1)/2,data);
+		base += (writelen + 1) / 2;
+		copytotal += (writelen + 1) / 2;
+		if(base>=(WIFI_TXBUFFER_SIZE/2)) base -= WIFI_TXBUFFER_SIZE/2;
+	}
+	if(WifiData->wepmode7)
+	{ // add required extra bytes
+		base += 2;
+		copytotal += 2;
+		if(base >= (WIFI_TXBUFFER_SIZE / 2)) base -= WIFI_TXBUFFER_SIZE / 2;
+	}
+	WifiData->txbufOut = base; // update fifo out pos, done sending packet.
+
+	if(copytotal!=copyexpect)
+	{
+		SGIP_DEBUG_MESSAGE(("Tx exp:%i que:%i",copyexpect,copytotal));
+	}
+	if(synchandler) 
+		synchandler();
+return 0;
 }
 
 
