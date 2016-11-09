@@ -27,6 +27,7 @@ SOFTWARE.
 #define DSWIFI9_H
 
 #include "dswifi_version.h"
+#include "wifi_shared.h"
 
 // well, some flags and stuff are just stuffed in here and not documented very well yet... Most of the important stuff is documented though.
 // Next version should clean up some of this a lot more :)
@@ -57,129 +58,15 @@ SOFTWARE.
 #define WFLAG_APDATA_SHORTPREAMBLE	0x0020
 #define WFLAG_APDATA_ACTIVE			0x8000
 
-enum WIFI_RETURN {
-	WIFI_RETURN_OK =				0, // Everything went ok
-	WIFI_RETURN_LOCKFAILED  =		1, // the spinlock attempt failed (it wasn't retried cause that could lock both cpus- retry again after a delay.
-	WIFI_RETURN_ERROR =				2, // There was an error in attempting to complete the requested task.
-	WIFI_RETURN_PARAMERROR =		3, // There was an error in the parameters passed to the function.
-};
-
-enum WIFI_STATS {
-	// software stats
-	WSTAT_RXQUEUEDPACKETS, // number of packets queued into the rx fifo
-	WSTAT_TXQUEUEDPACKETS, // number of packets queued into the tx fifo
-	WSTAT_RXQUEUEDBYTES, // number of bytes queued into the rx fifo
-	WSTAT_TXQUEUEDBYTES, // number of bytes queued into the tx fifo
-	WSTAT_RXQUEUEDLOST, // number of packets lost due to space limitations in queuing
-	WSTAT_TXQUEUEDREJECTED, // number of packets rejected due to space limitations in queuing
-	WSTAT_RXPACKETS,
-	WSTAT_RXBYTES,
-	WSTAT_RXDATABYTES,
-	WSTAT_TXPACKETS,
-	WSTAT_TXBYTES,
-	WSTAT_TXDATABYTES,
-	WSTAT_ARM7_UPDATES,
-	WSTAT_DEBUG,
-	// harware stats (function mostly unknown.)
-	WSTAT_HW_1B0,WSTAT_HW_1B1,WSTAT_HW_1B2,WSTAT_HW_1B3,WSTAT_HW_1B4,WSTAT_HW_1B5,WSTAT_HW_1B6,WSTAT_HW_1B7,
-	WSTAT_HW_1B8,WSTAT_HW_1B9,WSTAT_HW_1BA,WSTAT_HW_1BB,WSTAT_HW_1BC,WSTAT_HW_1BD,WSTAT_HW_1BE,WSTAT_HW_1BF,
-	WSTAT_HW_1C0,WSTAT_HW_1C1,WSTAT_HW_1C4,WSTAT_HW_1C5,
-	WSTAT_HW_1D0,WSTAT_HW_1D1,WSTAT_HW_1D2,WSTAT_HW_1D3,WSTAT_HW_1D4,WSTAT_HW_1D5,WSTAT_HW_1D6,WSTAT_HW_1D7,
-	WSTAT_HW_1D8,WSTAT_HW_1D9,WSTAT_HW_1DA,WSTAT_HW_1DB,WSTAT_HW_1DC,WSTAT_HW_1DD,WSTAT_HW_1DE,WSTAT_HW_1DF,
-
-	NUM_WIFI_STATS
-};
-
-// user code should NEVER have to use the WIFI_MODE or WIFI_AUTHLEVEL enums... is here in case I want to have some debug code...
-enum WIFI_MODE {
-	WIFIMODE_DISABLED,
-	WIFIMODE_NORMAL,
-	WIFIMODE_SCAN,
-	WIFIMODE_ASSOCIATE,
-	WIFIMODE_ASSOCIATED,
-	WIFIMODE_DISASSOCIATE,
-	WIFIMODE_CANNOTASSOCIATE,
-};
-enum WIFI_AUTHLEVEL {
-	WIFI_AUTHLEVEL_DISCONNECTED,
-	WIFI_AUTHLEVEL_AUTHENTICATED,
-	WIFI_AUTHLEVEL_ASSOCIATED,
-	WIFI_AUTHLEVEL_DEASSOCIATED,
-};
-
-// user code uses members of the WIFIGETDATA structure in calling Wifi_GetData to retreive miscellaneous odd information
-enum WIFIGETDATA {
-	WIFIGETDATA_MACADDRESS,			// MACADDRESS: returns data in the buffer, requires at least 6 bytes
-	WIFIGETDATA_NUMWFCAPS,			// NUM WFC APS: returns number between 0 and 3, doesn't use buffer.
-
-	MAX_WIFIGETDATA
-};
 
 
-enum WEPMODES {
-	WEPMODE_NONE = 0,
-	WEPMODE_40BIT = 1,
-	WEPMODE_128BIT = 2
-};
-// WIFI_ASSOCSTATUS - returned by Wifi_AssocStatus() after calling Wifi_ConnectAPk
-enum WIFI_ASSOCSTATUS {
-	ASSOCSTATUS_DISCONNECTED, // not *trying* to connect
-	ASSOCSTATUS_SEARCHING, // data given does not completely specify an AP, looking for AP that matches the data.
-	ASSOCSTATUS_AUTHENTICATING, // connecting...
-	ASSOCSTATUS_ASSOCIATING, // connecting...
-	ASSOCSTATUS_ACQUIRINGDHCP, // connected to AP, but getting IP data from DHCP
-	ASSOCSTATUS_ASSOCIATED,	// Connected! (COMPLETE if Wifi_ConnectAP was called to start)
-	ASSOCSTATUS_CANNOTCONNECT, // error in connecting... (COMPLETE if Wifi_ConnectAP was called to start)
-};
+
+
+
+
 
 extern const char * ASSOCSTATUS_STRINGS[];
 
-// most user code will never need to know about the WIFI_TXHEADER or WIFI_RXHEADER
-typedef struct WIFI_TXHEADER {
-	u16 enable_flags;
-	u16 unknown;
-	u16 countup;
-	u16 beaconfreq;
-	u16 tx_rate;
-	u16 tx_length;
-} Wifi_TxHeader;
-
-typedef struct WIFI_RXHEADER {
-	u16 a;
-	u16 b;
-	u16 c;
-	u16 d;
-	u16 byteLength;
-	u16 rssi_;
-} Wifi_RxHeader;
-
-// WIFI_ACCESSPOINT is an important structure in that it defines how to connect to an access point.
-// listed inline are information about the members and their function
-// if a field is not necessary for Wifi_ConnectAP it will be marked as such
-// *only* 4 fields are absolutely required to be filled in correctly for the connection to work, they are:
-// ssid, ssid_len, bssid, and channel - all others can be ignored (though flags should be set to 0)
-typedef struct WIFI_ACCESSPOINT {
-	char ssid[33]; // the AP's SSID - zero terminated is not necessary.. if ssid[0] is zero, the ssid will be ignored in trying to find an AP to connect to. [REQUIRED]
-	char ssid_len; // number of valid bytes in the ssid field (0-32) [REQUIRED]
-	u8 bssid[6]; // BSSID is the AP's SSID - setting it to all 00's indicates this is not known and it will be ignored [REQUIRED]
-	u8 macaddr[6]; // mac address of the "AP" is only necessary in ad-hoc mode. [generally not required to connect]
-	u16 maxrate; // max rate is measured in steps of 1/2Mbit - 5.5Mbit will be represented as 11, or 0x0B [not required to connect]
-	u32 timectr; // internal information about how recently a beacon has been received [not required to connect]
-	u16 rssi; // running average of the recent RSSI values for this AP, will be set to 0 after not receiving beacons for a while. [not required to connect]
-	u16 flags; // flags indicating various parameters for the AP [not required, but the WFLAG_APDATA_ADHOC flag will be used]
-	u32 spinlock; // internal data word used to lock the record to guarantee data coherence [not required to connect]
-	u8 channel; // valid channels are 1-13, setting the channel to 0 will indicate the system should search. [REQUIRED]
-	u8 rssi_past[8]; // rssi_past indicates the RSSI values for the last 8 beacons received ([7] is the most recent) [not required to connect]
-	u8 base_rates[16]; // list of the base rates "required" by the AP (same format as maxrate) - zero-terminated list [not required to connect]
-} Wifi_AccessPoint;
-
-// Wifi Packet Handler function: (int packetID, int packetlength) - packetID is only valid while the called function is executing.
-// call Wifi_RxRawReadPacket while in the packet handler function, to retreive the data to a local buffer.
-typedef void (*WifiPacketHandler)(int, int);
-
-// Wifi Sync Handler function: Callback function that is called when the arm7 needs to be told to synchronize with new fifo data.
-// If this callback is used (see Wifi_SetSyncHandler()), it should send a message via the fifo to the arm7, which will call Wifi_Sync() on arm7.
-typedef void (*WifiSyncHandler)();
 
 
 #ifdef __cplusplus

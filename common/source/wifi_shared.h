@@ -154,6 +154,8 @@ enum WIFI_STATS {
 };
 
 
+
+// user code should NEVER have to use the WIFI_MODE or WIFI_AUTHLEVEL enums... is here in case I want to have some debug code...
 enum WIFI_MODE {
 	WIFIMODE_DISABLED,
 	WIFIMODE_NORMAL,
@@ -168,6 +170,14 @@ enum WIFI_AUTHLEVEL {
 	WIFI_AUTHLEVEL_AUTHENTICATED,
 	WIFI_AUTHLEVEL_ASSOCIATED,
 	WIFI_AUTHLEVEL_DEASSOCIATED,
+};
+
+// user code uses members of the WIFIGETDATA structure in calling Wifi_GetData to retreive miscellaneous odd information
+enum WIFIGETDATA {
+	WIFIGETDATA_MACADDRESS,			// MACADDRESS: returns data in the buffer, requires at least 6 bytes
+	WIFIGETDATA_NUMWFCAPS,			// NUM WFC APS: returns number between 0 and 3, doesn't use buffer.
+
+	MAX_WIFIGETDATA
 };
 
 enum WEPMODES {
@@ -186,6 +196,7 @@ enum WIFI_ASSOCSTATUS {
     ASSOCSTATUS_CANNOTCONNECT, // error in connecting... (COMPLETE if Wifi_ConnectAP was called to start)
 };
 
+// most user code will never need to know about the WIFI_TXHEADER or WIFI_RXHEADER
 typedef struct WIFI_TXHEADER {
 	u16 enable_flags;
 	u16 unknown;
@@ -204,20 +215,36 @@ typedef struct WIFI_RXHEADER {
 	u16 rssi_;
 } Wifi_RxHeader;
 
+
+// WIFI_ACCESSPOINT is an important structure in that it defines how to connect to an access point.
+// listed inline are information about the members and their function
+// if a field is not necessary for Wifi_ConnectAP it will be marked as such
+// *only* 4 fields are absolutely required to be filled in correctly for the connection to work, they are:
+// ssid, ssid_len, bssid, and channel - all others can be ignored (though flags should be set to 0)
 typedef struct WIFI_ACCESSPOINT {
-	char ssid[33]; // 0-32byte data, zero
-	char ssid_len;
-	u8 bssid[6];
-	u8 macaddr[6];
-	u16 maxrate; // max rate is measured in steps of 1/2Mbit - 5.5Mbit will be represented as 11, or 0x0B
-	u32 timectr;
-	u16 rssi;
-	u16 flags;
-	u32 spinlock;
-	u8 channel;
-	u8 rssi_past[8];
-	u8 base_rates[16]; // terminated by a 0 entry
+	char ssid[33]; // the AP's SSID - zero terminated is not necessary.. if ssid[0] is zero, the ssid will be ignored in trying to find an AP to connect to. [REQUIRED]
+	char ssid_len; // number of valid bytes in the ssid field (0-32) [REQUIRED]
+	u8 bssid[6]; // BSSID is the AP's SSID - setting it to all 00's indicates this is not known and it will be ignored [REQUIRED]
+	u8 macaddr[6]; // mac address of the "AP" is only necessary in ad-hoc mode. [generally not required to connect]
+	u16 maxrate; // max rate is measured in steps of 1/2Mbit - 5.5Mbit will be represented as 11, or 0x0B [not required to connect]
+	u32 timectr; // internal information about how recently a beacon has been received [not required to connect]
+	u16 rssi; // running average of the recent RSSI values for this AP, will be set to 0 after not receiving beacons for a while. [not required to connect]
+	u16 flags; // flags indicating various parameters for the AP [not required, but the WFLAG_APDATA_ADHOC flag will be used]
+	u32 spinlock; // internal data word used to lock the record to guarantee data coherence [not required to connect]
+	u8 channel; // valid channels are 1-13, setting the channel to 0 will indicate the system should search. [REQUIRED]
+	u8 rssi_past[8]; // rssi_past indicates the RSSI values for the last 8 beacons received ([7] is the most recent) [not required to connect]
+	u8 base_rates[16]; // list of the base rates "required" by the AP (same format as maxrate) - zero-terminated list [not required to connect]
 } Wifi_AccessPoint;
+
+
+// Wifi Packet Handler function: (int packetID, int packetlength) - packetID is only valid while the called function is executing.
+// call Wifi_RxRawReadPacket while in the packet handler function, to retreive the data to a local buffer.
+typedef void (*WifiPacketHandler)(int, int);
+
+// Wifi Sync Handler function: Callback function that is called when the arm7 needs to be told to synchronize with new fifo data.
+// If this callback is used (see Wifi_SetSyncHandler()), it should send a message via the fifo to the arm7, which will call Wifi_Sync() on arm7.
+typedef void (*WifiSyncHandler)();
+
 
 typedef struct WIFI_MAINSTRUCT {
 	unsigned long dummy1[8];
