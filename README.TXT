@@ -1,3 +1,10 @@
+HOW-TO COMPILE:
+
+Create a new folder, copy source code like you would on any DS project
+open MSYS and MAKE. (Requires devkitPro)
+
+-
+
 nesDS, using toolchain devkitARM.
 We spent a few weeks to port the original nesDS project to the GCC toolchain. Then we made a new EX Edition, and made it possible to emulate the the NES/FC games that the origianl nesDS didn't work well.
 Since the 0.40 version, I ported the code of EX Edtion to the original nesDS, now it is the best nes-emulator~!
