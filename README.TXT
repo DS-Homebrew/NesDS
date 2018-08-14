@@ -1,4 +1,4 @@
-nesDS1.3c [NTR], using toolchain devkitARM r43. 
+nesDS1.3c [NTR], using toolchain devkitARM r43 (/release folder NesDS.nds binary was compiled with it). 
 If you want to update sources to latest devkitARM you can try using these sources, or the ones found in : https://github.com/cotodevel/NesDS/tree/original13b-touchscreen-bug (vanilla libnds sources)
 
 
