@@ -19,6 +19,9 @@
 #ifndef MININI_H
 #define MININI_H
 
+#define strnicmp  strncasecmp
+
+
 #define INI_ANSIONLY
 #define MININI_ANSI
 //#define INI_READONLY
