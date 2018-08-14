@@ -1,10 +1,11 @@
 #include <nds.h>
-#include <dswifi9.h>
+#include "dswifi_arm9/wifi_arm9.h"
 #include <stdlib.h>
 #include <string.h>
 #include "ds_misc.h"
 #include "c_defs.h"
 #include "menu.h"
+#include "multi.h"
 
 char data[4096];
 static const char nesds[32]		= {0xB2, 0xD1, 'n', 'e', 's', 'd', 's', 0};
@@ -52,12 +53,12 @@ void sendcmd()
 		memcpy(nfdata + 9, &new_nkeys, 4);
 		memcpy(nfdata + 7, &new_framecount, 2);
 		memcpy(nfdata + 13, key_buf, 4*16);
-		Wifi_RawTxFrame(78, 0x0014, (unsigned short *)nfdata);
+		Wifi_RawTxFrameNIFI(78, 0x0014, (unsigned short *)nfdata);
 	} else {
 		plykeys2 = IPC_KEYS & MP_KEY_MSK;
 		memcpy(nfdata + 7, &framecount, 2);
 		memcpy(nfdata + 11, &plykeys2, 2);
-		Wifi_RawTxFrame(14, 0x0014, (unsigned short *)nfdata);
+		Wifi_RawTxFrameNIFI(14, 0x0014, (unsigned short *)nfdata);
 	}
 }
 
@@ -217,7 +218,7 @@ void do_multi()
 				Wifi_EnableWifi();
 			nifi_cmd = MP_NFEN;
 			if(count++ > 30) {			//send a flag every second to search a host.
-				Wifi_RawTxFrame(8, 0x0014, (unsigned short *)nesds);
+				Wifi_RawTxFrameNIFI(8, 0x0014, (unsigned short *)nesds);
 				count = 0;
 			}
 			break;
@@ -225,7 +226,7 @@ void do_multi()
 			if(!(nifi_cmd & MP_NFEN))
 				Wifi_EnableWifi();
 			if(count++ > 30) {			//send a connected flag.
-				Wifi_RawTxFrame(8, 0x0014, (unsigned short *)nfconnect);
+				Wifi_RawTxFrameNIFI(8, 0x0014, (unsigned short *)nfconnect);
 				count = 0;
 			}
 			break;
@@ -235,7 +236,7 @@ void do_multi()
 			if(count++ > 30) {			//send a connected flag.
 				nfcrc[3] = debuginfo[17] &0xFF;
 				nfcrc[4] = (debuginfo[17] >> 8 )&0xFF;
-				Wifi_RawTxFrame(6, 0x0014, (unsigned short *)nfcrc);
+				Wifi_RawTxFrameNIFI(6, 0x0014, (unsigned short *)nfcrc);
 				count = 0;
 			}
 			break;
@@ -287,4 +288,90 @@ void do_multi()
 			break;
 	}
 	framecount++;
+}
+
+
+//source: http://www.youwrite.com/greenacorn/jmedia/wifi_rawtxframe.c (a method that forges a nifi packet). Compatible with NesDS nifi protocol
+
+//int Wifi_RawTxFrameNIFI(u16 datalen, u16 rate, u16 * data): special method to send formatted NIFI frames, required by NesDS NIFI to work between connected DS consoles.
+// (DSWIFI's Wifi_RawTxFrame does not do this, so as a solution, the new method is replaced in codebase, while using standard DSWIFI provided by libnds)
+
+// datalen = size of packet from beginning of 802.11 header to end, but not including CRC.
+int Wifi_RawTxFrameNIFI(u16 datalen, u16 rate, u16 * data) {
+	int base,framelen, hdrlen, writelen;
+	int copytotal, copyexpect;
+	u16 framehdr[6 + 12 + 2];
+	framelen=datalen + 8 + (WifiData->wepmode7 ? 4 : 0);
+
+	if(framelen + 40>Wifi_TxBufferWordsAvailable()*2) { // error, can't send this much!
+		return -1; //?
+	}
+
+	framehdr[0]=0;
+	framehdr[1]=0;
+	framehdr[2]=0;
+	framehdr[3]=0;
+	framehdr[4]=0; // rate, will be filled in by the arm7.
+	hdrlen=18;
+	framehdr[6]=0x0208;
+	framehdr[7]=0;
+
+	// MACs.
+	memset(framehdr + 8, 0xFF, 18);
+
+	if(WifiData->wepmode7)
+	{
+		framehdr[6] |=0x4000;
+		hdrlen=20;
+	}
+	framehdr[17] = 0;
+	framehdr[18] = 0; // wep IV, will be filled in if needed on the arm7 side.
+	framehdr[19] = 0;
+
+	framehdr[5]=framelen+hdrlen * 2 - 12 + 4;
+	copyexpect= ((framelen+hdrlen * 2 - 12 + 4) + 12 - 4 + 1)/2;
+	copytotal=0;
+
+	WifiData->stats[WSTAT_TXQUEUEDPACKETS]++;
+	WifiData->stats[WSTAT_TXQUEUEDBYTES] += framelen + hdrlen * 2;
+
+	base = WifiData->txbufOut;
+	Wifi_TxBufferWrite(base,hdrlen,framehdr);
+	base += hdrlen;
+	copytotal += hdrlen;
+	if(base >= (WIFI_TXBUFFER_SIZE / 2)) base -= WIFI_TXBUFFER_SIZE / 2;
+
+	// add LLC header
+	framehdr[0]=0xAAAA;
+	framehdr[1]=0x0003;
+	framehdr[2]=0x0000;
+	unsigned short protocol = 0x08FE;
+	framehdr[3] = ((protocol >> 8) & 0xFF) | ((protocol << 8) & 0xFF00);
+
+	Wifi_TxBufferWrite(base, 4, framehdr);
+	base += 4;
+	copytotal += 4;
+	if(base>=(WIFI_TXBUFFER_SIZE/2)) base -= WIFI_TXBUFFER_SIZE/2;
+
+	writelen = datalen;
+	if(writelen) {
+		Wifi_TxBufferWrite(base,(writelen+1)/2,data);
+		base += (writelen + 1) / 2;
+		copytotal += (writelen + 1) / 2;
+		if(base>=(WIFI_TXBUFFER_SIZE/2)) base -= WIFI_TXBUFFER_SIZE/2;
+	}
+	if(WifiData->wepmode7)
+	{ // add required extra bytes
+		base += 2;
+		copytotal += 2;
+		if(base >= (WIFI_TXBUFFER_SIZE / 2)) base -= WIFI_TXBUFFER_SIZE / 2;
+	}
+	WifiData->txbufOut = base; // update fifo out pos, done sending packet.
+
+	if(copytotal!=copyexpect)
+	{
+		//corrupted frame sent
+	}
+	if(synchandler) synchandler();
+	return 0;
 }

@@ -15,8 +15,8 @@ include $(DEVKITARM)/ds_rules
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
 BUILD		:=	build
-SOURCES		:=	source source/mappers data source/zip
-INCLUDES	:=	include ../include data/ source/nes
+SOURCES		:=	source source/mappers data source/zip	source/dswifi_arm9
+INCLUDES	:=	include ../include data/ source/nes	source/dswifi_arm9
 DATA		:=
 
 
