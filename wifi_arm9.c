@@ -27,7 +27,6 @@ SOFTWARE.
 
 #include <nds.h>
 #include "dsregs.h"
-#include "dswifi9.h"
 
 #include "wifi_arm9.h"
 #include <stdarg.h>
@@ -318,7 +317,6 @@ u16 Wifi_RxReadOffset(s32 base, s32 offset) {
 	return WifiData->rxbufData[base];
 }
 
-//Wifi_RawTxFrame from: http://www.youwrite.com/greenacorn/jmedia/wifi_rawtxframe.c
 // datalen = size of packet from beginning of 802.11 header to end, but not including CRC.
 int Wifi_RawTxFrame(u16 datalen, u16 rate, u16 * data) {
 	int base,framelen, hdrlen, writelen;
@@ -330,7 +328,7 @@ int Wifi_RawTxFrame(u16 datalen, u16 rate, u16 * data) {
 		SGIP_DEBUG_MESSAGE(("Transmit:err_space"));
 		return -1; //?
 	}
- 
+
 	framehdr[0]=0;
 	framehdr[1]=0;
 	framehdr[2]=0;
@@ -396,9 +394,8 @@ int Wifi_RawTxFrame(u16 datalen, u16 rate, u16 * data) {
 	{
 		SGIP_DEBUG_MESSAGE(("Tx exp:%i que:%i",copyexpect,copytotal));
 	}
-	if(synchandler) 
-		synchandler();
-return 0;
+	if(synchandler) synchandler();
+	return 0;
 }
 
 
@@ -942,7 +939,7 @@ void Wifi_Update() {
 					mb = sgIP_memblock_allocHW(14,len-8-hdrlen);
 					if(mb) {
 						if(base2>=(WIFI_RXBUFFER_SIZE/2)) base2-=(WIFI_RXBUFFER_SIZE/2);
-						Wifi_RxRawReadPacket(base2,(len-8-hdrlen)&(~1),((u16 *)mb->datastart)+7); // Todo: Improve this to read correctly  in the case that the packet buffer is fragmented
+						Wifi_RxRawReadPacket(base2,(len-8-hdrlen)&(~1),((u16 *)mb->datastart)+7);
 						if(len&1) ((u8 *)mb->datastart)[len+14-1-8-hdrlen]=Wifi_RxReadOffset(base2,((len-8-hdrlen)/2))&255;
 						Wifi_CopyMacAddr(mb->datastart,framehdr+8); // copy dest
 						if(Wifi_RxReadOffset(base,6)&0x0200) { // from DS set?
@@ -1118,9 +1115,9 @@ bool Wifi_InitDefault(bool useFirmwareSettings) {
 
 		Wifi_AutoConnect(); // request connect
 
-		while(true) {
+		while(wifiStatus != ASSOCSTATUS_ASSOCIATED) {
 			wifiStatus = Wifi_AssocStatus(); // check status
-            if(wifiStatus == ASSOCSTATUS_ASSOCIATED) break;
+
 			if(wifiStatus == ASSOCSTATUS_CANNOTCONNECT) return false;
 			swiWaitForVBlank();
 

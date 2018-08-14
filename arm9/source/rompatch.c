@@ -3299,30 +3299,25 @@ void crcinit()
 
 void romcorrect(char *s)
 {
-/* fixes an out of bounds causes out of bounds exception on romdb buffer */
-
 	unsigned char *rom = (unsigned char *)s;
 	int prgsize = rom[4] * 16 * 1024;
 	int chrsize = rom[5] * 8 * 1024;
 	int crcall = romcrc(rom + 16, prgsize + chrsize);
 	int crc = romcrc(rom + 16, prgsize);
 	int i = 0;
-	
-	for(i = 0; i < sizeof(romdb); i += 3) {	
-		if((i + 2) <= sizeof(romdb)){
-			if(romdb[i] == crcall || romdb[i + 1] == crc) {
-				unsigned int tmp = romdb[i + 2];
-				int oldmapper = (rom[6] >> 4) | (rom[7] & 0xf0);
-				int newmapper = ((tmp & 0xff) >> 4) | ((tmp >> 8) & 0xf0);
-				if(oldmapper == newmapper) {
-					rom[6] = tmp & 0xff;			
-					rom[7] = (tmp >> 8) & 0xff;	
-					__emuflags &= ~PALTIMING;		
-					if(! (tmp & (1 << 16)))		
-						__emuflags |= PALTIMING;
-				}
-				break;
+	for(i = 0; i < sizeof(romdb); i += 3) {
+		if(romdb[i] == crcall || romdb[i + 1] == crc) {
+			unsigned int tmp = romdb[i + 2];
+			int oldmapper = (rom[6] >> 4) | (rom[7] & 0xf0);
+			int newmapper = ((tmp & 0xff) >> 4) | ((tmp >> 8) & 0xf0);
+			if(oldmapper == newmapper) {
+				rom[6] = tmp & 0xff;
+				rom[7] = (tmp >> 8) & 0xff;
+				__emuflags &= ~PALTIMING;
+				if(! (tmp & (1 << 16)))
+					__emuflags |= PALTIMING;
 			}
+			break;
 		}
 	}
 }

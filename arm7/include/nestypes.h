@@ -7,11 +7,7 @@
 #define __fastcall __msfastcall
 #elif defined(__GNUC__)
 #define __inline		__inline__
-
-	#if !defined(__fastcall)
-	#define __fastcall
-	#endif
-	
+#define __fastcall
 #else
 #define __inline
 #define __fastcall

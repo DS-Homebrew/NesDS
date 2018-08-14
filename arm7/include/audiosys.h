@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-typedef void (*AUDIOHANDLER2)(Int32 *p);
-typedef Int32 (*AUDIOHANDLER)(void);
+typedef void (__fastcall *AUDIOHANDLER2)(Int32 *p);
+typedef Int32 (__fastcall *AUDIOHANDLER)(void);
 typedef struct NES_AUDIO_HANDLER_TAG {
 	Uint fMode;
 	AUDIOHANDLER Proc;
@@ -16,7 +16,7 @@ typedef struct NES_AUDIO_HANDLER_TAG {
 	struct NES_AUDIO_HANDLER_TAG *next;
 } NES_AUDIO_HANDLER;
 
-typedef void (*VOLUMEHANDLER)(Uint volume);
+typedef void (__fastcall *VOLUMEHANDLER)(Uint volume);
 typedef struct NES_VOLUME_HANDLER_TAG {
 	VOLUMEHANDLER Proc;
 	struct NES_VOLUME_HANDLER_TAG *next;

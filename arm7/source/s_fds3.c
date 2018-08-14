@@ -85,7 +85,7 @@ static void FDSSoundEGStep(FDS_EG *peg)
 		peg->volume -= (peg->volume > 0);
 }
 
-static Int32 FDSSoundRender(void)
+static Int32 __fastcall FDSSoundRender(void)
 {
 	Int32 output;
 	
@@ -145,7 +145,7 @@ static NES_AUDIO_HANDLER s_fds_audio_handler[] =
 	{ 0, 0, }, 
 };
 
-static void FDSSoundVolume(Uint volume)
+static void __fastcall FDSSoundVolume(Uint volume)
 {
 	volume += 196;
 	fdssound.mastervolume = (volume << (LOG_BITS - 8)) << 1;/*
@@ -165,7 +165,7 @@ static const Uint8 wave_delta_table[8] = {
 	0,256 - (4 << FM_DEPTH),256 - (2 << FM_DEPTH),256 - (1 << FM_DEPTH),
 };
 
-static void FDSSoundWrite(Uint address, Uint value)
+static void __fastcall FDSSoundWrite(Uint address, Uint value)
 {
 	if (0x4040 <= address && address <= 0x407F)
 	{
@@ -298,7 +298,7 @@ static Uint32 DivFix(Uint32 p1, Uint32 p2, Uint32 fix)
 	return ret;
 }
 
-static void FDSSoundReset(void)
+static void __fastcall FDSSoundReset(void)
 {
 	Uint32 i;
 	XMEMSET(&fdssound, 0, sizeof(FDSSOUND));

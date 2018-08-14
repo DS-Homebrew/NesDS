@@ -143,7 +143,7 @@ Int32 VRC6SoundRender3(void)
 //	{ 0, 0, }, 
 //};
 
-static void VRC6SoundVolume(Uint volume)
+static void __fastcall VRC6SoundVolume(Uint volume)
 {
 	volume += 64;
 	//vrc6s.mastervolume = (volume << (LOG_BITS - 8)) << 1;
@@ -206,7 +206,7 @@ static void VRC6SoundSawReset(VRC6_SAW *ch)
 	ch->cps = DivFix(NES_BASECYCLES, 24 * NESAudioFrequencyGet(), CPS_SHIFT);
 }
 
-static void VRC6SoundReset(void)
+static void __fastcall VRC6SoundReset(void)
 {
 	XMEMSET(&vrc6s, 0, sizeof(VRC6SOUND));
 	VRC6SoundSquareReset(&vrc6s.square[0]);

@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-typedef void (*RESETHANDLER)(void);
-typedef void (*TERMINATEHANDLER)(void);
+typedef void (__fastcall *RESETHANDLER)(void);
+typedef void (__fastcall *TERMINATEHANDLER)(void);
 
 typedef struct NES_RESET_HANDLER_TAG {
 	Uint priority;	/* 0(first) - 15(last) */

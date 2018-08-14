@@ -6,7 +6,7 @@ extern "C" {
 
 void FDSSoundInstall(void);
 void FDSSelect(unsigned type);
-extern void (*FDSSoundWriteHandler)(Uint address, Uint value);
+extern void __fastcall (*FDSSoundWriteHandler)(Uint address, Uint value);
 
 #ifdef __cplusplus
 }

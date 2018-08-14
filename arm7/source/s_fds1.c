@@ -48,7 +48,7 @@ typedef struct FDSSOUND {
 
 static FDSSOUND fdssound;
 
-static Int32 FDSSoundRender(void)
+static Int32 __fastcall FDSSoundRender(void)
 {
 	FDS_FMOP *pop;
 
@@ -117,7 +117,7 @@ static NES_AUDIO_HANDLER s_fds_audio_handler[] =
 	{ 0, 0, }, 
 };
 
-static void FDSSoundVolume(Uint volume)
+static void __fastcall FDSSoundVolume(Uint volume)
 {
 	fdssound.mastervolume = (volume << (LOG_BITS - 8)) << 1;
 }
@@ -127,7 +127,7 @@ static NES_VOLUME_HANDLER s_fds_volume_handler[] = {
 	{ 0, }, 
 };
 
-static void FDSSoundWrite(Uint address, Uint value)
+static void __fastcall FDSSoundWrite(Uint address, Uint value)
 {
 	if (0x4040 <= address && address <= 0x407F)
 	{
@@ -231,7 +231,7 @@ static Uint32 DivFix(Uint32 p1, Uint32 p2, Uint32 fix)
 	return ret;
 }
 
-static void FDSSoundReset(void)
+static void __fastcall FDSSoundReset(void)
 {
 	Int i;
 	FDS_FMOP *pop;

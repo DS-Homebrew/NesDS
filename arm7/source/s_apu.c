@@ -396,7 +396,7 @@ static void NESAPUSoundDpcmStart(NESAPU_DPCM *ch)
 	NESAPUSoundDpcmRead(ch);
 }
 
-static Int32 NESAPUSoundDpcmRender(void)
+static Int32 __fastcall NESAPUSoundDpcmRender(void)
 {
 #define ch (&apu.dpcm)
 	if (ch->first)
@@ -458,7 +458,7 @@ Int32 NESAPUSoundDpcmRender1()
 	return NESAPUSoundDpcmRender();
 }
 
-static Int32 APUSoundRender(void)
+static Int32 __fastcall APUSoundRender(void)
 {
 	Int32 accum = 0;
 	//accum += NESAPUSoundSquareRender(&apu.square[0]);
@@ -474,7 +474,7 @@ static NES_AUDIO_HANDLER s_apu_audio_handler[] = {
 	{ 0, 0, 0}
 };
 
-static void APUSoundVolume(Uint volume)
+static void __fastcall APUSoundVolume(Uint volume)
 {
 	volume  = (volume << (LOG_BITS - 8)) << 1;
 	volume += (NSF_apu_volume << (LOG_BITS - 8)) << 1;
@@ -733,7 +733,7 @@ static NES_READ_HANDLER s_apu_read_handler[] =
 };
 */
 
-void APU4015Reg()
+void __fastcall APU4015Reg()
 {
 	static int oldkey = 0;
 	int key = 0;
@@ -793,7 +793,7 @@ static void NESAPUSoundDpcmReset(NESAPU_DPCM *ch)
 	ch->cps = DivFix(NES_BASECYCLES, 12 * NESAudioFrequencyGet(), CPS_BITS);
 }
 
-static void APUSoundReset(void)
+static void __fastcall APUSoundReset(void)
 {
 	Uint i;
 	NESAPUSoundSquareReset(&apu.square[0]);

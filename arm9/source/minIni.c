@@ -47,10 +47,10 @@
   #define _tcschr   strchr
   #define _tcscmp   strcmp
   #define _tcscpy   strcpy
-  #define _tcsicmp  strcasecmp 	//stricmp
+  #define _tcsicmp  stricmp
   #define _tcslen   strlen
   #define _tcsncpy  strncpy
-  #define _tcsnicmp strncasecmp //strnicmp
+  #define _tcsnicmp strnicmp
   #define _tcsrchr  strrchr
   #define _tcstol   strtol
   #define _tfgets   fgets
@@ -669,15 +669,15 @@ int ini_putl(const TCHAR *Section, const TCHAR *Key, long Value, const TCHAR *Fi
 
 
 #if defined PORTABLE_STRNICMP
-int strnicmp(const char *s1, const char *s2, size_t n)
+int strnicmp(const TCHAR *s1, const TCHAR *s2, size_t n)
 {
-  register unsigned char c1, c2;
+  register unsigned TCHAR c1, c2;
 
   while (n-- != 0 && (*s1 || *s2)) {
-    c1 = *(const unsigned char *)s1++;
+    c1 = *(const unsigned TCHAR *)s1++;
     if ('a' <= c1 && c1 <= 'z')
       c1 += ('A' - 'a');
-    c2 = *(const unsigned char *)s2++;
+    c2 = *(const unsigned TCHAR *)s2++;
     if ('a' <= c2 && c2 <= 'z')
       c2 += ('A' - 'a');
     if (c1 != c2)

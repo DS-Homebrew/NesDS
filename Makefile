@@ -6,6 +6,7 @@ $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>dev
 endif
 
 include $(DEVKITARM)/ds_rules
+export LIBWIFI := $(DEVKITARM)/libwifi
 export LIBFAT := $(DEVKITARM)/libfat
 export LIBFILESYSTEM := $(DEVKITARM)/libfilesystem
 
@@ -41,4 +42,4 @@ arm9/$(TARGET).elf:
 clean:
 	$(MAKE) -C arm9 clean
 	$(MAKE) -C arm7 clean
-	rm -f $(TARGET).arm7 $(TARGET).arm9 $(TARGET).nds
+	rm -f $(TARGET).arm7 $(TARGET).arm9

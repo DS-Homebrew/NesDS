@@ -6,9 +6,6 @@
 #include "c_defs.h"
 #include "menu.h"
 
-#include "dswifi9.h"
-#include "wireless/wifi_arm9.h"
-
 char data[4096];
 static const char nesds[32]		= {0xB2, 0xD1, 'n', 'e', 's', 'd', 's', 0};
 static const char nfconnect[32]	= {0xB2, 0xD1, 'c', 'o', 'n', 'e', 'd', 0};
@@ -48,8 +45,6 @@ void deep_reset()
 	memset(key_maps, 0, 16);
 }
 
-
-//void * memcpy ( void * destination, const void * source, size_t num );
 void sendcmd()
 {
 	memcpy(nfdata + 3, &nifi_cmd, 4);

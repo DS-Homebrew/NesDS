@@ -15,27 +15,17 @@ include $(DEVKITARM)/ds_rules
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
 BUILD		:=	build
-SOURCES		:=	source source/mappers data source/zip   \
-                source/wireless/	\
-                source/disk/	\
-                ../common/	\
-                ../common/source/
-				
-INCLUDES	:=	include/ \
-                ../include/ \
-                data/   \
-                source/nes/ \
-                source/disk/	\
-				../common/source
+SOURCES		:=	source source/mappers data source/zip
+INCLUDES	:=	include ../include data/ source/nes
 DATA		:=
 
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	#-marm -mthumb-interwork
+ARCH	:=	#-mthumb -mthumb-interwork	#This may cause some problem when there are some cross-calls between C&Assembly.
 
-CFLAGS	:=	-Wall -O3 -DNO_VIZ\
+CFLAGS	:=	-Wall -O2 -DNO_VIZ\
  			-march=armv5te -mtune=arm946e-s -fomit-frame-pointer\
 			-ffast-math \
 			$(ARCH)
@@ -50,7 +40,7 @@ LDFLAGS	=	-specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map)
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lnds9
+LIBS	:=	-lfat -lnds9 -ldswifi9
  
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

@@ -7,8 +7,8 @@
 extern "C" {
 #endif
 
-typedef Uint (*READHANDLER)(Uint a);
-typedef void (*WRITEHANDLER)(Uint a, Uint v);
+typedef Uint (__fastcall *READHANDLER)(Uint a);
+typedef void (__fastcall *WRITEHANDLER)(Uint a, Uint v);
 
 typedef struct NES_READ_HANDLER_TAG {
 	Uint min;

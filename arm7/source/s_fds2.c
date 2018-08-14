@@ -91,7 +91,7 @@ static Int32 FDSSoundOperatorRender(FDS_FMOP *op)
 	return op->ofs3 + ((Int32)op->wave[(op->phase >> 24) & 0x3f] + op->ofs2) * (Int32)op->fd.volume;
 }
 
-static Int32 FDSSoundRender(void)
+static Int32 __fastcall FDSSoundRender(void)
 {	
 	fdssound.op[1].input = 0;
 	fdssound.op[0].input = FDSSoundOperatorRender(&fdssound.op[1]) << (3 - fdssound.op[1].lvl);
@@ -109,7 +109,7 @@ static NES_AUDIO_HANDLER s_fds_audio_handler[] =
 	{ 0, 0, }, 
 };
 
-static void FDSSoundVolume(Uint volume)
+static void __fastcall FDSSoundVolume(Uint volume)
 {
 	fdssound.mastervolume = (volume << (LOG_BITS - 8)) << 1;
 }
@@ -119,7 +119,7 @@ static NES_VOLUME_HANDLER s_fds_volume_handler[] = {
 	{ 0, }, 
 };
 
-static void FDSSoundWrite(Uint address, Uint value)
+static void __fastcall FDSSoundWrite(Uint address, Uint value)
 {
 	if (0x4040 <= address && address <= 0x407F)
 	{
@@ -234,7 +234,7 @@ static Uint32 DivFix(Uint32 p1, Uint32 p2, Uint32 fix)
 	return ret;
 }
 
-static void FDSSoundReset(void)
+static void __fastcall FDSSoundReset(void)
 {
 	Uint32 i, cps, cpf;
 	XMEMSET(&fdssound, 0, sizeof(FDSSOUND));

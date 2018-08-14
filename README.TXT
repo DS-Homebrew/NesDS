@@ -1,18 +1,8 @@
-HOW-TO COMPILE:
-
-Create a new folder, copy source code like you would on any DS project
-open MSYS and MAKE. (Requires devkitPro)
-
--
-
 nesDS, using toolchain devkitARM.
 We spent a few weeks to port the original nesDS project to the GCC toolchain. Then we made a new EX Edition, and made it possible to emulate the the NES/FC games that the origianl nesDS didn't work well.
 Since the 0.40 version, I ported the code of EX Edtion to the original nesDS, now it is the best nes-emulator~!
 
 If you found any bug on nesDS, just tell me. Maybe I could fix it.
-
-2016-5-03
-coto: nifi is back (rollback changes to DSWIFI 0.3.13), fixed a guru meditation screen due to buffer overflow on romdb rom adjustment, becoming NesDS1.3c
 
 2011-3-23
 avenir contributed some codes to version 0.45a.
