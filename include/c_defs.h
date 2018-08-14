@@ -8,7 +8,7 @@
 #define NES_SRAM NES_RAM + 0x800
 //nes_region
 #define MAX_IPS_SIZE 0x80000		//actually, the ips file won't be larger than 512kB.
-#define ROM_MAX_SIZE 0x318000
+#define ROM_MAX_SIZE 0x2b0000		//2,7MB free rom space
 #define MAXFILES 1024
 
 #define VRAM_ABCD (*(vu32*)0x4000240)
