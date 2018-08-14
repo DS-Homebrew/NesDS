@@ -9,7 +9,7 @@ If you found any bug on nesDS, just tell me. Maybe I could fix it.
 
 08-14-2018 
 coto: 
-	- nifi is broken, code is statically linked to libraries, but it compiles (and touchscreen works)
+	- nifi, sound, touchscreen works in NTR mode as of devkitARM r43. 
 	- fixed exception due to buffer overflow in Rom Database
 
 2011-3-23
