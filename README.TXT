@@ -1,6 +1,5 @@
 nesDS1.3c [NTR], using toolchain devkitARM r43 (/release folder NesDS.nds binary was compiled with it). 
-If you want to update sources to latest devkitARM you can try using these sources, or the ones found in : https://github.com/cotodevel/NesDS/tree/original13b-touchscreen-bug (vanilla libnds sources)
-
+master branch is the one and only branch that uses fully libnds sources. (for TGDS support I won't add support as of now, too busy right now)
 
 We spent a few weeks to port the original nesDS project to the GCC toolchain. Then we made a new EX Edition, and made it possible to emulate the the NES/FC games that the origianl nesDS didn't work well.
 Since the 0.40 version, I ported the code of EX Edtion to the original nesDS, now it is the best nes-emulator~!
