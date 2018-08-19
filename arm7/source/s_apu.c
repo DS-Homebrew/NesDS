@@ -487,7 +487,7 @@ static void __fastcall APUSoundVolume(Uint volume)
 	apu.triangle.mastervolume = volume + ((192 << (LOG_BITS - 8)) << 1);
 	apu.noise.mastervolume = volume + ((192 << (LOG_BITS - 8)) << 1);
 	volume += (NSF_dpcm_volume << (LOG_BITS - 8)) << 1;
-	apu.dpcm.mastervolume = volume + ((192 << (LOG_BITS - 8)) << 1);
+	apu.dpcm.mastervolume = (volume << 4) + ((192 << (LOG_BITS - 8)) << 1);
 }
 
 static NES_VOLUME_HANDLER s_apu_volume_handler[] = {
