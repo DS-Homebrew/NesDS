@@ -4,7 +4,6 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "ds_misc.h"
 #include "c_defs.h"
 #include "minIni.h"
 #include "menu.h"

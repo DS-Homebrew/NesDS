@@ -56,7 +56,6 @@ SOFTWARE.
 #define Spinlock_Release(structtolock) SLasm_Release(&((structtolock).spinlock),SPINLOCK_VALUE)
 #define Spinlock_Check(structtolock) (((structtolock).spinlock)!=SPINLOCK_NOBODY)
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -205,26 +204,20 @@ typedef struct WIFI_RXHEADER {
 	u16 rssi_;
 } Wifi_RxHeader;
 
-// WIFI_ACCESSPOINT is an important structure in that it defines how to connect to an access point.
-// listed inline are information about the members and their function
-// if a field is not necessary for Wifi_ConnectAP it will be marked as such
-// *only* 4 fields are absolutely required to be filled in correctly for the connection to work, they are:
-// ssid, ssid_len, bssid, and channel - all others can be ignored (though flags should be set to 0)
 typedef struct WIFI_ACCESSPOINT {
-	char ssid[33]; // the AP's SSID - zero terminated is not necessary.. if ssid[0] is zero, the ssid will be ignored in trying to find an AP to connect to. [REQUIRED]
-	char ssid_len; // number of valid bytes in the ssid field (0-32) [REQUIRED]
-	u8 bssid[6]; // BSSID is the AP's SSID - setting it to all 00's indicates this is not known and it will be ignored [REQUIRED]
-	u8 macaddr[6]; // mac address of the "AP" is only necessary in ad-hoc mode. [generally not required to connect]
-	u16 maxrate; // max rate is measured in steps of 1/2Mbit - 5.5Mbit will be represented as 11, or 0x0B [not required to connect]
-	u32 timectr; // internal information about how recently a beacon has been received [not required to connect]
-	u16 rssi; // running average of the recent RSSI values for this AP, will be set to 0 after not receiving beacons for a while. [not required to connect]
-	u16 flags; // flags indicating various parameters for the AP [not required, but the WFLAG_APDATA_ADHOC flag will be used]
-	u32 spinlock; // internal data word used to lock the record to guarantee data coherence [not required to connect]
-	u8 channel; // valid channels are 1-13, setting the channel to 0 will indicate the system should search. [REQUIRED]
-	u8 rssi_past[8]; // rssi_past indicates the RSSI values for the last 8 beacons received ([7] is the most recent) [not required to connect]
-	u8 base_rates[16]; // list of the base rates "required" by the AP (same format as maxrate) - zero-terminated list [not required to connect]
+	char ssid[33]; // 0-32byte data, zero
+	char ssid_len;
+	u8 bssid[6];
+	u8 macaddr[6];
+	u16 maxrate; // max rate is measured in steps of 1/2Mbit - 5.5Mbit will be represented as 11, or 0x0B
+	u32 timectr;
+	u16 rssi;
+	u16 flags;
+	u32 spinlock;
+	u8 channel;
+	u8 rssi_past[8];
+	u8 base_rates[16]; // terminated by a 0 entry
 } Wifi_AccessPoint;
-
 
 typedef struct WIFI_MAINSTRUCT {
 	unsigned long dummy1[8];
@@ -265,7 +258,7 @@ typedef struct WIFI_MAINSTRUCT {
 	// WFC data
 	u8 wfc_enable[4]; // wep mode, or 0x80 for "enabled"
 	Wifi_AccessPoint wfc_ap[3];
-	unsigned long wfc_config[3][5]; // ip, snmask, gateway, primarydns, 2nddns
+	unsigned long wfc_config[3][5]; // ip, gateway, snmask, primarydns, 2nddns
 	u8 wfc_wepkey[3][16];
 	
 
@@ -290,4 +283,3 @@ typedef struct WIFI_MAINSTRUCT {
 
 
 #endif
-

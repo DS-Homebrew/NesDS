@@ -22,7 +22,7 @@ DATA		:=
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-marm	-mthumb-interwork
+ARCH	:=	-marm -mthumb-interwork
 
 CFLAGS	:=	-Wall -O2 \
 		-mcpu=arm7tdmi -mtune=arm7tdmi -fomit-frame-pointer\

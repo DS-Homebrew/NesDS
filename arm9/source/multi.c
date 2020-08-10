@@ -2,7 +2,6 @@
 #include "dswifi_arm9/wifi_arm9.h"
 #include <stdlib.h>
 #include <string.h>
-#include "ds_misc.h"
 #include "c_defs.h"
 #include "menu.h"
 #include "multi.h"

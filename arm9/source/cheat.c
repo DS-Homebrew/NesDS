@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "menu.h"
-#include "ds_misc.h"
 #include "c_defs.h"
 
 struct cheatlist_s
