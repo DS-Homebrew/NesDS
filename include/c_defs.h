@@ -234,7 +234,7 @@ extern void save_cheat(void);
 //ips.c
 void load_ips(const char *name);
 void do_ips(int romsize);
-extern int ips_stat;
+extern bool ips_stat;
 
 //gesture.c
 void do_gesture(void);

@@ -70,7 +70,7 @@ int global_roms = 0;
 void do_rommenu() {
 	int roms = global_roms;
 
-	ips_stat = 0;		//disable ips first.
+	ips_stat = false;		//disable ips first.
 
 	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);			//disable sound when selecting a rom.
 

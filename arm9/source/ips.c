@@ -3,7 +3,7 @@
 #include <string.h>
 #include "c_defs.h"
 
-int ips_stat = 0;		// 0 = no ips, 1 = already has one.
+bool ips_stat = false;
 int ips_len = 0;		//length of ips patch.
 char *ips_start = (char *)rom_start + ROM_MAX_SIZE - MAX_IPS_SIZE; //alloca the ips patch here.
 
@@ -11,7 +11,7 @@ void load_ips(const char *name)
 {
 	FILE *fp;
 
-	ips_stat = 0;
+	ips_stat = false;
 	ips_len = 0;
 
 	fp = fopen(name,"rb");
@@ -19,11 +19,7 @@ void load_ips(const char *name)
 		return;
 
 	ips_len = fread(ips_start,1,MAX_IPS_SIZE,fp);
-
-	if(ips_len > 0)
-		ips_stat = 1;
-	else 
-		ips_stat = 0;
+	ips_stat = (ips_len > 0);
 
 	fclose(fp);
 }
