@@ -1,7 +1,6 @@
 #include <nds.h>
 #include <stdio.h>
 #include <string.h>
-#include "ds_misc.h"
 #include "c_defs.h"
 #include "menu.h"
 

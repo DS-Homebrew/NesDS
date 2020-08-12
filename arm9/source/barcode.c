@@ -1,5 +1,4 @@
 #include <nds.h>
-#include "ds_misc.h"
 #include "c_defs.h"
 
 char prefix_parity_type[10][6] = {

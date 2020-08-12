@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "ds_misc.h"
 #include "c_defs.h"
 //frameskip min = 1, max = xxxxxx....
 int soft_frameskip = 3;

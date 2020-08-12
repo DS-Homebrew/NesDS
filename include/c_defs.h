@@ -1,3 +1,6 @@
+#ifndef C_DEFS_H
+#define C_DEFS_H
+
 //FIFO_USER_06	for ipc_region
 //FIFO_USER_07	for audio data
 //FIFO_USER_08  for APU control
@@ -91,7 +94,7 @@ extern u32 debuginfo[];
 int debugdump(void);
 
 //romloader.c
-int romsize;
+extern int romsize;
 int bootext();
 extern int active_interface;
 extern char romfilename[256];
@@ -231,7 +234,7 @@ extern void save_cheat(void);
 //ips.c
 void load_ips(const char *name);
 void do_ips(int romsize);
-extern int ips_stat;
+extern bool ips_stat;
 
 //gesture.c
 void do_gesture(void);
@@ -319,4 +322,6 @@ int do_decompression(const char *inname, const char *outname);
 #define NSFFILE 0x100000 //on or off state of all_pix_show
 #else
 extern int ipc_region;
+#endif
+
 #endif

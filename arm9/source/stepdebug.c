@@ -1,5 +1,4 @@
 #include <nds.h>
-#include "ds_misc.h"
 #include "c_defs.h"
 
 extern u32 __nz;
