@@ -231,7 +231,3 @@ int get_gesture(int out)
 	last_pos = gesture_pos;
 	return 0;
 }
-			
-
-
-	

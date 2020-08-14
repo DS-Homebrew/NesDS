@@ -235,7 +235,7 @@ void recorder_reset() {
 
 //run 1 NES frame with FF/REW control
 void play() {
-  	static int framecount=0;
+	static int framecount = 0;
 	static int fcount = 0;
 	int forward = 0;
 	int backward = 0;
@@ -251,29 +251,30 @@ void play() {
 
 	forward = __emuflags & FASTFORWARD;
 	backward = __emuflags & REWIND;
-	
-	if(backward) { // for rolling back... a nice function?
+
+	if (backward) { // for rolling back... a nice function?
 		swiWaitForVBlank();
 		framecount++;
-		if(framecount>2) {
-			framecount-=3;
-			if(firstsave!=lastsave) {
+		if(framecount > 2) {
+			framecount -= 3;
+			if(firstsave != lastsave) {
 				lastsave--;
-				if(lastsave<0)
-					lastsave=maxsaves-1;
-				loadstate(freemem_start+SAVESTATESIZE*lastsave);
+				if(lastsave < 0)
+					lastsave = maxsaves - 1;
+				loadstate(freemem_start + SAVESTATESIZE * lastsave);
 				EMU_Run();
 			}
 		}
 	} else {
-		if(__emuflags & SOFTRENDER) {
-			if(!(forward) && (fcount >= debuginfo[6] && fcount - debuginfo[6] < 10) ) // disable VBlank to speed up emulation.
+		if (__emuflags & SOFTRENDER) {
+			if (!(forward) && (fcount >= debuginfo[6] && fcount - debuginfo[6] < 10) ) // disable VBlank to speed up emulation.
 				swiWaitForVBlank();
 		} else {
 			if(!(forward)) {
 				if(__emuflags & PALSYNC) {
 					if(__emuflags & (SOFTRENDER | PALTIMING))
 						__emuflags ^= PALSYNC;
+
 					if(REG_VCOUNT < 190) {
 						swiWaitForVBlank();
 					}
@@ -285,28 +286,27 @@ void play() {
 			}
 		}
 
-		if(!(__emuflags & PALTIMING && global_playcount == 6)) {
+		if (!(__emuflags & PALTIMING && global_playcount == 6)) {
 			EMU_Run(); //run a frame
 			framecount++;
-			if(framecount>8) {	//save state every 9th frame
-				framecount-=9;
-				savestate(freemem_start+SAVESTATESIZE*lastsave);
+			if(framecount > 8) {	//save state every 9th frame
+				framecount -= 9;
+				savestate(freemem_start + SAVESTATESIZE * lastsave);
 				lastsave++;
-				if(lastsave>=maxsaves)
-					lastsave=0;
-				if(lastsave==firstsave) {
+				if(lastsave >= maxsaves)
+					lastsave = 0;
+				if(lastsave == firstsave) {
 					firstsave++;
-					if(firstsave>=maxsaves)
-						firstsave=0;
+					if(firstsave >= maxsaves)
+						firstsave = 0;
 				}
 			}
-		}
-		else {
+		} else {
 			if((__emuflags & PALTIMING) && (__emuflags & ALLPIXEL) && !(__emuflags & SOFTRENDER))
 				swiWaitForVBlank();
 		}
 	}
-	
+
 	if(__emuflags & SOFTRENDER) {
 		__emuflags &= ~AUTOSRAM;
 		__rendercount++;
