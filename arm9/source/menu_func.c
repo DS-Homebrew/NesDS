@@ -936,7 +936,7 @@ void menu_saveini(void)
 
 	menu_stat = 3;
 
-	if(!active_interface) return;
+	if (!active_interface) return;
 
 	inibuf[0] = 0;
 	getcwd(inibuf, 512);
@@ -954,7 +954,7 @@ void menu_saveini(void)
 	if(joyflags & B_A_SWAP)	i = 1;
 	else i = 0;
 	ini_putl("nesDSrev2", "BASwap", i, ininame);
-	
+
 	i = __emuflags& 3;
 	ini_putl("nesDSrev2", "Blend", i, ininame);
 

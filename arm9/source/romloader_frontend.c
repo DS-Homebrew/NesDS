@@ -36,7 +36,7 @@ extern char **argv;
 bool readFrontend(char *target)
 {
 	char dir[768];
-	if(!(argc>1))
+	if (argc < 2)
 		return false;
 
 	strcpy(target,argv[1]);

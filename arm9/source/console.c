@@ -220,20 +220,19 @@ void menutext(int line,char *s,int selected) {
 ******************************/
 void consoletext(int offset,char *s,int color) {
 	u16 *p;
-	p=(u16*)(SUB_BG+offset);
-	while(*s) {
-		if(*s == '\n') {
-			p = (u16 *)(((int)p + 62)&(~63));
+	p = (u16*)(SUB_BG + offset);
+	while (*s) {
+		if (*s == '\n') {
+			p = (u16 *)(((int)p + 62) & (~63));
 			s++;
-		}
-		else if(*s == '\t') {
+		} else if (*s == '\t') {
 			p = (u16 *)(((int)p + 14)&(~15));
 			s++;
-		}
-		else if(*s == '\r') {
-			p = (u16 *)((((int)p)&~63) + (offset&63) + 64);
+		} else if (*s == '\r') {
+			p = (u16 *)((((int)p)&~63) + (offset & 63) + 64);
 			s++;
 		}
+
 		if(!*s)
 			break;
 		*p++ = (*s++)|color;
@@ -251,12 +250,15 @@ void consoletext(int offset,char *s,int color) {
 void hex(int offset,int d,int n) {
 	u16 *p;
 	u16 c;
-	p=(u16*)(SUB_BG+offset);
+	p = (u16*)(SUB_BG + offset);
 	do {
-		c=d&0x0f;
-		if(c<10) c+='0';
-		else c=c-10+'A';
+		c = d & 0x0f;
+		if(c < 10)
+			c += '0';
+		else
+			c = c - 10 + 'A';
+
 		d>>=4;
-		p[n--]=c;
-	} while(n>=0);
+		p[n--] = c;
+	} while(n >= 0);
 }
