@@ -1,1 +1,0 @@
-this wifi code links against devkitARM r45 current dswifi version. If dswifi code is updated, you must reflect these changes here 
