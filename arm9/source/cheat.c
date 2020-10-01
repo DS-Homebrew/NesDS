@@ -242,24 +242,23 @@ int cheatlist()
 	static unsigned int preadd;
 	static unsigned char preval, pretype;
 
-	if(menu_stat == 5) {
+	if (menu_stat == 5) {
 		for(i = 4; i <= 24; i++)  {
 			consoletext(64 * i, "                                ", 0);
 		}
 		menu_stat = 6;
 	}
-	for(i = 4; i < cheatcount + 4; i++)  {
+	for (i = 4; i < cheatcount + 4; i++)  {
 		int j;
 		consoletext(64 * i, "add:0x    val:0x   type:        ", 0);
 		hex(64 * i + 12, cheatlistdata[i - 4].add, 2);
 		hex(64 * i + 12 + 20, cheatlistdata[i - 4].val, 1);
 		consoletext(64 * i + 30 + 8 + 10, type[cheatlistdata[i - 4].type], 0);
-		if(i&1)
-			cheatlisttouch[0].offset = 64 * i + 60;
-		else
-			cheatlisttouch[0].offset = 64 * i + 56;
+
+		cheatlisttouch[0].offset = 64 * i + 56 + (i & 1 ? 4 : 0);
+
 		j = do_touchstrings(cheatlisttouch, 0);
-		if(touchstate==4 && j == 0)  {
+		if (touchstate == 4 && j == 0)  {
 			state = 1;
 			editnum = i - 4;
 			preadd = cheatlistdata[editnum].add;
@@ -293,8 +292,8 @@ int cheatlist()
 		hex(64 * 20 + 24, preval, 0);
 		consoletext(64 * 20 + 42, type[pretype], 0);
 		i = do_touchstrings(mytouch, 0);
-		if(touchstate==4)  {
-			if(i >=0 && i <= 12)
+		if(touchstate == 4)  {
+			if(i >= 0 && i <= 12)
 				menu_stat = 5;
 			switch(i)  {
 				case 0:
@@ -352,14 +351,13 @@ int cheatlist()
 			preval &= 0xFF;
 			preadd &= 0x7FF;
 		}
-	}
-	else  {
+	} else {
 		touchstring mytouch[] = {
 			{64 * 20 + 40, "add new one"},
 			{-1, 0},
 		};
 		i = do_touchstrings(mytouch, 0);
-		if(touchstate==4) {
+		if (touchstate == 4) {
 			switch(i) {
 				case 0:	//add new one
 					if(cheatcount < 14) {
