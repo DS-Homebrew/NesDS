@@ -362,40 +362,56 @@ struct menu_unit menu_short_cut = {
 };
 
 struct menu_item menu_config_items[] = {
+	// Save SRAM
 	{
-		.name = "\rSave SRAM\rAuto",
+		.name = "\r Auto",
 		.type = 1,
-		.x = 1, .y = 5, .w = 9, .h = 4,
+		.x = 13, .y = 5, .w = 6, .h = 3,
 		.func = menu_config_func,
 	},
 	{
-		.name = "\rSave SRAM\rManual",
+		.name = "\rManual",
 		.type = 1,
-		.x = 16, .y = 5, .w = 9, .h = 4,
+		.x = 21, .y = 5, .w = 6, .h = 3,
+		.func = menu_config_func,
+	},
+	// Gfx Screen
+	{
+		.name = "\r Top",
+		.type = 1,
+		.x = 13, .y = 10, .w = 6, .h = 3,
 		.func = menu_config_func,
 	},
 	{
-		.name = "\rGraphic on\rTop-Screen",
+		.name = "\r Sub",
 		.type = 1,
-		.x = 1, .y = 12, .w = 11, .h = 4,
+		.x = 21, .y = 10, .w = 6, .h = 3,
+		.func = menu_config_func,
+	},
+	// Save dir
+	{
+		.name = "\r Sub",
+		.type = 1,
+		.x = 13, .y = 15, .w = 6, .h = 3,
 		.func = menu_config_func,
 	},
 	{
-		.name = "\rGraphic on\rSub-Screen",
+		.name = "\r Same",
 		.type = 1,
-		.x = 16, .y = 12, .w = 11, .h = 4,
+		.x = 21, .y = 15, .w = 6, .h = 3,
 		.func = menu_config_func,
 	},
 	{
-		.name = "\rSound Reset",
+		.name = "Sound Reset",
 		.type = 1,
-		.x = 1, .y = 19, .w = 11, .h = 3,
+		.x = 10, .y = 21, .w = 11, .h = 1,
 		.func = menu_config_func,
 	},
 };
 struct menu_unit menu_config = {
 	.top = "Config",
-	.subcnt = 5,
+	.subcnt = 7,
+	.start = menu_config_start,
 	.item = menu_config_items,
 };
 

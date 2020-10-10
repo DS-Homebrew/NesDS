@@ -39,8 +39,7 @@ bool readFrontend(char *target)
 	if (argc < 2)
 		return false;
 
-	strcpy(target,argv[1]);
-	SplitItemFromFullPathAlias(target,dir,NULL);
+	SplitItemFromFullPathAlias(argv[1],dir,target);
 	chdir(dir);
 	return true;
 }

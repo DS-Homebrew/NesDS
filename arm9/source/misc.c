@@ -1,11 +1,15 @@
 #include <nds.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <errno.h>
 #include <string.h>
 #include "c_defs.h"
 #include "menu.h"
 
 int save_slots = 0;
 int slots_num = 0;
+bool use_saves_dir = false;
 
 //a bad idea...
 void reg4015interrupt(u32 msg, void *none)
@@ -112,11 +116,37 @@ int do_touchstrings(touchstring *ts, int pushstate) {
 //			}
 		}
 		consoletext(offset,str,color);
-		
+
 		ts++;
 		strnum++;
 	} while(ts->offset>=0);
 	return strtouched;
+}
+
+/*****************************
+* name:			enter_save_context
+* function:		if using saves dir, cd's to saves/, creating if necessary
+*****************************/
+void enter_save_context() {
+	if (!use_saves_dir) return;
+	if (mkdir("saves", 0777)) {
+		if (errno != EEXIST) // failure
+		{
+			use_saves_dir=false;
+			return;
+		};
+	}
+	if (chdir("saves") != 0) // failure
+		use_saves_dir=false;
+}
+
+/*****************************
+* name:			leave_save_context
+* function:		if using saves dir, cd's ..
+*****************************/
+void leave_save_context() {
+	if (!use_saves_dir) return;
+	chdir("..");
 }
 
 /*****************************
@@ -127,18 +157,22 @@ int do_touchstrings(touchstring *ts, int pushstate) {
 ******************************/
 void load_sram() {
 	FILE *f;
-	
+
 	//if(!(__cartflags&SRAM)) return;		//some games have bad headers.
 	if(!active_interface) return;
+
+	enter_save_context();
 
 	romfileext[0]='s';
 	romfileext[1]='a';
 	romfileext[2]='v';
 	romfileext[3]=0;
 	f=fopen(romfilename,"r");
-	if(!f) return;
-	fread((u8*)NES_SRAM,1,0x2000,f);
-	fclose(f);
+	if (f) {
+		fread((u8*)NES_SRAM,1,0x2000,f);
+		fclose(f);
+	}
+	leave_save_context();
 }
 
 /*****************************
@@ -153,15 +187,19 @@ void save_sram() {
 	//if(!(__cartflags&SRAM)) return;		//some games have bad headers.
 	if(!active_interface) return;
 
+	enter_save_context();
+
 	romfileext[0]='s';
 	romfileext[1]='a';
 	romfileext[2]='v';
 	romfileext[3]=0;
 	f=fopen(romfilename,"w");
-	if(!f) return;
-	fwrite((u8*)NES_SRAM,1,0x2000,f);
-	fflush(f);
-	fclose(f);
+	if (f) {
+		fwrite((u8*)NES_SRAM,1,0x2000,f);
+		fflush(f);
+		fclose(f);
+	}
+	leave_save_context();
 }
 
 /*****************************
@@ -179,17 +217,21 @@ void write_savestate(int num) {
 	if(num > 9 || num < 0)
 		return;
 
+	enter_save_context();
+
 	romfileext=strrchr(romfilename,'.')+1;
 	romfileext[0]='s';
 	romfileext[1]='s';
 	romfileext[2]='0' + num;
 	savestate((u32)p);
 	f=fopen(romfilename,"w");
-	if(!f) return;
-	fwrite(p,1,SAVESTATESIZE,f);
-	fflush(f);
-	fclose(f);						//something maybe lost if we shutdown our DS immi...
-	recorder_reset();
+	if (f) {
+		fwrite(p,1,SAVESTATESIZE,f);
+		fflush(f);
+		fclose(f);						//something maybe lost if we shutdown our DS immi...
+		recorder_reset();
+	}
+	leave_save_context();
 }
 
 /*****************************
@@ -208,18 +250,22 @@ void read_savestate(int num) {
 	if(num > 9 || num < 0)
 		return;
 
+	enter_save_context();
+
 	romfileext=strrchr(romfilename,'.')+1;		//make sure everything is ok...
 	romfileext[0]='s';
 	romfileext[1]='s';
 	romfileext[2]='0' + num;
 
 	f=fopen(romfilename,"r");
-	if(!f) return;
-	i=fread(p,1,SAVESTATESIZE,f);
-	fclose(f);
-	if(i==SAVESTATESIZE)
-		loadstate((u32)p);
-	recorder_reset();
+	if (f) {
+		i=fread(p,1,SAVESTATESIZE,f);
+		fclose(f);
+		if(i==SAVESTATESIZE)
+			loadstate((u32)p);
+		recorder_reset();
+	}
+	leave_save_context();
 }
 
 
@@ -322,7 +368,7 @@ void do_quickf(int func)
 			fdscmdwrite(0);
 		}
 		break;
-	case 12: 
+	case 12:
 		if(debuginfo[16] == 20) {
 			fdscmdwrite(1);
 		}
@@ -450,11 +496,11 @@ void rescale(int a, int b)
 {
 	if(b >= 0)
 		REG_BG3Y = -(b >> 8);
-	else 
+	else
 		REG_BG3Y = ((-b) >> 8);
 	if(__emuflags & ALLPIXEL) {
 		int pos = b / (1 << 16);
-	
+
 		if(pos < -(240 - 192)/2) {
 			__emuflags |= SCREENSWAP;
 			all_pix_start = 0;

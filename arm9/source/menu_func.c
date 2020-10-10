@@ -885,6 +885,19 @@ void menu_shortcut_func(void)
 	menu_shortcut_fresh();
 }
 
+void menu_config_start(void)
+{
+	consoletext(64*7 + 1, "Save SRAM", 0);
+	consoletext(64*7 + ((__emuflags & AUTOSRAM) ? 25 : 58), "*", 0x1000);
+	consoletext(64*7 + ((__emuflags & AUTOSRAM) ? 58 : 25), " ", 0x1000);
+	consoletext(64*12 + 1, "GFX Screen", 0);
+	consoletext(64*12 + ((__emuflags & SCREENSWAP) ? 58 : 25), "*", 0x1000);
+	consoletext(64*12 + ((__emuflags & SCREENSWAP) ? 25 : 58), " ", 0x1000);
+	consoletext(64*17 + 1, "Saves dir", 0);
+	consoletext(64*17 + (use_saves_dir ? 25 : 58), "*", 0x1000);
+	consoletext(64*17 + (use_saves_dir ? 58 : 25), " ", 0x1000);
+}
+
 void menu_config_func(void)
 {
 	menu_stat = 3;
@@ -901,10 +914,17 @@ void menu_config_func(void)
 	case 3: //On sub
 		__emuflags |= SCREENSWAP;
 		break;
-	case 4: //Sound reset
+	case 4: //Use Saves Subdir
+		use_saves_dir = true;
+		break;
+	case 5: // No Saves Subdir
+		use_saves_dir = false;
+		break;
+	case 6: //Sound reset
 		fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
 		break;
 	}
+	menu_config_start();
 }
 
 void menu_about_start(void)
@@ -967,12 +987,16 @@ void menu_saveini(void)
 	i = (__emuflags & AUTOSRAM) ? 1 : 0;
 	ini_putl("nesDSrev2", "AutoSRAM", i, ininame);
 
+	i = (__emuflags & ALLPIXELON) ? 1 : 0;
+	ini_putl("nesDSrev2", "AllPixelOn", i, ininame);
+
 	i = (__emuflags & SCREENSWAP) ? 1 : 0;
 	ini_putl("nesDSrev2", "ScreenSwap", i, ininame);
 
 	ini_putl("nesDSrev2", "Screen_Scale", ad_scale, ininame);
 	ini_putl("nesDSrev2", "Screen_Offset", ad_ypos, ininame);
 	ini_putl("nesDSrev2", "AutoFire", autofire_fps, ininame);
+	ini_putl("nesDSrev2", "UseSavesDir", use_saves_dir, ininame);
 
 	//short-cuts
 	for(i = 0; i < MAX_SC; i++) {

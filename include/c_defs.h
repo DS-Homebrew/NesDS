@@ -131,6 +131,7 @@ void do_quickf(int func);
 
 extern int slots_num;
 extern int screen_swap;
+extern bool use_saves_dir;
 typedef struct {
 	int offset;
 	char *str;

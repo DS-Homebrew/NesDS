@@ -83,7 +83,9 @@ void autofire_fresh(void);
 void menu_shortcut_start(void);
 void menu_shortcut_func(void);
 
+void menu_config_start(void);
 void menu_config_func(void);
+
 void menu_about_start(void);
 void menu_about_action(void);
 void menu_extra_fds(void);
