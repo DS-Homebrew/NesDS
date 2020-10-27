@@ -14,6 +14,9 @@ extern int shortcuts_tbl[16];
 
 char tmpname[] = "dszip.tmp";
 
+char diskbios[8192];
+const int diskbios_size = sizeof(diskbios);
+
 int romsize;	//actual rom size
 int freemem_start;	//points to unused mem (end of loaded rom)
 int freemem_end;
@@ -245,6 +248,12 @@ int loadrom() {
 	int i; // romsize
 	char *roms; // rom data
 
+	if(strstr(romfilename, ".fds") || strstr(romfilename, ".FDS")) {
+		if ((__emuflags & DISKBIOS) == 0) {
+			return 1;
+		}
+	}
+
 	if(strstr(romfilename, ".GZ") || strstr(romfilename, ".gz") ||
 		strstr(romfilename, ".ZIP") || strstr(romfilename, ".zip")
 	) {	// a gz file is loaded.
@@ -415,7 +424,9 @@ void stringsort(char **p1) {
 extern int argc;
 extern char **argv;
 char inibuf[768];
+char disksyspath[768];
 char ininame[768];
+char defaultDisksyspath[] = "/disksys.rom";
 
 char *findpath(int argc, char **argv, const char *name){
 	int i=0;
@@ -492,6 +503,7 @@ int bootext() {
 		}
 
 		ini_gets("nesDSrev2","StartIn","/",inibuf,768,ininame);
+		ini_gets("nesDSrev2","DisksysBios",defaultDisksyspath,disksyspath,768,ininame);
 	}
 	/*else{
 		strcpy(inibuf,"/");
@@ -499,6 +511,23 @@ int bootext() {
 
 	if(!*inibuf||inibuf[strlen(inibuf)-1]!='/')strcat(inibuf,"/");
 	chdir(inibuf); //might be overwritten in readFrontend()
+
+	// if we didn't have an ini, this'll be blank
+	if (disksyspath[0] == 0)
+		strcpy(disksyspath, defaultDisksyspath);
+
+	FILE* bios = fopen(disksyspath, "r");
+	if (bios != NULL) {
+		fseek(bios, 0, SEEK_END);
+		size_t offset = ftell(bios);
+		if (offset < 8193) { // FDS BIOS should be 8KB, we'll accept anything that fits in our buffer
+			fseek(bios, 0, SEEK_SET);
+			fread(diskbios, 8192, 1, bios);
+
+			__emuflags |= DISKBIOS;
+		}
+		fclose(bios);
+	}
 
 	//interrupt 2: read frontend
 	if(!readFrontend(romfilename)) return 0;

@@ -321,6 +321,7 @@ int do_decompression(const char *inname, const char *outname);
 #define REWIND 0x40000 // for backward
 #define ALLPIXELON 0x80000 //on or off state of all_pix_show
 #define NSFFILE 0x100000 //on or off state of all_pix_show
+#define DISKBIOS 0x200000 // if diskbios was loaded
 #else
 extern int ipc_region;
 #endif
