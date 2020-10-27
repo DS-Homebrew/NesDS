@@ -1,4 +1,4 @@
-name: Build NesDS
+name: Build nesDS
 
 on:
   push:
@@ -31,19 +31,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install p7zip-full python -y
-      - name: Build & Package NesDS
+      - name: Build & Package nesDS
         id: build
         run: |
           make
           chmod +x make_cia
-          ./make_cia --srl="NesDS.nds" --id_0=$(git rev-parse --short=7 HEAD) --tikID=$(git rev-parse --short=16 HEAD)
-          mkdir NesDS/
-          cp NesDS.nds NesDS/
-          cp NesDS.cia NesDS/
-          7z a NesDS.7z NesDS/
+          ./make_cia --srl="nesDS.nds" --id_0=$(git rev-parse --short=7 HEAD) --tikID=$(git rev-parse --short=16 HEAD)
+          mkdir nesDS/
+          cp nesDS.nds nesDS/
+          cp nesDS.cia nesDS/
+          7z a nesDS.7z nesDS/
 
           mkdir -p ~/artifacts
-          cp NesDS.7z ~/artifacts
+          cp nesDS.7z ~/artifacts
 
           echo ::set-output name=commit_tag::$(git describe --abbrev=0 --tags)
           echo ::set-output name=commit_hash::$(git log --format=%h -1)
@@ -105,7 +105,7 @@ jobs:
           cd Builds/extras
           cp ${{ github.workspace }}/build/* .
           git stage .
-          git commit -m "NesDS | $COMMIT_HASH"
+          git commit -m "nesDS | $COMMIT_HASH"
           git tag v$CURRENT_DATE
           git push origin master v$CURRENT_DATE
       - name: Release to TWLBot/Builds
@@ -114,7 +114,7 @@ jobs:
           AUTH_HEADER="Authorization: token ${{ secrets.TWLBOT_TOKEN }}"
           CONTENT_TYPE="Content-Type: application/json"
           API_URL="https://api.github.com/repos/TWLBot/Builds/releases"
-          RELEASE_INFO="{\"tag_name\": \"v${{ steps.commit.outputs.current_date }}\", \"name\": \"NesDS | $COMMIT_HASH\", \"body\": \"$AUTHOR_NAME - $COMMIT_MESSAGE\", \"prerelease\": true}"
+          RELEASE_INFO="{\"tag_name\": \"v${{ steps.commit.outputs.current_date }}\", \"name\": \"nesDS | $COMMIT_HASH\", \"body\": \"$AUTHOR_NAME - $COMMIT_MESSAGE\", \"prerelease\": true}"
 
           RESPONSE=$(curl -XPOST -H "$AUTH_HEADER" -H "$CONTENT_TYPE" "$API_URL" -d "$RELEASE_INFO")
 
