@@ -486,6 +486,9 @@ int bootext() {
 		if((iniret=ini_getl("nesDSrev2","AutoSRAM",0,ininame)) != 0) __emuflags|=AUTOSRAM;
 		if((iniret=ini_getl("nesDSrev2","Screen_Scale",0,ininame)) != 0) ad_scale=iniret;
 		if((iniret=ini_getl("nesDSrev2","Screen_Offset",0,ininame)) != 0) ad_ypos=iniret;
+		if((iniret=ini_getl("nesDSrev2","Screen_Gamma",0,ininame)) != 0) gammavalue=iniret;
+		if((iniret=ini_getl("nesDSrev2","Screen_Palette",0,ininame)) != 0) palette_value=iniret;
+		palset();
 		if((iniret=ini_getl("nesDSrev2","AutoFire",2,ininame)) != 0) autofire_fps=iniret;
 		if((iniret=ini_getl("nesDSrev2","UseSavesDir",0,ininame)) != 0) use_saves_dir=true;
 		__af_start = ((autofire_fps >> 1) << 8) + (autofire_fps >> 1) + (autofire_fps & 1);

@@ -5,7 +5,9 @@
 #include <unistd.h>
 #include "c_defs.h"
 //frameskip min = 1, max = xxxxxx....
+int palette_value = 0;
 int soft_frameskip = 3;
+#define PALETTE_VALUE palette_value
 #define SOFT_FRAMESKIP soft_frameskip
 
 #ifdef ROM_EMBEDED

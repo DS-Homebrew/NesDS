@@ -67,9 +67,9 @@ struct menu_unit menu_adjust = {
 
 struct menu_item menu_display_items[] = {
 	{
-		.name = "\rAdjust\rScaling",
+		.name = "\rAdjust\rScale",
 		.type = 0,
-		.x = 1, .y = 5, .w = 7, .h = 4,
+		.x = 1, .y = 4, .w = 6, .h = 4,
 		.child = &menu_adjust,
 	},
 	{
@@ -111,13 +111,13 @@ struct menu_item menu_display_items[] = {
 	{
 		.name = "\rDec",
 		.type = 1,
-		.x = 22, .y = 6, .w = 3, .h = 3,
+		.x = 27, .y = 6, .w = 3, .h = 3,
 		.func = menu_display_br
 	},
 	{
 		.name = "\rInc",
 		.type = 1,
-		.x = 16, .y = 6, .w = 3, .h = 3,
+		.x = 21, .y = 6, .w = 3, .h = 3,
 		.func = menu_display_br
 	},
 	{
@@ -126,11 +126,23 @@ struct menu_item menu_display_items[] = {
 		.x = 27, .y = 13, .w = 3, .h = 3,
 		.func = menu_display_br
 	},
+	{
+		.name = "Gamma:",
+		.type = 1,
+		.x = 9, .y = 4, .w = 5, .h = 1,
+		.func = menu_display_br
+	},
+	{
+		.name = "Palette:",
+		.type = 1,
+		.x = 9, .y = 7, .w = 7, .h = 1,
+		.func = menu_display_br
+	},
 };
 
 struct menu_unit menu_display = {
 	.top = "Display",
-	.subcnt = 10,
+	.subcnt = 12,
 	.start = menu_display_start,
 	.item = menu_display_items,
 };
@@ -194,7 +206,7 @@ struct menu_item menu_game_items[] = {
 		.type = 1,
 		.x = 11, .y = 19, .w = 7, .h = 3,
 		.func = show_all_pixel,
-	}
+	},
 };
 struct menu_unit menu_game = {
 	.top = "Game",

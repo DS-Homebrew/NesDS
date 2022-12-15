@@ -2,11 +2,35 @@
 #include <fat.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "c_defs.h"
 #include "menu.h"
+#include "loopy_pal.h"
+#include "asqrealc_pal.h"
+#include "chriscovell_pal.h"
+#include "crashman_pal.h"
+#include "mattconte_pal.h"
+#include "mess_pal.h"
+#include "pasofami_pal.h"
+#include "quor_pal.h"
+#include "firebrandx_pal.h"
 
 extern u32 agb_bg_map[];
+
+u8 gammavalue = 0;
+
+u8 nes_rgb[] = { 
+	0x75,0x75,0x75, 0x27,0x1b,0x8f, 0x00,0x00,0xab, 0x47,0x00,0x9f, 0x8f,0x00,0x77, 0xab,0x00,0x13, 0xa7,0x00,0x00, 0x7f,0x0b,0x00,
+	0x43,0x2f,0x00, 0x00,0x47,0x00, 0x00,0x51,0x00, 0x00,0x3f,0x17, 0x1b,0x3f,0x5f, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00,
+	0xbc,0xbc,0xbc, 0x00,0x73,0xef, 0x23,0x3b,0xef, 0x83,0x00,0xf3, 0xbf,0x00,0xbf, 0xe7,0x00,0x5b, 0xdb,0x2b,0x00, 0xcb,0x4f,0x0f,
+	0x8b,0x73,0x00, 0x00,0x97,0x00, 0x00,0xab,0x00, 0x00,0x93,0x3b, 0x00,0x83,0x8b, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00,
+	0xff,0xff,0xff, 0x3f,0xbf,0xff, 0x5f,0x97,0xff, 0xa7,0x8b,0xfd, 0xf7,0x7b,0xff, 0xff,0x77,0xb7, 0xff,0x77,0x63, 0xff,0x9b,0x3b,
+	0xf3,0xbf,0x3f, 0x83,0xd3,0x13, 0x4f,0xdf,0x4b, 0x58,0xf8,0x98, 0x00,0xeb,0xdb, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00,
+	0xff,0xff,0xff, 0xab,0xe7,0xff, 0xc7,0xd7,0xff, 0xd7,0xcb,0xff, 0xff,0xc7,0xff, 0xff,0xc7,0xdb, 0xff,0xbf,0xb3, 0xff,0xdb,0xab,
+	0xff,0xe7,0xa3, 0xe3,0xff,0xa3, 0xab,0xf3,0xbf, 0xb3,0xff,0xcf, 0x9f,0xff,0xf3, 0xd1,0xd1,0xd1, 0x11,0x11,0x11, 0x11,0x11,0x11
+	};
+
 
 void menu_hide(void)
 {
@@ -286,20 +310,94 @@ char *rendernames[] = {
 	"SP-Perframe", "SP-Pertile ", "Pure-Soft   "
 };
 
+char *brightxt[] = {
+	"I    ","II   ","III  ","IIII ","IIIII"
+};
+
+char *paltxt[] = {
+	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","Firebrandx "
+};
+
 void menu_display_start(void)
 {
 	consoletext(64*12 + 4, "Blend:", 0);
 	consoletext(64*12 + 16, blendnames[__emuflags&3], 0x1000);
 	consoletext(64*19 + 4, "Render Type:", 0);
 	consoletext(64*19 + 28, rendernames[(__emuflags >> 6)&3], 0x1000);
-	consoletext(64*19 + 4, "Render Type:", 0);
-	consoletext(64*19 + 28, rendernames[(__emuflags >> 6)&3], 0x1000);
-	consoletext(64*4 + 17*2, "Frame-skip for\rPure-Soft:", 0);
-	hex8(64*5 + 27*2, soft_frameskip - 1);
+	consoletext(64*4 + 42, "Frame-skip\rPureSoft:", 0);
+	hex8(64*5 + 30*2, soft_frameskip - 1);
 	consoletext(64*11 + 23*2, "Palette\rsync:", 0);
 	consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000); 
+	consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
+	hex8(64*8 + 36, palette_value);
+	consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
 }
 
+void menu_preset_func(void) {
+	if(lastbutton_cnt == 0) {
+	ad_scale=0x10000;
+	ad_ypos=-0x00090000;
+	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 1) {
+	ad_scale=0x10000;
+	ad_ypos=-0x00280000;
+	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 2) {
+	ad_scale=0x10000;
+	ad_ypos=-0x00180000;
+	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 3) {
+	ad_scale=0x10000;
+	ad_ypos=-0x00200000;
+	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 4) {
+	ad_scale=0xc000;
+	ad_ypos=0x00062000;
+	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 5) {
+	ad_scale=0xd000;
+	ad_ypos=-0x00000000;
+	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 6) {
+	ad_scale=0xf000;
+	ad_ypos=-0x000f0000;
+	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 7) {
+	ad_scale=0xf000;
+	ad_ypos=-0x00170000;
+	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 8) {
+	ad_scale=0xe000;
+	ad_ypos=-0x00060000;
+	rescale(ad_scale,ad_ypos);
+	}	menu_stat = 3;
+}
+
+struct menu_item menu_preset_items[] = {
+	{.name = "Top\rNo\rScale", .type = 1, .x = 0, .y = 6, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "Bottom\rNo\rScale", .type = 1, .x = 8, .y = 6, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "Middle\rNo\rScale", .type = 1, .x = 16, .y = 6, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "+24\rNo\rScale", .type = 1, .x = 24, .y = 6, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "Pocket\rNES\rFull", .type = 1, .x = 0, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "All\r \rScaled", .type = 1, .x = 8, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "Middle\rMedium\rScale", .type = 1, .x = 16, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "Bottom\rMedium\rScale", .type = 1, .x = 24, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "Default\r Scale", .type = 1, .x = 11, .y = 18, .w = 7, .h = 2, .func = menu_preset_func},
+};
+
+struct menu_unit menu_preset = {
+	.top = "Preset",
+	.subcnt = 9,
+	.item = menu_preset_items,
+};
 
 touchstring scaleopts[]={
 	{64*12+26,"\x80"}, {64*12+36,"\x81"}, {64*11+30,"\x84\x85"}, {64*14+30,"\x86\x87"},{-1,0}
@@ -312,6 +410,7 @@ int adjustdisplay(void)
 
 int ad_scale=0xe000, ad_ypos=-0x00060000;
 void menu_display_adjust(void) {
+
 	int i,j;
 	u32 dts;
 	static int dragging=0;
@@ -376,8 +475,14 @@ void menu_display_adjust(void) {
 	}
 	hex16(64*12+28,ad_scale);
 	hex16(64*13+28,ad_ypos>>8);
+	if(lastbutton_cnt == 0) {
+		menu_array[menu_depth] = &menu_preset;
+		menu_depth++;
+		menu_stat = 1;
+		menu_draw = 0;
+		lastbutton = NULL;
+	}
 }
-
 
 void menu_display_br(void)
 {
@@ -456,7 +561,7 @@ void menu_display_br(void)
 			if(soft_frameskip < 0xf)
 				soft_frameskip++;
 		}
-		hex8(64*5 + 27*2, soft_frameskip - 1);
+		hex8(64*5 + 30*2, soft_frameskip - 1);
 	}
 	else if(lastbutton_cnt == 9) {
 		__emuflags ^= PALSYNC;
@@ -464,16 +569,81 @@ void menu_display_br(void)
 			__emuflags &= ~PALSYNC;
 		consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000); 
 	}
-	menu_stat = 3;
+	else if(lastbutton_cnt == 10) {
+		gammavalue++;
+		if (gammavalue > 4) {
+			gammavalue = 0;
+		}
+		consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
+		brightset();
+	}
+	else if(lastbutton_cnt == 11) {
+		palette_value++;
+			if (palette_value > 8) {
+				palette_value = 0;
+		}
+		hex8(64*8 + 36, palette_value);
+		consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
+		palset();
+		brightset();
+	}	menu_stat = 3;
 }
+
+
+void brightset(void) {
+	paletteinit();
+// add once fixed in ppu.s
+//PaletteTxAll();
+//Update_Palette();
+//PPU_init();
+}
+
+void palset(void) {
+	if(palette_value == 0) {
+	memcpy(nes_rgb,nes_rgb_0,192);
+	}
+	else if(palette_value == 1) {
+	memcpy(nes_rgb,nes_rgb_1,192);
+	}
+	else if(palette_value == 2) {
+	memcpy(nes_rgb,nes_rgb_2,192);
+	}
+	else if(palette_value == 3) {
+	memcpy(nes_rgb,nes_rgb_3,192);	
+	}
+	else if(palette_value == 4) {
+	memcpy(nes_rgb,nes_rgb_4,192);	
+	}
+	else if(palette_value == 5) {
+	memcpy(nes_rgb,nes_rgb_5,192);	
+	}
+	else if(palette_value == 6) {
+	memcpy(nes_rgb,nes_rgb_6,192);	
+	}
+	else if(palette_value == 7) {
+	memcpy(nes_rgb,nes_rgb_7,192);
+	}
+	else if(palette_value == 8) {
+	memcpy(nes_rgb,nes_rgb_8,192);
+	}
+};
+
+struct button button_adjust[] = {
+	{
+		.name = "Pre\rSet",
+		.x = 27, .y = 17, .w = 3, .h = 2
+	},
+};
 
 void menu_adjust_start(void)
 {
 	menu_stat = 5;
 	menu_func = menu_display_adjust;
+	user_bcnt = 0;
+	add_buttonp(2, &button_adjust[0]);
+	show_button_group(2);
 	lastbutton = NULL;
 }
-
 
 
 struct button button_nifi[] = {
@@ -995,6 +1165,8 @@ void menu_saveini(void)
 
 	ini_putl("nesDSrev2", "Screen_Scale", ad_scale, ininame);
 	ini_putl("nesDSrev2", "Screen_Offset", ad_ypos, ininame);
+	ini_putl("nesDSrev2", "Screen_Gamma", gammavalue, ininame);
+	ini_putl("nesDSrev2", "Screen_Palette", palette_value, ininame);
 	ini_putl("nesDSrev2", "AutoFire", autofire_fps, ininame);
 	ini_putl("nesDSrev2", "UseSavesDir", use_saves_dir, ininame);
 

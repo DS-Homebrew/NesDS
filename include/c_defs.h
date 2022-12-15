@@ -64,6 +64,7 @@ typedef struct {	//rom info from builder
 
 //nesmain.c
 extern int soft_frameskip;
+extern int palette_value;
 extern int global_playcount;
 extern int subscreen_stat;
 void showversion();
@@ -263,6 +264,7 @@ void do_menu();
 //menu_func.c
 extern int ad_scale, ad_ypos;
 extern int autofire_fps;
+extern u8 nes_rgb[];
 
 //subscreen.c
 extern u32 debuginfo[];

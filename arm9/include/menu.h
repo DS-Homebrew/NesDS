@@ -24,6 +24,17 @@ struct button
 	char x,y,w,h;
 };
 
+extern u8 gammavalue;
+extern u8 nes_rgb[192];
+extern const u8 nes_rgb_0[];
+extern const u8 nes_rgb_1[];
+extern const u8 nes_rgb_2[];
+extern const u8 nes_rgb_3[];
+extern const u8 nes_rgb_4[];
+extern const u8 nes_rgb_5[];
+extern const u8 nes_rgb_6[];
+extern const u8 nes_rgb_7[];
+
 extern struct button top_button[];
 extern int top_bcnt;
 extern struct button menu_button[];
@@ -65,6 +76,8 @@ void menu_game_reset(void);
 void menu_input_start(void);
 void menu_display_start(void);
 void menu_display_br(void);
+void brightset(void);
+void palset(void);
 void menu_display_adjust(void);
 void menu_adjust_start(void);
 void menu_nifi_start(void);
