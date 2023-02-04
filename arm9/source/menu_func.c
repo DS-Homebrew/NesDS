@@ -15,6 +15,11 @@
 #include "pasofami_pal.h"
 #include "quor_pal.h"
 #include "firebrandx_pal.h"
+#include "digitalprime_pal.h"
+#include "nesvc_pal.h"
+#include "nesclassic_pal.h"
+#include "3dsvc_pal.h"
+#include "nespvm_pal.h"
 
 extern u32 agb_bg_map[];
 
@@ -315,7 +320,7 @@ char *brightxt[] = {
 };
 
 char *paltxt[] = {
-	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","Firebrandx "
+	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","Firebrandx ","FBXDigPrime","NES VC     ","NES Classic","3DS VC     ","NES PVM    "
 };
 
 void menu_display_start(void)
@@ -579,7 +584,7 @@ void menu_display_br(void)
 	}
 	else if(lastbutton_cnt == 11) {
 		palette_value++;
-			if (palette_value > 8) {
+			if (palette_value > 0xd) {
 				palette_value = 0;
 		}
 		hex8(64*8 + 36, palette_value);
@@ -624,7 +629,22 @@ void palset(void) {
 	memcpy(nes_rgb,nes_rgb_7,192);
 	}
 	else if(palette_value == 8) {
-	memcpy(nes_rgb,nes_rgb_8,192);
+	memcpy(nes_rgb,nes_rgb_8,192);	
+	}
+	else if(palette_value == 9) {
+	memcpy(nes_rgb,nes_rgb_9,192);	
+	}
+	else if(palette_value == 10) {
+	memcpy(nes_rgb,nes_rgb_10,192);	
+	}
+	else if(palette_value == 11) {
+	memcpy(nes_rgb,nes_rgb_11,192);
+	}
+	else if(palette_value == 12) {
+	memcpy(nes_rgb,nes_rgb_12,192);
+	}
+	else if(palette_value == 13) {
+	memcpy(nes_rgb,nes_rgb_13,192);
 	}
 };
 

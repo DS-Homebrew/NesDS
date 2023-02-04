@@ -34,6 +34,12 @@ extern const u8 nes_rgb_4[];
 extern const u8 nes_rgb_5[];
 extern const u8 nes_rgb_6[];
 extern const u8 nes_rgb_7[];
+extern const u8 nes_rgb_8[];
+extern const u8 nes_rgb_9[];
+extern const u8 nes_rgb_10[];
+extern const u8 nes_rgb_11[];
+extern const u8 nes_rgb_12[];
+extern const u8 nes_rgb_13[];
 
 extern struct button top_button[];
 extern int top_bcnt;
