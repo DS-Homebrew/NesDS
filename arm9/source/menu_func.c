@@ -320,7 +320,7 @@ char *brightxt[] = {
 };
 
 char *paltxt[] = {
-	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","Firebrandx ","FBXDigPrime","NES VC     ","NES Classic","3DS VC     ","NES PVM    "
+	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","FireBrandX ","FBXDigPrime","FBX NES PVM","NES VC     ","NES Classic","3DS VC     "
 };
 
 void menu_display_start(void)
