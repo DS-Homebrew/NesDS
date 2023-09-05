@@ -11,7 +11,7 @@ export LIBFAT := $(DEVKITARM)/libfat
 export LIBFILESYSTEM := $(DEVKITARM)/libfilesystem
 
 export GAME_TITLE	:=	nesDS
-export GAME_SUBTITLE1	:=	Version 1.3c
+export GAME_SUBTITLE1	:=	Version 1.3c+
 export GAME_SUBTITLE2	:=	Enjoy yourself!
 export GAME_ICON	:=	$(CURDIR)/icon.bmp
 export TARGET		:=	nesDS

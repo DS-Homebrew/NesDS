@@ -320,7 +320,7 @@ char *brightxt[] = {
 };
 
 char *paltxt[] = {
-	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","FireBrandX ","FBXDigPrime","FBX NES PVM","NES VC     ","NES Classic","3DS VC     "
+	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","FireBrandX ","FBXDigiPrim","FBX NES PVM","Wii NES VC ","NES Classic","3DS NES VC "
 };
 
 void menu_display_start(void)
@@ -365,8 +365,8 @@ void menu_preset_func(void) {
 	rescale(ad_scale,ad_ypos);
 	}
 	else if(lastbutton_cnt == 5) {
-	ad_scale=0xd000;
-	ad_ypos=-0x00000000;
+	ad_scale=0xce00;
+	ad_ypos=-0x00010000;
 	rescale(ad_scale,ad_ypos);
 	}
 	else if(lastbutton_cnt == 6) {
@@ -383,6 +383,11 @@ void menu_preset_func(void) {
 	ad_scale=0xe000;
 	ad_ypos=-0x00060000;
 	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 9) {
+	ad_scale=0xe000;
+	ad_ypos=-0x000c0000;
+	rescale(ad_scale,ad_ypos);
 	}	menu_stat = 3;
 }
 
@@ -395,12 +400,13 @@ struct menu_item menu_preset_items[] = {
 	{.name = "All\r \rScaled", .type = 1, .x = 8, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
 	{.name = "Middle\rMedium\rScale", .type = 1, .x = 16, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
 	{.name = "Bottom\rMedium\rScale", .type = 1, .x = 24, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
-	{.name = "Default\r Scale", .type = 1, .x = 11, .y = 18, .w = 7, .h = 2, .func = menu_preset_func},
+	{.name = "Default\r Scale", .type = 1, .x = 7, .y = 18, .w = 7, .h = 2, .func = menu_preset_func},
+	{.name = "Default\r Lower", .type = 1, .x = 16, .y = 18, .w = 7, .h = 2, .func = menu_preset_func},
 };
 
 struct menu_unit menu_preset = {
 	.top = "Preset",
-	.subcnt = 9,
+	.subcnt = 10,
 	.item = menu_preset_items,
 };
 
