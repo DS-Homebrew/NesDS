@@ -62,7 +62,7 @@ void shex(unsigned char *p,int d,int n) {
 
 
 void stepdebug()
-{ 
+{/* 
 	static int framecount = 0;
 	static int line, keys, oldkeys, opcount = 0;
 	unsigned int i, count;
@@ -106,7 +106,18 @@ void stepdebug()
 		shex8(ptbuf + 128 + 3*i, ((__memmap_tbl[i] - __rombase) >> 13) + i);
 	}
 	
-
+	count = pstep - stepinfo;
+	if(count > 18 * 4)
+		count = 18 * 4;
+	for(i = 0; i < count; i++) {
+		shex(ptbuf + 192 + i*8, stepinfo[i] >> 12, 3);
+		if(stepinfo[i] & 0x100) {
+			*(ptbuf + 192 + i * 8 + 4) = 'w';
+		} else {
+			*(ptbuf + 192 + i * 8 + 4) = 'r';
+		}
+		shex(ptbuf + 197 + i*8, stepinfo[i], 1);
+	}
 	consoletext(0, ptbuf, 0);
 	//memset( ptbuf + 192 + count * 8, 32, (18 * 4 - count) * 8);
 	
@@ -126,5 +137,5 @@ void stepdebug()
 	}
 	while(1);
 	oldkeys = keys;
-	//pstep = stepinfo;
+	//pstep = stepinfo;*/
 }
