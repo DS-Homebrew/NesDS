@@ -4,8 +4,11 @@
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
-	.global mapper10init
 	.global mapper9init
+	.global mapper10init
+	.global mapper9BGcheck
+	.global mapper_9_hook
+
 	reg = mapperdata
 	reg0 = mapperdata + 0
 	reg1 = mapperdata + 1
@@ -15,73 +18,30 @@
 	latch_b = mapperdata + 5
 	chrc = mapperdata + 6
 
+@----------------------------------------------------------------------------
+mapper9init:	@really bad Punchout hack
+@---------------------------------------------------------------------------------
+	.word empty_W,writeAB,write,write
+map10start:
+
+	ldrb_ r0,cartflags
+	bic r0,r0,#SCREEN4	@(many punchout roms have bad headers)
+	strb_ r0,cartflags
+
+	ldr r0,=mapper_9_hook
+	str_ r0,scanlinehook
+	
+	adr r0, chrlatch2
+	str_ r0, ppuchrlatch
+
+	mov r0,#-1
+	b map89ABCDEF_		@everything to last bank
+
 @---------------------------------------------------------------------------------
 mapper10init:
 @---------------------------------------------------------------------------------
-	.word empty_W, write, write, write
-	stmfd sp!, {lr}
-	
-	mov r0, #0
-	str_ r0, reg
-	mov r0, #4
-	strb_ r0, reg1
-	mov r0, #0xFE
-	strb_ r0, latch_a
-	strb_ r0, latch_b
-
-	mov r0, #4
-	bl chr0123_
-	mov r0, #0
-	bl chr4567_
-
-	mov r0, #-1
-	mov r2, #32 / 4
-	adr r1, bgchrdata
-	bl filler
-
-	@adr r0, framehook
-	@str_ r0, newframehook
-
-	adr r0, chrlatch2
-	str_ r0, ppuchrlatch
-
-	ldmfd sp!, {pc}
-
-@---------------------------------------------------------------------------------
-mapper9init:
-@---------------------------------------------------------------------------------
-	.word empty_W, writeAB, write, write
-	stmfd sp!, {lr}
-	
-	mov r0, #0
-	str_ r0, reg
-	mov r0, #4
-	strb_ r0, reg1
-	mov r0, #0xFE
-	strb_ r0, latch_a
-	strb_ r0, latch_b
-
-	mov r0, #4
-	bl chr0123_
-	mov r0, #0
-	bl chr4567_
-
-	mov r0, #-1
-	mov r2, #32 / 4
-	adr r1, bgchrdata
-	bl filler
-
-	@adr r0, framehook
-	@str_ r0, newframehook
-
-	adr r0, chrlatch2
-	str_ r0, ppuchrlatch
-
-	mov r0, #-1
-	bl map89ABCDEF_
-
-	ldmfd sp!, {pc}
-
+	.word empty_W,write,write,write
+	b map10start
 @---------------------------------------------------------------------------------
 writeAB:
 	and r1, addy, #0xF000
@@ -99,44 +59,81 @@ write:
 	cmp r1, #0xA000
 	beq map89AB_
 	cmp r1, #0xB000
-	bne c
+	bne c000
 	strb_ r0, reg0
 	ldrb_ r2, latch_a
 	cmp r2, #0xFD
 	beq chr0123_
 	mov pc, lr
 
-c:
+b000: @-------------------------
+	strb_ r0,reg0
+	mov pc,lr
+c000: @-------------------------
 	cmp r1, #0xC000
-	bne d
-	strb_ r0, reg1
+	bne d000
+
+	strb_ r0,reg1
+	b chr0123_
 	ldrb_ r2, latch_a
 	cmp r2, #0xFE
 	beq chr0123_
 	mov pc, lr
-
-d:
+d000: @-------------------------
 	cmp r1, #0xD000
-	bne e
+	bne e000
 	strb_ r0, reg2
 	ldrb_ r2, latch_b
 	cmp r2, #0xFD
 	beq chr4567_
 	mov pc, lr
-
-e:
+e000: @-------------------------
 	cmp r1, #0xE000
-	bne f
+	bne f000
+	tst addy,#0x1000
+	bne f000
 	strb_ r0, reg3
 	ldrb_ r2, latch_b
 	cmp r2, #0xFE
 	beq chr4567_
 	mov pc, lr
-
-f:
-	tst r0, #1
+f000: @-------------------------
+	tst r0,#1
 	b mirror2V_
+@------------------------------
+mapper_9_hook:
+@---------------------------------------------------------------------------------
+	ldr_ r0,scanline
+	sub r0,r0,#1
+	tst r0,#7
+	ble h9
+	cmp r0,#239
+	bhi h9
 
+	ldr r2,=latchtbl
+	ldrb r0,[r2,r0,lsr#3]
+
+	cmp r0,#0xfd
+	ldreqb_ r0,reg2
+	ldrneb_ r0,reg3
+	bl chr4567_
+h9:
+	fetch 0
+@---------------------------------------------------------------------------------
+mapper9BGcheck: @called from PPU.s, r0=FD-FF
+@---------------------------------------------------------------------------------
+	cmp r0,#0xff
+	moveq pc,lr
+
+	ldr r1,=latchtbl
+	and r2,addy,#0x3f
+	cmp r2,#0x10
+	strlob r0,[r1,addy,lsr#6]
+
+	mov pc,lr
+
+latchtbl:
+.skip 32
 
 @---------------------------------------------------------------------------------
 framehook:

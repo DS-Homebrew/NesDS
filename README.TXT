@@ -1,10 +1,23 @@
-nesDS1.3c [NTR], using toolchain devkitARM r43 (/release folder NesDS.nds binary was compiled with it). 
-master branch is the one and only branch that uses fully libnds sources. (for TGDS support I won't add support as of now, too busy right now)
+nesDS1.3d+ [NTR], using toolchain devkitARM latest.
 
 We spent a few weeks to port the original nesDS project to the GCC toolchain. Then we made a new EX Edition, and made it possible to emulate the the NES/FC games that the origianl nesDS didn't work well.
 Since the 0.40 version, I ported the code of EX Edtion to the original nesDS, now it is the best nes-emulator~!
 
 If you found any bug on nesDS, just tell me. Maybe I could fix it.
+
+09-30-2023
+nibbles27:
+
+	- Also updated to include map 159 for DBZ 2 and 3 translations, please set from 16 to 159 for these two titles with iNES Header Editor - https://www.romhacking.net/utilities/1352/
+
+09-15-2023
+nibbles27:
+	- Restored Debug menu so as to not break Mapper 4 games to a crash (like Dragon Warrior 1)
+	- Restored bad Punch Out hack from PNES-9.98
+
+08-01-2023
+nibbles27:
+	- Added Screen selection presets, 14 different Palettes, and Restored Gamma selection (5 levels)
 
 08-14-2018 
 coto: 

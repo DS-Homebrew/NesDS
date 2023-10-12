@@ -45,6 +45,7 @@ mappertbl:
 	.word 33,mapper33init
 	.word 34,mapper34init
 	.word 40,mapper40init
+	.word 42,mapper42init
 	.word 64,mapper64init
 	.word 65,mapper65init
 	.word 66,mapper66init
@@ -74,10 +75,14 @@ mappertbl:
 	.word 99,mapper99init
 	.word 105,mapper105init
 	.word 118,mapper118init
-	.word 119,mapper4init
+	.word 119,mapper119init
+	.word 140,mapper66init
 	.word 151,mapper151init
 	.word 152,mapper152init
+	.word 153,mapper16init
+	.word 157,mapper16init
 	.word 158,mapper64init
+	.word 159,mapper159init	
 	.word 163,mapper163init
 	.word 180,mapper180init
 	.word 184,mapper184init
@@ -95,6 +100,7 @@ mappertbl:
 	.word 240,mapper240init
 	.word 245,mapper245init
 	.word 246,mapper246init
+	.word 249,mapper249init
 	.word 252,mapper252init
 	.word 253,mapper253init
 	.word 255,mapper255init

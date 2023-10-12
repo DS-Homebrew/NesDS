@@ -5,6 +5,7 @@
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper67init
+	.global map67_IRQ_Hook
 	countdown = mapperdata+0
 	irqen = mapperdata+4
 	suntoggle = mapperdata+5

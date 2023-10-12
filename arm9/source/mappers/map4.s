@@ -10,7 +10,8 @@
 #define	MMC3_IRQ_ROCKMAN3	5
 @---------------------------------------------------------------------------------
 	.global mapper4init
-	
+	.global mapper119init
+	.global mapper249init
 	reg0 = mapperdata
 	reg1 = mapperdata+1
 	reg2 = mapperdata+2
@@ -44,6 +45,8 @@
 	
 @---------------------------------------------------------------------------------
 mapper4init:
+mapper119init:
+mapper249init:
 @---------------------------------------------------------------------------------
 	.word write0, write1, write2, write3
 	stmfd sp!, {lr}
