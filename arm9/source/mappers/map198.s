@@ -1,30 +1,30 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper198init
-	
-	reg0 = mapperdata
-	reg1 = mapperdata+1
-	reg2 = mapperdata+2
-	reg3 = mapperdata+3
-	reg4 = mapperdata+4
-	reg5 = mapperdata+5
-	reg6 = mapperdata+6
-	reg7 = mapperdata+7
-	
-	chr01 = mapperdata+8
-	chr23 = mapperdata+9
-	chr4  = mapperdata+10
-	chr5  = mapperdata+11
-	chr6  = mapperdata+12
-	chr7  = mapperdata+13
-	
-	prg0  = mapperdata+14
-	prg1  = mapperdata+15
-	
+
+	reg0 = mapperData
+	reg1 = mapperData+1
+	reg2 = mapperData+2
+	reg3 = mapperData+3
+	reg4 = mapperData+4
+	reg5 = mapperData+5
+	reg6 = mapperData+6
+	reg7 = mapperData+7
+
+	chr01 = mapperData+8
+	chr23 = mapperData+9
+	chr4  = mapperData+10
+	chr5  = mapperData+11
+	chr6  = mapperData+12
+	chr7  = mapperData+13
+
+	prg0  = mapperData+14
+	prg1  = mapperData+15
+
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper198init:
 @---------------------------------------------------------------------------------
@@ -33,14 +33,14 @@ mapper198init:
 	mov r0, #0
 	str_ r0, reg0
 	str_ r0, reg4
-	
+
 	mov r0, #0x0
 	strb_ r0, prg0			@prg0 = 0; prg1 = 1
 	mov r0, #1
 	strb_ r0, prg1
-	
+
 	bl setbank_cpu
-	
+
 	mov r0, #0
 	strb_ r0, chr01
 	mov r0, #2
@@ -53,7 +53,7 @@ mapper198init:
 	strb_ r0, chr6
 	mov r0, #7
 	strb_ r0, chr7
-	
+
 	bl setbank_ppu
 
 	adr r0, readl
@@ -67,7 +67,7 @@ mapper198init:
 	str_ r0, writemem_tbl+12
 */
 	ldmfd sp!, {pc}
-	
+
 @-------------------------------------------------------------------
 writel:
 @-------------------------------------------------------------------
@@ -77,7 +77,7 @@ writel:
 	bic r1, addy, #0xE000
 	ldr r2, =NES_XRAM
 	strb r0, [r2, r1]
-	mov pc, lr
+	bx lr
 @-------------------------------------------------------------------
 readl:
 @-------------------------------------------------------------------
@@ -87,20 +87,20 @@ readl:
 	bic r1, addy, #0xE000
 	ldr r2, =NES_XRAM
 	ldrb r0, [r2, r1]
-	mov pc, lr
-	
+	bx lr
+
 @-------------------------------------------------------------------
 writeh:
 	ldr r1,=NES_SRAM
 	bic r2, addy, #0xE000
 	strb r0,[r1,r2]
-	mov pc, lr
+	bx lr
 @-------------------------------------------------------------------
 readh:
 	ldr r1,=NES_SRAM	
 	bic r2, addy, #0xE000
 	ldrb r0,[r1,r2]
-	mov pc, lr
+	bx lr
 @-------------------------------------------------------------------
 setbank_cpu:
 @-------------------------------------------------------------------
@@ -108,7 +108,7 @@ setbank_cpu:
 	ldrb_ r0, reg0
 	tst r0, #0x40
 	beq sbc1
-	
+
 	mov r0, #-2
 	bl map89_
 	ldrb_ r0, prg1
@@ -135,14 +135,14 @@ setbank_ppu:
 @-------------------------------------------------------------------
 	ldr_ r1, vrommask
 	tst r1, #0x80000000
-	movne pc, lr
-	
+	bxne lr
+
 	stmfd sp!, {lr}
 
 	ldrb_ r0, reg0
 	tst r0, #0x80
 	beq 0f
-	
+
 	mov r1, #0
 	ldrb_ r0, chr4
 	bl chr1k
@@ -170,7 +170,7 @@ setbank_ppu:
 	add r0, r0, #1
 	bl chr1k
 	ldmfd sp!, {pc}
-	
+
 0:
 	mov r1, #0
 	ldrb_ r0, chr01
@@ -217,7 +217,7 @@ w8001:
 	ldrb_ r1, reg0
 	and r1, r1, #7
 	cmp r1, #6
-	bcs 6f	
+	bcs 6f
 0:
 	cmp r1, #2
 	andcc r0, r0, #0xfe
@@ -243,7 +243,6 @@ writeABCDEF:
 	subs r1, r1, #0xa
 	adrl_ r2, reg2
 	strb r0, [r2, r1]
-	movne pc, lr
+	bxne lr
 	tst r0, #1
 	b mirror2V_
-	

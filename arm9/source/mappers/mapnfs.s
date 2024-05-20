@@ -1,18 +1,18 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 @---------------------------------------------------------------------------------
 	.global mappernsfinit
 	.global wram
 
-	exchip		= mapperdata+0
-	bankswitch	= mapperdata+4
-	banksize	= mapperdata+8
-	exaddr		= mapperdata+12
-	songno		= mapperdata+16
-	repcnt		= mapperdata+20
-	banks		= mapperdata+24
+	exchip		= mapperData+0
+	bankswitch	= mapperData+4
+	banksize	= mapperData+8
+	exaddr		= mapperData+12
+	songno		= mapperData+16
+	repcnt		= mapperData+20
+	banks		= mapperData+24
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mappernsfinit:	@play nsf files
 @---------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ mappernsfinit:	@play nsf files
 	str_ r0, memmap_tbl + 24
 	ldr r0, =wram + 0x8000 - 0xE000
 	str_ r0, memmap_tbl + 28
-	
+
 	@read the exchip flag
 	adrl_ r0, nsfextrachipselect
 	ldrb r0, [r0]
@@ -98,7 +98,7 @@ bankswitchon:
 
 1:
 	mov r2, #0
-	
+
 	adrl_ r3, nsfbankswitch
 2:
 	add r0, r2, #8
@@ -121,7 +121,7 @@ bankswitchon:
 	b bankswitchend
 
 bankswitchoff:
-	ldr_ r0, rombase
+	ldr_ r0, romBase
 	ldr_ r1, banksize
 	cmp r1, #8
 	movcs r1, #8
@@ -219,7 +219,7 @@ exread:
 	addne r2, r2, #1
 	orrne r2, r2, #0x80
 	strne_ r2, exaddr
-	mov pc, lr
+	bx lr
 
 @-------------------------------
 exwrite:
@@ -230,12 +230,12 @@ exwrite:
 
 	ldr r1, =0x5016
 	cmp addy, r1
-	movcs pc, lr
+	bxcs lr
 	cmp addy, #0x4800
 	bcc IO_W
 	beq ew
 	cmp addy, #0x5000
-	movcc pc, lr
+	bxcc lr
 ew:
 	adr r1, exram
 	ldr_ r2, exaddr
@@ -246,7 +246,7 @@ ew:
 	addne r2, r2, #1
 	orrne r2, r2, #0x80
 	strne_ r2, exaddr
-	mov pc, lr
+	bx lr
 0:
 	and r2, addy, #0xf
 	mov r1, r0
@@ -267,7 +267,7 @@ write:
 0:
 	cmp addy, #0xf800
 	streq_ r0, exaddr
-	mov pc, lr
+	bx lr
 
 @-------------------------------
 bankswitch_func:
@@ -293,8 +293,8 @@ bankswitch_func:
 	ldr r4, =0xfff
 	and r3, r3, r4
 	sub r1, r1, r3
-	
-	ldr_ r3, rombase
+
+	ldr_ r3, romBase
 	ldr_ r4, banksize
 	mov r4, r4, lsl#12
 
@@ -304,7 +304,7 @@ loop:
 	bne flush0
 	cmp r1, r4
 	bcs flush0
-	
+
 	ldrb r0, [r3, r1]
 	b flush
 flush0:
@@ -316,10 +316,9 @@ flush:
 	bne loop
 bankend:
 	ldmfd sp!, {r2-r6}
-	mov pc, lr
+	bx lr
 
 exram:
 	.skip 128
 initdata:
 	.byte	0x4c, 0x00, 0x47, 0x20, 0x4c, 0x00, 0x47, 0x20, 0x4c, 0x00, 0x47
-	

@@ -289,7 +289,7 @@ int loadrom() {
 		romcorrect(roms);
 	}
 	initcart(roms);
-	IPC_MAPPER = debuginfo[16];
+	IPC_MAPPER = debuginfo[MAPPER];
 
 	load_sram();
 	//if(autostate) loadstate(..);

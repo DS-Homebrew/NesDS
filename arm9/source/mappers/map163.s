@@ -1,22 +1,22 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper163init
-	reg0	= mapperdata+0
-	reg1	= mapperdata+1
-	strobe	= mapperdata+2
-	security= mapperdata+3
-	trigger	= mapperdata+4
-	rom_type= mapperdata+5
+	reg0	= mapperData+0
+	reg1	= mapperData+1
+	strobe	= mapperData+2
+	security= mapperData+3
+	trigger	= mapperData+4
+	rom_type= mapperData+5
 
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper163init:
 @---------------------------------------------------------------------------------
 	.word void, void, void, void
-	
+
 	mov r0, #0xFF
 	strb_ r0, reg1
 	mov r0, #1
@@ -36,7 +36,7 @@ mapper163init:
 	adr r0, writel
 	str_ r0, writemem_tbl+8
 	adr r0,hook
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 
 	ldmfd sp!, {pc}
 
@@ -49,29 +49,29 @@ readl:
 	cmp r0, #0x5100
 	cmpne r0, #0x5500
 	movne r0, #4
-	movne pc, lr
+	bxne lr
 
 	cmp r0, #0x5100
 	ldreqb_ r0, security
-	moveq pc, lr
+	bxeq lr
 
 	ldrb_ r0, trigger
 	ands r0, r0, r0
 	ldrneb_ r0, security
-	mov pc, lr
+	bx lr
 
 @---------------------------------------------------------------------------------
 writel:
 @---------------------------------------------------------------------------------
 	cmp addy, #0x5000
 	bcc IO_W
-	
+
 	mov r1, addy, lsr#8
 	and r2, r1, #0x3
 	cmp r2, #1
 	movne r1, r2
 	cmp r1, #4
-	movcs pc, lr
+	bxcs lr
 	ldr r2, =wtbl
 	ldr pc, [r2, r1, lsl#2]
 @---------------------
@@ -93,12 +93,12 @@ w50:
 	ldmfd sp!, {lr}
 	ldr_ r1, scanline
 	cmp r1, #128
-	movcc pc, lr
+	bxcc lr
 	ldrb_ r1, reg1
 	tst r1, #0x80
 	moveq r0, #0
 	beq chr01234567_
-	mov pc, lr
+	bx lr
 
 w51:
 	ands r1, addy, #0xFF
@@ -106,23 +106,23 @@ w51:
 	cmp r0, #6
 	moveq r0, #3
 	beq map89ABCDEF_
-	mov pc, lr
+	bx lr
 
 w51_1:
 	cmp r1, #1
-	movne pc, lr			@This works?
+	bxne lr				@This works?
 	ldrb_ r1, strobe
 	strb_ r0, strobe
 
 	tst r0, #0xff
-	movne pc, lr
+	bxne lr
 	tst r1, #0xff
-	moveq pc, lr
+	bxeq lr
 	strb_ r0, strobe
 	ldrb_ r1, trigger
 	eor r1, r1, #1
 	strb_ r1, trigger
-	mov pc, lr
+	bx lr
 
 w52:
 	strb_ r0, reg0
@@ -134,7 +134,7 @@ w52:
 
 w53:
 	strb_ r0, security
-	mov pc, lr
+	bx lr
 
 
 @---------------------------------------------------------------------------------
@@ -176,6 +176,3 @@ hook:
 
 hk:
 	fetch 0
-
-
-

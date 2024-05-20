@@ -112,7 +112,7 @@ mappertbl:
 @ arguments:	none
 @ description:	none
 
-initcart: @called from C:  r0=rom, (r1=emuflags?)
+initcart: @called from C:  r0=rom, (r1=emuFlags?)
 @
 @	(initialize mapper, etc after loading the rom)
 @---------------------------------------------------------------------------------
@@ -121,23 +121,23 @@ initcart: @called from C:  r0=rom, (r1=emuflags?)
 	ldr globalptr,=globals		@init ptr regs
 	ldr cpu_zpage,=NES_RAM
 
-	ldr_ r1,emuflags
+	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
 	addeq r3,r0,#16			@skip over iNES header
 	addne r3, r0, #128		@skip nsf file header
-	str_ r3,rombase			@set rom base.  r3=rombase til end of initcart
+	str_ r3,romBase			@set rom base.  r3=romBase til end of initcart
 
 	mov r2,#1
 	ldrb r1,[r3,#-12]		@r1 = 16K PRG-ROM page count
 	movne r0, #1			@nsf has 16k?
-	str_ r1,prgsize16k		@some games' prg rom not == to (2**n), shit...
+	str_ r1,prgSize16k		@some games' prg rom not == to (2**n), shit...
 	mov r0, r1, lsl#1
-	str_ r0,prgsize8k
+	str_ r0,prgSize8k
 	mov r0, r1, lsr#1
-	str_ r0,prgsize32k
+	str_ r0,prgSize32k
 
 	rsb r0,r2,r1,lsl#14		@r0 = page count * 16K - 1
-	str_ r0,rommask			@rommask=romsize-1
+	str_ r0,romMask			@romMask=romsize-1
 
 	add r0,r3,r1,lsl#14		@r0 = rom end.(romsize + rom start)
 	str_ r0,vrombase		@set vrom base
@@ -164,8 +164,8 @@ initcart: @called from C:  r0=rom, (r1=emuflags?)
 
 	stmfd sp!, {r3-r4, r12}
 	mov r0, #0			@init val, cal crc for prgrom
-	ldr_ r1, rombase		@src
-	ldr_ r2, prgsize8k		@size
+	ldr_ r1, romBase		@src
+	ldr_ r2, prgSize8k		@size
 	mov r2, r2, lsl#13
 	swi 0x0e0000			@swicrc16
 	str_ r0, prgcrc
@@ -181,7 +181,7 @@ initcart: @called from C:  r0=rom, (r1=emuflags?)
 	mov m6502_pc,#0			@(eliminates any encodePC errors during mapper*init)
 	str_ m6502_pc,lastbank
 
-	ldr_ r1,emuflags
+	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
 	bne 0f
 	mov r0,#0			@default ROM mapping
@@ -195,11 +195,11 @@ initcart: @called from C:  r0=rom, (r1=emuflags?)
 	ldrb r1,[r3,#-9]		@rom control byte #2
 	and r0,r0,#0x0f			@exclude mapper
 	orr r1,r0,r1,lsl#4
-	strb_ r1,cartflags		@set cartflags(upper 4-bits (<<8, ignored) + 0000(should be zero)(<<4) + vTsM) 
+	strb_ r1,cartFlags		@set cartFlags(upper 4-bits (<<8, ignored) + 0000(should be zero)(<<4) + vTsM)
 	@DEBUGINFO CARTFLAG, r1
 
 	ldr r0,=pcm_scanlinehook
-	str_ r0,scanlinehook		@no mapper irq
+	str_ r0,scanlineHook		@no mapper irq
 
 	mov r0,#0x0			@clear nes ram		reset value changed from 0xFFFFFFFF to 0x0
 	mov r1,cpu_zpage		@cpu_zpage,=NES_RAM
@@ -209,7 +209,7 @@ initcart: @called from C:  r0=rom, (r1=emuflags?)
 	add r1,cpu_zpage,#0x800		@save ram = SRAM
 	mov r2,#0x2000/4
 	bl filler
-	ldr r1,=mapperstate		@clear mapperdata so we dont have to do that in every MapperInit.
+	ldr r1,=mapperstate		@clear mapperData so we dont have to do that in every MapperInit.
 	mov r2,#96/4
 	bl filler
 
@@ -267,7 +267,7 @@ initcart: @called from C:  r0=rom, (r1=emuflags?)
 	cmpeq r1, #83
 	moveq r0, #20			@this is a fds file...
 
-	ldr_ r1,emuflags
+	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
 	movne r0, #256
 
@@ -286,9 +286,9 @@ lc1:				@call mapperXXinit
 	stmia r5,{r1-r4}	@set default (write) operation for NES(0x8000 ~ 0xFFFF), maybe 'void', according to Mapper.
 	blx r0			@go maper_init
 
-	ldrb_ r1,cartflags
-	tst r1,#MIRROR		@set default mirror, horizontal mirroring 
-	bl mirror2H_		@(call after mapperinit to allow mappers to set up cartflags first)
+	ldrb_ r1,cartFlags
+	tst r1,#MIRROR		@set default mirror, horizontal mirroring
+	bl mirror2H_		@(call after mapperinit to allow mappers to set up cartFlags first)
 
 	bl NES_reset
 	bl recorder_reset	@init rewind control stuff
@@ -302,8 +302,8 @@ savestate:
 
 	ldr globalptr,=globals
 
-	ldr_ r2,rombase
-	rsb r2,r2,#0			@adjust rom maps,etc so they aren't based on rombase
+	ldr_ r2,romBase
+	rsb r2,r2,#0			@adjust rom maps,etc so they aren't based on romBase
 	bl fixromptrs
 
 	mov r6,r0			@r6=where to copy state
@@ -321,7 +321,7 @@ ss0:	ldr r5,[r2],#4
 	subs r3,r3,#1
 	bne ss1
 
-	ldr_ r2,rombase			@restore pointers
+	ldr_ r2,romBase			@restore pointers
 	bl fixromptrs
 
 	ldmfd sp!,{r4-r6,globalptr,pc}
@@ -355,7 +355,7 @@ fixromptrs:	@add r2 to some things
 	add r3,r3,r2
 	str_ r3,cpuregs+6*4
 
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 loadstate:
 @void loadstate(u32 *stateptr)	 (stateptr must be word aligned)
@@ -377,7 +377,7 @@ ls0:	ldr r5,[r6],#4
 	subs r0,r0,#1
 	bne ls1
 
-	ldr_ r2,rombase		@adjust ptr shit (see savestate above)
+	ldr_ r2,romBase		@adjust ptr shit (see savestate above)
 	bl fixromptrs
 @---
 	ldr r3,=NES_VRAM+0x2000		@write all nametbl + attrib
@@ -428,9 +428,9 @@ NES_reset:
 @---------------------------------------------------------------------------------
 map67_:	@rom paging.. r0=page#
 @---------------------------------------------------------------------------------
-	ldr_ r1,rombase
+	ldr_ r1,romBase
 	sub r1,r1,#0x6000
-	ldr_ r2,prgsize8k
+	ldr_ r2,prgSize8k
 	tst r0, #0x80000000
 	addne r0, r0, r2
 0:
@@ -443,9 +443,9 @@ map67_:	@rom paging.. r0=page#
 @---------------------------------------------------------------------------------
 map89_:	@rom paging.. r0=page#
 @---------------------------------------------------------------------------------
-	ldr_ r1,rombase
+	ldr_ r1,romBase
 	sub r1,r1,#0x8000
-	ldr_ r2,prgsize8k
+	ldr_ r2,prgSize8k
 	tst r0, #0x80000000
 	addne r0, r0, r2
 0:
@@ -458,9 +458,9 @@ map89_:	@rom paging.. r0=page#
 @---------------------------------------------------------------------------------
 mapAB_:
 @---------------------------------------------------------------------------------
-	ldr_ r1,rombase
+	ldr_ r1,romBase
 	sub r1,r1,#0xa000
-	ldr_ r2,prgsize8k
+	ldr_ r2,prgSize8k
 	tst r0, #0x80000000
 	addne r0, r0, r2
 0:
@@ -473,9 +473,9 @@ mapAB_:
 @---------------------------------------------------------------------------------
 mapCD_:
 @---------------------------------------------------------------------------------
-	ldr_ r1,rombase
+	ldr_ r1,romBase
 	sub r1,r1,#0xc000
-	ldr_ r2,prgsize8k
+	ldr_ r2,prgSize8k
 	tst r0, #0x80000000
 	addne r0, r0, r2
 0:
@@ -488,9 +488,9 @@ mapCD_:
 @---------------------------------------------------------------------------------
 mapEF_:
 @---------------------------------------------------------------------------------
-	ldr_ r1,rombase
+	ldr_ r1,romBase
 	sub r1,r1,#0xe000
-	ldr_ r2,prgsize8k
+	ldr_ r2,prgSize8k
 	tst r0, #0x80000000
 	addne r0, r0, r2
 0:
@@ -503,9 +503,9 @@ mapEF_:
 @---------------------------------------------------------------------------------
 map89AB_:
 @---------------------------------------------------------------------------------
-	ldr_ r1,rombase
+	ldr_ r1,romBase
 	sub r1,r1,#0x8000
-	ldr_ r2,prgsize16k
+	ldr_ r2,prgSize16k
 	tst r0, #0x80000000
 	addne r0, r0, r2
 0:
@@ -519,13 +519,13 @@ flush:		@update m6502_pc & lastbank
 	ldr_ r1,lastbank
 	sub m6502_pc,m6502_pc,r1
 	encodePC
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 mapCDEF_:
 @---------------------------------------------------------------------------------
-	ldr_ r1,rombase
+	ldr_ r1,romBase
 	sub r1,r1,#0xc000
-	ldr_ r2,prgsize16k
+	ldr_ r2,prgSize16k
 	tst r0, #0x80000000
 	addne r0, r0, r2
 0:
@@ -539,9 +539,9 @@ mapCDEF_:
 @---------------------------------------------------------------------------------
 map89ABCDEF_:
 @---------------------------------------------------------------------------------
-	ldr_ r1,rombase
+	ldr_ r1,romBase
 	sub r1,r1,#0x8000
-	ldr_ r2,prgsize32k
+	ldr_ r2,prgSize32k
 	tst r0, #0x80000000
 	addne r0, r0, r2
 0:

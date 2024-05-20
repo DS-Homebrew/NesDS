@@ -1,47 +1,45 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper20init
 	.global fdscmdwrite
 	.global diskbios
-	irq_enable	= mapperdata
-	irq_repeat	= mapperdata + 1
-	irq_occur	= mapperdata + 2
-	irq_transfer	= mapperdata + 3
-	disk_enable	= mapperdata + 4
-	sound_enable	= mapperdata + 5
-	RW_start	= mapperdata + 6
-	RW_mode		= mapperdata + 7
-	disk_motor_mode = mapperdata + 8
-	disk_eject	= mapperdata + 9
-	drive_ready	= mapperdata + 10
-	drive_reset	= mapperdata + 11
-	first_access	= mapperdata + 12
-	disk_side	= mapperdata + 13
-	disk_mount_count = mapperdata + 14
-	irq_type	= mapperdata + 15
-	sound_startup_flag = mapperdata + 16
-	bDiskThrottle	= mapperdata + 17
+	irq_enable	= mapperData
+	irq_repeat	= mapperData + 1
+	irq_occur	= mapperData + 2
+	irq_transfer	= mapperData + 3
+	disk_enable	= mapperData + 4
+	sound_enable	= mapperData + 5
+	RW_start	= mapperData + 6
+	RW_mode		= mapperData + 7
+	disk_motor_mode = mapperData + 8
+	disk_eject	= mapperData + 9
+	drive_ready	= mapperData + 10
+	drive_reset	= mapperData + 11
+	first_access	= mapperData + 12
+	disk_side	= mapperData + 13
+	disk_mount_count = mapperData + 14
+	irq_type	= mapperData + 15
+	sound_startup_flag = mapperData + 16
+	bDiskThrottle	= mapperData + 17
 
-	DiskThrottleTime= mapperdata + 24
-	disk		= mapperdata + 28
-	disk_w		= mapperdata + 32
-	irq_counter	= mapperdata + 36
-	irq_latch	= mapperdata + 40
-	block_point	= mapperdata + 44
-	block_mode	= mapperdata + 48
-	size_file_data	= mapperdata + 52
-	file_amount	= mapperdata + 56
-	point		= mapperdata + 60
-	sound_startup_timer= mapperdata + 64
-	sound_seekend_timer= mapperdata + 68
+	DiskThrottleTime= mapperData + 24
+	disk		= mapperData + 28
+	disk_w		= mapperData + 32
+	irq_counter	= mapperData + 36
+	irq_latch	= mapperData + 40
+	block_point	= mapperData + 44
+	block_mode	= mapperData + 48
+	size_file_data	= mapperData + 52
+	file_amount	= mapperData + 56
+	point		= mapperData + 60
+	sound_startup_timer= mapperData + 64
+	sound_seekend_timer= mapperData + 68
 	
-	diskno	= mapperdata + 72
-	makerid = mapperdata + 76
-	gameid	= mapperdata + 80
+	diskno	= mapperData + 72
+	makerid = mapperData + 76
+	gameid	= mapperData + 80
 
 
 EXCMDWR_NONE		= 0
@@ -64,17 +62,19 @@ OFFSET_FILE_HEADER	= 58
 OFFSET_FILE_DATA	= 74
 
 @---------------------------------------------------------------------------------
+.section .text,"ax"
+@---------------------------------------------------------------------------------
 mapper20init:
 @---------------------------------------------------------------------------------
 	@.word void, void, void, void
 	.word write, write, write, void
-	
-	ldr_ r2, rombase
+
+	ldr_ r2, romBase
 	ldrb r1, [r2, #-12]		@diskno		DEBUT this...
 	strb_ r1, diskno
 	DEBUGINFO DISKNO, r1
 	mov r0, r1, lsl#2
-	strb_ r0, prgsize16k		@65500 * diskno, not equal...
+	strb_ r0, prgSize16k		@65500 * diskno, not equal...
 	ldrb r1, [r2, #0x1F]		@makerid.... I dont know..
 	strb_ r1, makerid
 	DEBUGINFO MAKEID, r1
@@ -127,7 +127,7 @@ mapper20init:
 	subs r1, r1, #1
 	bne 0b
 
-	ldr_ r2, rombase
+	ldr_ r2, romBase
 	str_ r2, disk
 	ldr r1, =NES_DISK
 	str_ r1, disk_w
@@ -139,13 +139,13 @@ mapper20init:
 	ldr r0, =writel
 	str_ r0, writemem_tbl + 12
 	ldr r0, =hsync
-	str_ r0, scanlinehook
+	str_ r0, scanlineHook
 	ldr r0, =frameend
 	str_ r0, endframehook
 
 	@mov r0, #NESCMD_DISK_THROTTLE_OFF
 
-	mov pc, lr
+	bx lr
 
 @-------------------------------
 exread:
@@ -157,12 +157,12 @@ exread:
 	mov r0, addy, lsr#8
 	mov r1, addy, lsr#8
 	cmp r1, #0x40
-	movne pc, lr
+	bxne lr
 	and r1, addy, #0xFF
 	cmp r1, #0x34
 	bcs IO_R
 	subs r1, r1, #0x30
-	movcc pc, lr
+	bxcc lr
 	adr r2, exrtbl
 	ldr pc, [r2, r1, lsl#2]
 @--------------------------
@@ -174,26 +174,26 @@ r30:
 	ldrb_ r2, irq_occur
 	strb_ r1, irq_occur
 	ands r2, r2, r2
-	moveq pc, lr
+	bxeq lr
 	ldrb_ r2, irq_transfer
 	tst r2, #0xFF
 	orrne r0, #0x2
 	orreq r0, #0x1
-	mov pc, lr
-	
+	bx lr
+
 r31:
 	ldrb_ r0, RW_mode
 	ands r0, r0, r0
 	moveq r0, #0xFF
-	moveq pc, lr
-	
+	bxeq lr
+
 	mov r0, #0
 	strb_ r0, first_access
 
 	ldr_ r0, disk
 	ands r0, r0, r0
 	moveq r0, #0xFF
-	moveq pc, lr
+	bxeq lr
 
 	ldr_ r0, block_mode
 
@@ -205,7 +205,7 @@ r31tbl:
 @-----------------------
 exread_ready:
 	mov r0, addy, lsr#8
-	mov pc, lr
+	bx lr
 
 exread_label:
 	ldr_ r1, disk
@@ -215,7 +215,7 @@ exread_label:
 	addcc r2, r2, #1
 	strcc_ r2, block_point
 	movcs r0, #0
-	mov pc, lr
+	bx lr
 
 exread_amount:
 	ldr_ r0, disk
@@ -228,7 +228,7 @@ exread_amount:
 	strcc_ r1, block_point
 	strcc_ r0, file_amount
 	movcs r0, #0
-	mov pc, lr
+	bx lr
 
 exread_header:
 	ldr_ r0, disk
@@ -247,7 +247,7 @@ exread_header:
 	addcc r1, r1, #1
 	strcc_ r1, block_point
 	movcs r0, #0
-	mov pc, lr
+	bx lr
 
 exread_data:
 	ldr_ r0, disk
@@ -260,27 +260,27 @@ exread_data:
 	addls r1, r1, #1
 	strls_ r1, block_point
 	movhi r0, #0
-	mov pc, lr
-	
+	bx lr
+
 r32:
 	mov r0, #0x40
 	ldrb_ r1, disk_eject
 	ands r1, r1, r1
 	orrne r0, #0x7
-	movne pc, lr
+	bxne lr
 
 	ldrb_ r1, disk_motor_mode
 	ands r1, r1, r1
-	moveq pc, lr
+	bxeq lr
 
 	ldrb_ r1, drive_reset
 	ands r1, r1, r1
 	biceq r0, r0, #0x2
-	mov pc, lr
+	bx lr
 
 r33:
 	mov r0, #0x80
-	mov pc, lr
+	bx lr
 
 
 @-------------------------------
@@ -289,15 +289,15 @@ exwrite:
 	ldr r1, =0x4020
 	cmp addy, r1
 	bcc IO_W
-	
+
 	mov r1, addy, lsr#8
 	cmp r1, #0x40
-	movne pc, lr
+	bxne lr
 	and r1, addy, #0xFF
 	cmp r1, #0x27
 	bcs IO_W
 	subs r1, r1, #0x20
-	movcc pc, lr
+	bxcc lr
 
 	adr r2, exwtbl
 	ldr pc, [r2, r1, lsl#2]
@@ -307,10 +307,10 @@ exwtbl:
 @-----
 w20:
 	strb_ r0, irq_latch
-	mov pc, lr
+	bx lr
 w21:
 	strb_ r0, irq_latch+1
-	mov pc, lr
+	bx lr
 w22:
 	mov r1, #0
 	strb_ r1, irq_occur
@@ -318,38 +318,38 @@ w22:
 	strb_ r1, irq_repeat
 	ands r1, r0, #2
 	streqb_ r1, irq_enable
-	moveq pc, lr
+	bxeq lr
 	ldrb_ r1, disk_enable
 	ands r1, r1, r1
 	strb_ r1, irq_enable
-	moveq pc, lr
+	bxeq lr
 	ldr_ r1, irq_latch
 	str_ r1, irq_counter
-	mov pc, lr
+	bx lr
 
 w23:
 	ands r0, r0, #1
 	strb_ r0, disk_enable
-	movne pc, lr
+	bxne lr
 	strb_ r0, irq_enable
 	strb_ r0, irq_occur
-	mov pc, lr
+	bx lr
 
 w24:
 	ldrb_ r1, RW_mode
 	ands r1, r1, r1
-	movne pc, lr
+	bxne lr
 
 	ldrb_ r1, first_access
 	ands r1, r1, r1
 	movne r1, #0
 	strneb_ r1, first_access
-	movne pc, lr
+	bxne lr
 
 	ldr_ r1, disk
 	ands r1, r1, r1
-	moveq pc, lr
-	
+	bxeq lr
+
 	ldr_ r1, block_mode
 	adr r2, w24tbl
 	ldr pc, [r2, r1, lsl#2]
@@ -359,7 +359,7 @@ w24tbl:
 exwrite_label:
 	ldr_ r1, block_point
 	cmp r1, #SIZE_VOLUME_LABEL
-	movhi pc, lr
+	bxhi lr
 	ldr_ r2, disk
 	strb r0, [r2, r1]
 	ldr_ r2, disk_w
@@ -367,12 +367,12 @@ exwrite_label:
 	strb r0, [r2, r1]
 	add r1, r1, #1
 	str_ r1, block_point
-	mov pc, lr
+	bx lr
 
 exwrite_amount:
 	ldr_ r1, block_point
 	cmp r1, #SIZE_FILE_AMOUNT
-	movcs pc, lr
+	bxcs lr
 	ldr_ addy, point
 	add addy, addy, r1
 	ldr_ r2, disk
@@ -382,17 +382,17 @@ exwrite_amount:
 	strb r0, [r2, addy]
 	add r1, r1, #1
 	str_ r1, block_point
-	mov pc, lr
+	bx lr
 
 exwrite_header:
 	ldr_ r1, block_point
 	cmp r1, #SIZE_FILE_HEADER
-	movcs pc, lr
+	bxcs lr
 	ldr_ addy, point
 	add addy, addy, r1
 	ldr_ r2, disk
 	strb r0, [r2, addy]
-	
+
 	cmp r1, #13
 	streq_ r0, size_file_data
 	cmp r1, #14
@@ -406,13 +406,13 @@ exwrite_header:
 
 	add r1, r1, #1
 	str_ r1, block_point
-	mov pc, lr
-	
+	bx lr
+
 exwrite_data:
 	ldr_ r1, block_point
 	ldr_ r2, size_file_data
 	cmp r1, r2
-	movhi pc, lr
+	bxhi lr
 	ldr_ addy, point
 	add addy, addy, r1
 	ldr_ r2, disk
@@ -422,8 +422,8 @@ exwrite_data:
 	strb r0, [r2, addy]
 	add r1, r1, #1
 	str_ r1, block_point
-	mov pc, lr
-	
+	bx lr
+
 w25:
 	and r1, r0, #0x80
 	strb_ r1, irq_transfer
@@ -458,7 +458,7 @@ exch_label:
 	add r1, r1, #SIZE_VOLUME_LABEL
 	str_ r1, point
 	b 0f
-	
+
 exch_amount:
 	mov r1, #BLOCK_FILE_HEADER
 	str_ r1, block_mode
@@ -535,26 +535,26 @@ exch_data:
 	b mirror2V_
 @-------------
 w26:
-	mov pc, lr
+	bx lr
 
 @-------------
 writel:
 	ldr r2, =NES_DRAM - 0x6000
 	strb r0, [r2, addy]
-	mov pc, lr
+	bx lr
 
 @-------------
 write:
 	ldr r2, =NES_DRAM - 0x6000
 	strb r0, [r2, addy]
-	mov pc, lr
-	
+	bx lr
+
 @-------------
 hsync:
 	ldrb_ r0, irq_enable
 	ands r0, r0, r0
 	beq checktr
-	
+
 	ldr_ r1, irq_counter
 	ldrb_ r2, irq_type
 	ands r2, r2, r2
@@ -660,7 +660,7 @@ d0:
 e0:
 	@ldr_ r0, bDiskThrottle
 	@b command
-	mov pc, lr
+	bx lr
 
 @------------------------------------
 fdscmdwrite:	@called when....
@@ -677,7 +677,7 @@ excmd_insert:
 	tst r0, #1
 	addne r2, r2, r3
 
-	ldr_ r1, rombase
+	ldr_ r1, romBase
 	add r3, r1, r2
 	str_ r3, disk
 
@@ -702,8 +702,8 @@ excmd_eject:
 	mov r0, #0xFF
 	strb_ r0, disk_eject
 	strb_ r0, disk_side
-	mov pc, lr
-	
+	bx lr
+
 .ltorg
 
 @-------------------------------

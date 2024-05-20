@@ -89,9 +89,23 @@ void showconsole(void);
 //subscreen.c
 int debugdump(void);
 
+#define ERR0 0
+#define ERR1 0
+#define READ 2
+#define WRITE 3
+#define BRK 4
+#define BADOP 5
 #define VBLS 6
 #define FPS 7
-extern u32 debuginfo[];
+#define BGMISS 8
+#define CARTFLAG 9
+
+#define MAPPER 16
+#define PRGCRC 17
+#define DISKNO 18
+#define MAKEID 19
+#define GAMEID 20
+
 int debugdump(void);
 
 //romloader.c

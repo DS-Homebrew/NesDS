@@ -1,6 +1,4 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
@@ -9,16 +7,18 @@
 	.global mapper9BGcheck
 @	.global mapper_9_hook
 
-	reg = mapperdata
-	reg0 = mapperdata + 0
-	reg1 = mapperdata + 1
-	reg2 = mapperdata + 2
-	reg3 = mapperdata + 3
-	latch_a = mapperdata + 4
-	latch_b = mapperdata + 5
-	chrc = mapperdata + 6
+	reg = mapperData
+	reg0 = mapperData + 0
+	reg1 = mapperData + 1
+	reg2 = mapperData + 2
+	reg3 = mapperData + 3
+	latch_a = mapperData + 4
+	latch_b = mapperData + 5
+	chrc = mapperData + 6
 
 @----------------------------------------------------------------------------
+.section .text,"ax"
+@---------------------------------------------------------------------------------
 mapper9init:	@really bad Punchout hack
 @---------------------------------------------------------------------------------
 	.word empty_W,writeAB,write,write
@@ -31,16 +31,16 @@ map10start:
 	strb_ r0, latch_a
 	strb_ r0, latch_b
 
-	ldrb_ r0,cartflags
+	ldrb_ r0,cartFlags
 	bic r0,r0,#SCREEN4	@(many punchout roms have bad headers)
-	strb_ r0,cartflags
+	strb_ r0,cartFlags
 
 @	ldr r0,=mapper_9_hook
-@	str_ r0,scanlinehook
-	
+@	str_ r0,scanlineHook
+
 	adr r0,framehook
 	str_ r0,newframehook
-	
+
 	adr r0, chrlatch2
 	str_ r0, ppuchrlatch
 
@@ -61,7 +61,7 @@ writeAB:
 	ldrb_ r2, latch_a
 	cmp r2, #0xFD
 	beq chr0123_
-	mov pc, lr
+	bx lr
 
 @---------------------------------------------------------------------------------
 write:
@@ -74,11 +74,11 @@ write:
 	ldrb_ r2, latch_a
 	cmp r2, #0xFD
 	beq chr0123_
-	mov pc, lr
+	bx lr
 
 b000: @-------------------------
 	strb_ r0,reg0
-	mov pc,lr
+	bx lr
 c000: @-------------------------
 	cmp r1, #0xC000
 	bne d000
@@ -88,7 +88,7 @@ c000: @-------------------------
 	ldrb_ r2, latch_a
 	cmp r2, #0xFE
 	beq chr0123_
-	mov pc, lr
+	bx lr
 d000: @-------------------------
 	cmp r1, #0xD000
 	bne e000
@@ -96,7 +96,7 @@ d000: @-------------------------
 	ldrb_ r2, latch_b
 	cmp r2, #0xFD
 	beq chr4567_
-	mov pc, lr
+	bx lr
 e000: @-------------------------
 	cmp r1, #0xE000
 	bne f000
@@ -106,7 +106,7 @@ e000: @-------------------------
 	ldrb_ r2, latch_b
 	cmp r2, #0xFE
 	beq chr4567_
-	mov pc, lr
+	bx lr
 f000: @-------------------------
 	tst r0,#1
 	b mirror2V_
@@ -227,8 +227,7 @@ chrlp:
 
 lend:
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
-
+	bx lr
 
 
 @---------------------------------------------------------------------------------
@@ -316,9 +315,9 @@ chrlatch2:
 3:
 	ldr r1, =0x1FE0
 	cmp r0, r1
-	movne pc, lr
+	bxne lr
 	cmp r2, #0xFE
-	moveq pc, lr
+	bxeq lr
 
 	mov r0, #0xFE
 	strb_ r0, latch_b
@@ -329,14 +328,14 @@ chrlatch2:
 mapper9BGcheck: @called from PPU.s, r0=FD-FF
 @---------------------------------------------------------------------------------
 	cmp r0,#0xff
-	moveq pc,lr
+	bxeq lr
 
 	ldr r1,=latchtbl
 	and r2,addy,#0x3f
 	cmp r2,#0x10
 	strlob r0,[r1,addy,lsr#6]
 
-	mov pc,lr
+	bx lr
 
 latchtbl:
 .skip 32

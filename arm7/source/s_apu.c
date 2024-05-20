@@ -159,7 +159,7 @@ static const Uint32 spd_limit_table[8] =
 	0x787, 0x7C1, 0x7E0, 0x7F0,
 };
 
-static Uint32 dpcm_freq_table[16] =
+static const Uint32 dpcm_freq_table[16] =
 {
 	428, 380, 340, 320,
 	286, 254, 226, 214,

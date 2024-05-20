@@ -1,14 +1,14 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper69init
-	countdown = mapperdata+0
-	irqen = mapperdata+4
-	cmd = mapperdata+5
-	video = mapperdata+6		@ number of cycles per scanline
+	countdown = mapperData+0
+	irqen = mapperData+4
+	cmd = mapperData+5
+	video = mapperData+6		@ number of cycles per scanline
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper69init:			@ Sunsoft FME-7, Batman ROTJ, Gimmick...
 @---------------------------------------------------------------------------------
@@ -18,23 +18,23 @@ mapper69init:			@ Sunsoft FME-7, Batman ROTJ, Gimmick...
 	mov r1,r1,lsr#16
 	str_ r1,countdown
 
-	ldr r0,=emuflags
-    ldrb r1,[r0]
-	ldr_ r1,emuflags
+	ldr r0,=emuFlags
+	ldrb r1,[r0]
+	ldr_ r1,emuFlags
 	tst r1,#PALTIMING
 	movne r1,#107				@PAL
 	moveq r1,#113				@NTSC
 	strb_ r1,video
 
 	adr r0,hook
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 write0:		@$8000
 @---------------------------------------------------------------------------------
 	strb_ r0,cmd
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 write1:		@$A000
 @---------------------------------------------------------------------------------
@@ -47,13 +47,13 @@ write1:		@$A000
 
 irqen69:
 	strb_ r0,irqen
-	mov pc,lr
+	bx lr
 irqA69:
 	strb_ r0,countdown
-	mov pc,lr
+	bx lr
 irqB69:
 	strb_ r0,countdown+1
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 mapJinx:
 @---------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ mapJinx:
 	beq map67_
 	ldr r1,=NES_RAM-0x5800		@sram at $6000.
 	str_ r1,memmap_tbl+12
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 hook:
 @---------------------------------------------------------------------------------

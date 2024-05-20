@@ -1,6 +1,4 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 #define	MMC3_IRQ_KLAX		1
@@ -12,37 +10,39 @@
 	.global mapper4init
 	.global mapper119init
 	.global mapper249init
-	reg0 = mapperdata
-	reg1 = mapperdata+1
-	reg2 = mapperdata+2
-	reg3 = mapperdata+3
-	reg4 = mapperdata+4
-	reg5 = mapperdata+5
-	reg6 = mapperdata+6
-	reg7 = mapperdata+7
+	reg0 = mapperData
+	reg1 = mapperData+1
+	reg2 = mapperData+2
+	reg3 = mapperData+3
+	reg4 = mapperData+4
+	reg5 = mapperData+5
+	reg6 = mapperData+6
+	reg7 = mapperData+7
 	
-	chr01 = mapperdata+8
-	chr23 = mapperdata+9
-	chr4  = mapperdata+10
-	chr5  = mapperdata+11
-	chr6  = mapperdata+12
-	chr7  = mapperdata+13
+	chr01 = mapperData+8
+	chr23 = mapperData+9
+	chr4  = mapperData+10
+	chr5  = mapperData+11
+	chr6  = mapperData+12
+	chr7  = mapperData+13
 	
-	prg0  = mapperdata+14
-	prg1  = mapperdata+15
+	prg0  = mapperData+14
+	prg1  = mapperData+15
 	
-	irq_enable	= mapperdata+16
-	irq_counter	= mapperdata+17
-	irq_latch	= mapperdata+18
-	irq_request	= mapperdata+19
-	vs_patch	= mapperdata+20
-	vs_index	= mapperdata+21
-	we_sram		= mapperdata+22
-	irq_type	= mapperdata+23
+	irq_enable	= mapperData+16
+	irq_counter	= mapperData+17
+	irq_latch	= mapperData+18
+	irq_request	= mapperData+19
+	vs_patch	= mapperData+20
+	vs_index	= mapperData+21
+	we_sram		= mapperData+22
+	irq_type	= mapperData+23
 	
-	irq_preset	= mapperdata+24
-	irq_preset_vbl	= mapperdata+25
+	irq_preset	= mapperData+24
+	irq_preset_vbl	= mapperData+25
 	
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper4init:
 mapper119init:
@@ -89,28 +89,28 @@ mapper249init:
 	
 	
 	ldr r0,=hsync
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 	adr r0, writel
 	str_ r0, writemem_tbl+8
 	adr r0, readl
 	str_ r0, readmem_tbl+8
 
-	mov pc, lr
+	bx lr
 	
 @patch for games...
 	@mov r0, #0		@init val
-	@ldr_ r1, rombase	@src
+	@ldr_ r1, romBase	@src
 	@ldr_ r2, romsize8k	@size
 	@mov r2, r2, lsl#13
 	@swi 0x0e0000		@swicrc16
 	
 	@ldr r1, =0x5807		@Tenchi o Kurau 2 - Akakabe no Tatakai Chinese Edtion.
 	@cmp r1, r0
-	@ldreq_ r2, emuflags
+	@ldreq_ r2, emuFlags
 	@orreq r2, r2, #PALTIMING
-	@streq_ r2, emuflags
+	@streq_ r2, emuFlags
 
-	@mov pc, lr
+	@bx lr
 
 @---------------------------------------------------------------------------------
 writel:		@($4100-$5FFF)
@@ -120,7 +120,7 @@ writel:		@($4100-$5FFF)
 	sub r2, addy, #0x4000
 	ldr r1, =NES_XRAM
 	strb r0, [r1, r2]
-	mov pc, lr
+	bx lr
 
 @---------------------------------------------------------------------------------
 readl:		@($4100-$5FFF)
@@ -130,7 +130,7 @@ readl:		@($4100-$5FFF)
 	sub r2, addy, #0x4000
 	ldr r1, =NES_XRAM
 	ldrb r0, [r1, r2]
-	mov pc, lr
+	bx lr
 @-------------------------------------------------------------------
 setbank_cpu:
 @-------------------------------------------------------------------
@@ -257,15 +257,15 @@ write1:
 	bne wa001
 	
 	strb_ r0, reg2
-	ldrb_ r1, cartflags
+	ldrb_ r1, cartFlags
 	tst r1, #SCREEN4
-	movne pc, lr
+	bxne lr
 	tst r0, #1
 	b mirror2V_
 
 wa001:
 	strb_ r0, reg3
-	mov pc, lr
+	bx lr
 	
 @------------------------------------
 write2:
@@ -282,7 +282,7 @@ write2:
 	cmp r1, #MMC3_IRQ_DBZ2
 	moveq r0, #7
 	streqb_ r0, irq_latch
-	mov pc, lr
+	bx lr
 
 wc001:
 	strb_ r0, reg5
@@ -290,7 +290,7 @@ wc001:
 	cmp r1, #MMC3_IRQ_KLAX
 	cmpne r1, #MMC3_IRQ_ROCKMAN3
 	streqb_ r0, irq_latch
-	moveq pc, lr
+	bxeq lr
 	
 	ldrb_ r0, irq_counter
 	orr r0, r0, #0x80
@@ -300,16 +300,16 @@ wc001:
 	ldr_ r0, scanline
 	cmp r0, #240
 	strccb_ r2, irq_preset
-	movcc pc, lr
+	bxcc lr
 	
 	cmp r1, #MMC3_IRQ_SHOUGIMEIKAN
 	streqb_ r2, irq_preset
-	moveq pc, lr
+	bxeq lr
 	
 	strb_ r2, irq_preset_vbl
 	mov r0, #0
 	strb_ r0, irq_preset
-	mov pc, lr
+	bx lr
 	
 @------------------------------------
 write3:
@@ -321,7 +321,7 @@ write3:
 	mov r0, #0
 	strb_ r0, irq_enable
 	strb_ r0, irq_request
-	mov pc, lr
+	bx lr
 
 we001:
 	strb_ r0, reg7
@@ -329,7 +329,7 @@ we001:
 	strb_ r0, irq_enable
 	mov r0, #0
 	strb_ r0, irq_request
-	mov pc, lr
+	bx lr
 
 @-------------------------------------------------------------------
 hsync:

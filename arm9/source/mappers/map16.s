@@ -1,35 +1,35 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper16init
-	patch		= mapperdata	@may never used
-	eeprom_type	= mapperdata + 1
-	irq_enable	= mapperdata + 2
-	irq_type	= mapperdata + 3
-	reg0		= mapperdata + 4
-	reg1		= mapperdata + 5
-	reg2		= mapperdata + 6
-	irq_counter	= mapperdata + 8
-	irq_latch	= mapperdata + 12
+	patch		= mapperData	@may never used
+	eeprom_type	= mapperData + 1
+	irq_enable	= mapperData + 2
+	irq_type	= mapperData + 3
+	reg0		= mapperData + 4
+	reg1		= mapperData + 5
+	reg2		= mapperData + 6
+	irq_counter	= mapperData + 8
+	irq_latch	= mapperData + 12
 
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper16init:
 @---------------------------------------------------------------------------------
 	.word write, write, write, write
 	
 	mov r0, #0
-	str_ r0, mapperdata
-	str_ r0, mapperdata + 4
+	str_ r0, mapperData
+	str_ r0, mapperData + 4
 	str_ r0, irq_counter
 	str_ r0, irq_latch
 	strb_ r0, eeprom_type
 
-	ldrb_ r0, cartflags		//games need sram.
+	ldrb_ r0, cartFlags		//games need sram.
 	orr r0, r0, #SRAM
-	strb_ r0, cartflags
+	strb_ r0, cartFlags
 
 	stmfd sp!, {lr}
 
@@ -37,7 +37,7 @@ mapper16init:
 	str_ r1,writemem_tbl+12
 
 	ldr r0,=hook
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 
 	adr r1, readl
 	str_ r1, readmem_tbl+12
@@ -49,11 +49,11 @@ mapper16init:
 
 @patch for games...
 	mov r0, #0		@init val
-	ldr_ r1, rombase	@src
-	ldr_ r2, prgsize8k	@size
+	ldr_ r1, romBase	@src
+	ldr_ r2, prgSize8k	@size
 	mov r2, r2, lsl#13
 	swi 0x0e0000		@swicrc16
-	
+
 	ldr r1, =0x1F01		@Dragon Ball Z
 	cmp r1, r0
 	moveq r0, #0
@@ -112,10 +112,10 @@ readl:
 	ldrb_ r1, patch
 	ands r1, r1, r1
 	movne r0, addy, lsr#8
-	movne pc, lr
+	bxne lr
 	tst addy, #0xFF
 	movne r0, #0
-	movne pc, lr
+	bxne lr
 
 	stmfd sp!, {lr}
 	ldrb_ r1, eeprom_type
@@ -156,7 +156,7 @@ readl:
 writel:
 	ldrb_ r1, patch
 	ands r1, r1, r1
-	movne pc, lr
+	bxne lr
 	b writesuba
 
 @--------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ write:
 
 @--------------------------------------------------------------------------------
 writesubb:
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------------------------------------------
 writesuba:
@@ -187,7 +187,7 @@ writesuba:
 
 	ldrb_ r2, eeprom_type
 	cmp r2, #2
-	movne pc, lr
+	bxne lr
 	strb_ r0, reg0
 	ands r0, r0, #0x8
 	movne r0, #0xFF
@@ -209,8 +209,8 @@ writesuba:
 	beq c1
 	cmp r1, #0xd
 	beq d1
-	
-	mov pc, lr
+
+	bx lr
 8:
 	b map89AB_
 
@@ -227,17 +227,17 @@ a1:
 	strb_ r1, irq_enable
 	ldr_ r1, irq_latch
 	str_ r1, irq_counter
-	mov pc, lr
+	bx lr
 
 b1:
 	strb_ r0, irq_latch
 	strb_ r0, irq_counter
-	mov pc, lr
+	bx lr
 
 c1:
 	strb_ r0, irq_latch + 1
 	strb_ r0, irq_counter + 1
-	mov pc, lr
+	bx lr
 
 d1:
 	ldrb_ r2, eeprom_type
@@ -259,10 +259,10 @@ d1:
 	ands r0, r0, #0x20
 	movne r0, #0xfF
 	b x24c02_write
-	
+
 2:
 	@no need to support now.
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------------------------------------------
 hook:

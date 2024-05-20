@@ -1,36 +1,36 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 @---------------------------------------------------------------------------------
 	.global mapper80init
-	patch = mapperdata+0
+	patch = mapperData+0
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper80init:	@Taito
 @---------------------------------------------------------------------------------
 	.word void,void,void,void
 
-	ldrb_ r1,cartflags
-	
+	ldrb_ r1,cartFlags
+
 	bic r1,r1,#SRAM			@don't use SRAM on this mapper
 	strb r1,[r0]
 
 	adr r0,write80
 	str_ r0,writemem_tbl+12
-	ldr_ r0,rommask
+	ldr_ r0,romMask
 	tst r0,#0x20000
 	movne r0,#1
 	moveq r0,#0
 	str_ r0,patch
 
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 write80:
 @---------------------------------------------------------------------------------
 	mov r1,#0x7F0
 	sub r1,r1,#1
 	teq r1,addy,lsr#4
-	movne pc,lr
+	bxne lr
 
 	and addy,addy,#0xF
 	adr r1,write80tbl
@@ -62,4 +62,3 @@ wF6:
 
 write80tbl: .word wF0,wF1,chr4_,chr5_,chr6_,chr7_,wF6,void,void,void,map89_,map89_,mapAB_,mapAB_,mapCD_,mapCD_
 @---------------------------------------------------------------------------------
-

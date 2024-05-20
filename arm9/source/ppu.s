@@ -310,9 +310,9 @@ rs1:	movs r4,r1,asr#16
 	bcc rs1
 		
 	mov r1,#REG_BASE	@change blend control for scaling type
-	@ldr r0,=emuflags
+	@ldr r0,=emuFlags
 	@ldr r0,[r0]
-	ldr_ r0,emuflags
+	ldr_ r0,emuFlags
 	tst r0,#ALPHALERP
 	ldrne r2,=0x08082241
 	ldreq r2,=0x10000310
@@ -355,7 +355,7 @@ EMU_VBlank:	@call every vblank
 	stmfd sp!,{r4-r7,globalptr,lr}
 	ldr globalptr,=globals
 
-	ldrb_ r1,cartflags		@set cartflags(upper 4-bits (<<8, ignored) + 0000(should be zero)(<<4) + vTsM) 
+	ldrb_ r1,cartFlags		@set cartFlags(upper 4-bits (<<8, ignored) + 0000(should be zero)(<<4) + vTsM)
 	DEBUGINFO CARTFLAG, r1
 
 	ldr r0, =IPC_MEMTBL
@@ -378,13 +378,13 @@ EMU_VBlank:	@call every vblank
 	@strh r2,[r2,#REG_DM2CNT_H]
 	@strh r2,[r2,#REG_DM3CNT_H]
 
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #SOFTRENDER
 	bne svbend
 
-	@ldr_ r0,=emuflags
+	@ldr_ r0,=emuFlags
 	@ldr r0,[r0]
-	ldr_ r0,emuflags
+	ldr_ r0,emuFlags
 	mov r3, #0					@reset the scale, a fake one...
 	tst r0,#NOFLICKER
 	bne ev0
@@ -392,7 +392,7 @@ EMU_VBlank:	@call every vblank
 		eor r3,r3,#1
 		str r3,scale
 ev0:
-	@ldr r0,emuflags
+	@ldr r0,emuFlags
 	@tst r0,#PALTIMING
 	@beq nopal60
 	@ldrb r0,PAL60
@@ -423,7 +423,7 @@ nopal60:
 	ldmfd sp!,{r4-r7,globalptr,pc}
 
 svbend:
-	ldr_ r0,emuflags
+	ldr_ r0,emuFlags
 	tst r0,#NOFLICKER
 	bne 0f
 	
@@ -448,7 +448,7 @@ ppusync:		@called on NES scanline 0..239 (r0=line)
 @---------------------------------------------------------------------------------
 	stmfd sp!,{r3,lr}
 
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #SOFTRENDER
 	bne soft_sync
 
@@ -555,7 +555,7 @@ ppusync:		@called on NES scanline 0..239 (r0=line)
 	str_ r2,scrollY
 
 	@- - -
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #0x40		@sprite render type
 	beq 0f
 	stmfd sp!, {r4-r12}
@@ -563,7 +563,7 @@ ppusync:		@called on NES scanline 0..239 (r0=line)
 	ldmfd sp!, {r4-r12}
 0:
 	@- - -
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #PALSYNC
 	beq no_sync
 
@@ -620,7 +620,7 @@ no_sync:
 	ldmfd sp!,{r3,pc}
 @---
 soft_sync:
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	DEBUGINFO 20, r0
 
 	stmfd sp!, {r4-r12}
@@ -708,7 +708,7 @@ ctrl1_W:		@(2001)
 	tst r0,#0x08		@bg en?
 	beq cr10
 
-	ldr_ r2,emuflags
+	ldr_ r2,emuFlags
 	tst r2,#ALPHALERP
 	orrne r1,r1,#0x0300
 	orreq r1,r1,#0x0100
@@ -733,7 +733,7 @@ stat_R:		@(2002)
 	strb_ r0,toggle
 	ldrb_ r2,ppustat
 	
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #SOFTRENDER
 	bne 0f
 
@@ -742,7 +742,7 @@ stat_R:		@(2002)
 	cmp r1,r0
 @	ble nosprh
 @	ldrb r0,sprite0x			@for extra high resolution sprite0 hit
-@	ldr r1,cyclesperscanline	@the store is in IO.s
+@	ldr r1,cyclesPerScanline	@the store is in IO.s
 @	sub r1,r1,cycles
 @	cmp r1,r0
 	bic r2, #0x40
@@ -1034,7 +1034,7 @@ newframe:	@called at NES scanline 0	(r0-r9 safe to use)
 	mov r0, #0
 	str_ r0, palsyncline
 
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #SOFTRENDER
 	bne nfsoft
 
@@ -1059,11 +1059,11 @@ newframe:	@called at NES scanline 0	(r0-r9 safe to use)
 	ldr r0,DMAlinestart	@init scaling stuff
 	str r0,DMAline
 
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #0x40			@sprite render type
 	bleq updateOBJCHR		@(nes_zpage still valid here)
 @------------------------
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #PALSYNC
 	beq 1f
 	ldr r3, =0x4000006
@@ -1178,7 +1178,7 @@ mirror_xram_0000:
 mirror4_:
 	adr r0,m0123
 mirrorchange:
-	ldrb_ r1,cartflags
+	ldrb_ r1,cartFlags
 	tst r1,#SCREEN4+VS
 	ldrne r0,=m0123		@force 4way mirror for SCREEN4 or VS flags
 
@@ -1595,7 +1595,7 @@ msplp:
 	str r1, [r0, #239]
 	str r1, [r0, #240]
 
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #ALLPIXEL
 	beq hidesp
 
@@ -1627,7 +1627,7 @@ hidesp_loop:
 	cmp r3, #239		@r3 = scanline
 	bne 1f
 
-	ldr_ r2, emuflags
+	ldr_ r2, emuFlags
 	tst r2, #ALLPIXEL
 	beq 1f
 

@@ -1,29 +1,29 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper159init
 
- counter = mapperdata+0
- latch = mapperdata+4
- enable = mapperdata+8
+ counter = mapperData+0
+ latch = mapperData+4
+ enable = mapperData+8
 @----------------------------------------------------------------------------
+.section .text,"ax"
+@---------------------------------------------------------------------------------
 mapper159init:@		Bandai
 @----------------------------------------------------------------------------
 	.word write0,write0,write0,write0
 
-	ldrb_ r1,cartflags		@get cartflags
+	ldrb_ r1,cartFlags		@get cartFlags
 	bic r1,r1,#SRAM			@don't use SRAM on this mapper
-	strb_ r1,cartflags		@set cartflags
+	strb_ r1,cartFlags		@set cartFlags
 	ldr r1,mapper159init
 	str_ r1,writemem_tbl+12
 
 	ldr r0,=hook
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 
-	mov pc,lr
+	bx lr
 @-------------------------------------------------------
 write0:
 @-------------------------------------------------------
@@ -37,13 +37,13 @@ wA: @---------------------------
 	strb_ r0,enable
 	ldr_ r0,latch
 	str_ r0,counter
-	mov pc,lr
+	bx lr
 wB: @---------------------------
 	strb_ r0,latch
 asdf:	mov r1,#0
 	strb_ r1,latch+2
 	strb_ r1,latch+3
-	mov pc,lr
+	bx lr
 wC: @---------------------------
 	strb_ r0,latch+1
 	b asdf

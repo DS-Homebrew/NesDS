@@ -105,7 +105,7 @@ void Handler(int packetID, int readlength)
 			case 3:
 				if(data[34] == 0x81) {		//Check the CRC. Make sure that both players are using the same game.
 					int remotecrc = (data[35] | (data[36] << 8));
-					if(debuginfo[17] == remotecrc) {	//ok. same game
+					if(debuginfo[PRGCRC] == remotecrc) {	//ok. same game
 						nifi_stat = 5;
 						nifi_cmd |= MP_CONN;
 						sendcmd();
@@ -233,8 +233,8 @@ void do_multi()
 			if(!(nifi_cmd & MP_NFEN))
 				Wifi_EnableWifi();
 			if(count++ > 30) {			//send a connected flag.
-				nfcrc[3] = debuginfo[17] &0xFF;
-				nfcrc[4] = (debuginfo[17] >> 8 )&0xFF;
+				nfcrc[3] = debuginfo[PRGCRC] &0xFF;
+				nfcrc[4] = (debuginfo[PRGCRC] >> 8 )&0xFF;
 				Wifi_RawTxFrameNIFI(6, 0x0014, (unsigned short *)nfcrc);
 				count = 0;
 			}

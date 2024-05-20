@@ -452,7 +452,7 @@ IPC			27fff00 -> 2800000	(uncached)
 scratch memory is (Image$$EWRAM$$ZI$$Limit -> 23f8000), used for file list storage, rom storage, game recording
 
 other ptrs:
-	rombase = Image$$EWRAM$$ZI$$Limit
+	romBase = Image$$EWRAM$$ZI$$Limit
 	freemem_start = end of rom
 	freemem_end=23f8000
 	(all of freemem_start -> end is used for recording)

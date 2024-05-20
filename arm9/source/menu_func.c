@@ -833,7 +833,7 @@ void menu_extra_action(void)
 				{
 					FILE *f;
 
-					if(active_interface || debuginfo[16] == 20) {
+					if(active_interface || debuginfo[MAPPER] == 20) {
 						romfileext[0]='f';
 						romfileext[1]='d';
 						romfileext[2]='s';

@@ -93,7 +93,7 @@ int debugdump() {
 		for(i = 0; i < 4; i++) {
 			hex32(64 * 20 + i * 32, (u32)__memmap_tbl[i + 4] + 0x2000 * i + 0x8000);
 		}
-	} else if(debuginfo[16] == 20) {
+	} else if(debuginfo[MAPPER] == 20) {
 		u8 *p=(u8*)&mapperstate;//0x7000000;
 		u32 *ip=(u32*)&mapperstate;//0x7000000;
 		for(i=0;i<18;i++) {

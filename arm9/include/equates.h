@@ -128,9 +128,9 @@ _m_ m6502_s,4
 _m_ lastbank,4
 _m_ nexttimeout,4
 _m_ scanline,4
-_m_ scanlinehook,4
+_m_ scanlineHook,4
 _m_ frame,4
-_m_ cyclesperscanline,4
+_m_ cyclesPerScanline,4
 _m_ lastscanline,4
 _m_ unused_align,4
 			@ppu.s
@@ -163,15 +163,15 @@ _m_ newframehook,4
 _m_ endframehook,4
 _m_ hblankhook,4
 _m_ ppuchrlatch,4
-_m_ mapperdata,96
-_m_ rombase,4
+_m_ mapperData,96
+_m_ romBase,4
 
-_m_ rommask,4     @ADDED
+_m_ romMask,4     @ADDED
 _m_ romnumber,4   @ADDED
-_m_ prgsize8k,4     @ADDED
-_m_ prgsize16k,4     @ADDED
-_m_ prgsize32k,4     @ADDED
-_m_ emuflags,4 @ADDED
+_m_ prgSize8k,4     @ADDED
+_m_ prgSize16k,4     @ADDED
+_m_ prgSize32k,4     @ADDED
+_m_ emuFlags,4 @ADDED
 _m_ prgcrc,4
 
 _m_ lighty,4
@@ -183,7 +183,7 @@ _m_ loopy_v,4
 _m_ loopy_shift,4
 _m_ bglastline, 4
 _m_ rendercount, 4
-_m_ tempdata, 20*4
+_m_ tempData, 20*4
 
 _m_ nsfid, 5
 _m_ nsfversion, 1
@@ -213,7 +213,7 @@ _m_ af_st, 4	@auto fire state
 _m_ af_start, 4 @auto fire start
 _m_ palsyncline, 4
 
-_m_ cartflags,1 @ADDED
+_m_ cartFlags,1 @ADDED
 _m_ barcode, 1
 _m_ barcode_out, 1
 @_m_ ,1 @align   @ADDED
@@ -262,7 +262,7 @@ DISKBIOS		= 0x200000
 
 
 @------------------------multi-players
-@in everyframe, 64bit sould be transfered. 32bit = IPC_KEYS, 32bit = CONTROL_BIT
+@in every frame, 64bit sould be transfered. 32bit = IPC_KEYS, 32bit = CONTROL_BIT
 
 MP_KEY_MSK		= 0x0CFF			@not all the keys can be transfered.
 MP_HOST			= (1 << 31)			@whether I am a host.

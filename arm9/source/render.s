@@ -42,7 +42,7 @@
 	.global rev_data	
 @renderdata = 0x6040000 - 4
 
-tileofs 	= tempdata
+tileofs 	= tempData
 ntbladr 	= tileofs + 4
 attradr 	= ntbladr + 4
 ntbl_x  	= attradr + 4
@@ -113,7 +113,7 @@ lpvend:
 soft_render:
 @r0 for scanline r1=free
 @--------------------------------------------
-	ldr_ r1, emuflags
+	ldr_ r1, emuFlags
 	tst r1, #SOFTRENDER
 	bne soft_r
 
@@ -130,7 +130,7 @@ soft_render:
 	movhi pc, lr
 	bne normal_sp
 @wait for vbl sync:
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #FASTFORWARD
 	movne pc, lr
 

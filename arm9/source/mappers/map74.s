@@ -1,44 +1,44 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper74init
 	.word write0, write1, write2, write3
-	
-	reg0 = mapperdata
-	reg1 = mapperdata+1
-	reg2 = mapperdata+2
-	reg3 = mapperdata+3
-	reg4 = mapperdata+4
-	reg5 = mapperdata+5
-	reg6 = mapperdata+6
-	reg7 = mapperdata+7
-	
-	chr01 = mapperdata+8
-	chr23 = mapperdata+9
-	chr4  = mapperdata+10
-	chr5  = mapperdata+11
-	chr6  = mapperdata+12
-	chr7  = mapperdata+13
-	
-	prg0  = mapperdata+14
-	prg1  = mapperdata+15
-	prg2  = mapperdata+16
-	prg3  = mapperdata+17
-	chr1  = mapperdata+18
-	chr3  = mapperdata+19
-	
-	irq_enable	= mapperdata+20
-	irq_counter	= mapperdata+21
-	irq_latch	= mapperdata+22
-	irq_request	= mapperdata+23
-	patch		= mapperdata+24
-	we_sram		= mapperdata+25
-	irq_type	= mapperdata+26
 
-	
+	reg0 = mapperData
+	reg1 = mapperData+1
+	reg2 = mapperData+2
+	reg3 = mapperData+3
+	reg4 = mapperData+4
+	reg5 = mapperData+5
+	reg6 = mapperData+6
+	reg7 = mapperData+7
+
+	chr01 = mapperData+8
+	chr23 = mapperData+9
+	chr4  = mapperData+10
+	chr5  = mapperData+11
+	chr6  = mapperData+12
+	chr7  = mapperData+13
+
+	prg0  = mapperData+14
+	prg1  = mapperData+15
+	prg2  = mapperData+16
+	prg3  = mapperData+17
+	chr1  = mapperData+18
+	chr3  = mapperData+19
+
+	irq_enable	= mapperData+20
+	irq_counter	= mapperData+21
+	irq_latch	= mapperData+22
+	irq_request	= mapperData+23
+	patch		= mapperData+24
+	we_sram		= mapperData+25
+	irq_type	= mapperData+26
+
+
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper74init:
 @---------------------------------------------------------------------------------
@@ -47,20 +47,20 @@ mapper74init:
 	mov r0, #0
 	str_ r0, reg0
 	str_ r0, reg4
-	
+
 	mov r0, #0x0
 	strb_ r0, prg0			@prg0 = 0; prg1 = 1
 	mov r0, #1
 	strb_ r0, prg1
 
-	ldr_ r1, prgsize8k
+	ldr_ r1, prgSize8k
 	sub r0, r1, #2
 	strb_ r0, prg2
 	add r0, r0, #1
 	strb_ r0, prg3
-	
+
 	bl setbank_cpu
-	
+
 	mov r0, #0
 	strb_ r0, chr01
 	mov r0, #2
@@ -78,16 +78,16 @@ mapper74init:
 	strb_ r0, chr1
 	mov r0, #3
 	strb_ r0, chr3
-	
+
 	bl setbank_ppu
-	
+
 	mov r0, #0
 	str_ r0, irq_enable
 	strb_ r0, patch
 	strb_ r0, we_sram
-	
+
 	adr r0, hsync
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 
 	adr r0, framehook
 	str_ r0,newframehook
@@ -105,7 +105,7 @@ setbank_cpu:
 	ldrb_ r0, reg0
 	tst r0, #0x40
 	beq sbc1
-	
+
 	ldrb_ r0, prg2
 	bl map89_
 	ldrb_ r0, prg1
@@ -126,7 +126,7 @@ sbc1:
 	ldmfd sp!, {lr}
 	ldrb_ r0, prg3
 	b mapEF_
-	
+
 
 @-------------------------------------------------------------------
 setbank_ppu:
@@ -136,7 +136,7 @@ setbank_ppu:
 	ldrb_ r0, reg0
 	tst r0, #0x80
 	beq 0f
-	
+
 	mov r1, #4
 	ldrb_ r0, chr01
 	bl chr1k
@@ -162,7 +162,7 @@ setbank_ppu:
 	ldrb_ r0, chr7
 	bl chr1k
 	ldmfd sp!, {pc}
-	
+
 0:
 	mov r1, #0
 	ldrb_ r0, chr01
@@ -196,22 +196,22 @@ hsync:
 	ldr_ r0, scanline
 	cmp r0, #240
 	bcs hk
-	
+
 	ldrb_ r1, ppuctrl1
 	tst r1, #0x18
 	beq hk
-	
+
 	ldrb_ r1, irq_enable
 	ands r1, r1, r1
 	beq hk
 	ldrb_ r1, irq_request
 	ands r1, r1, r1
 	bne hk
-	
+
 	ldrb_ r1, irq_counter
 	cmp r0, #0
 	bne cirq
-	
+
 	ands r1, r1, r1
 	subne r1, r1, #1
 cirq:
@@ -243,7 +243,7 @@ w8001:
 	ldrb_ r1, reg0
 	and r1, r1, #0xf
 	cmp r1, #0x0c
-	movcs pc, lr
+	bxcs lr
 	adrl_ r2, chr01
 	strb r0, [r2, r1]
 	cmp r1, #2
@@ -264,7 +264,7 @@ write1:
 @------------------------------------
 	tst addy, #1
 	bne wa001
-	
+
 	strb_ r0, reg2
 	and r0, r0, #3
 	cmp r0, #0
@@ -276,38 +276,38 @@ write1:
 
 wa001:
 	strb_ r0, reg3
-	mov pc, lr
-	
+	bx lr
+
 @------------------------------------
 write2:
 @------------------------------------
 	tst addy, #1
 	bne wc001
-	
+
 	strb_ r0, reg4
 	strb_ r0, irq_counter
 	mov r0, #0
 	strb_ r0, irq_request
-	mov pc, lr
+	bx lr
 
 wc001:
 	strb_ r0, reg5
 	strb_ r0, irq_latch
 	mov r0, #0
 	strb_ r0, irq_request
-	mov pc, lr
-	
+	bx lr
+
 @------------------------------------
 write3:
 @------------------------------------
 	tst addy, #1
 	bne we001
-	
+
 	strb_ r0, reg6
 	mov r0, #0
 	strb_ r0, irq_enable
 	strb_ r0, irq_request
-	mov pc, lr
+	bx lr
 
 we001:
 	strb_ r0, reg7
@@ -315,8 +315,8 @@ we001:
 	strb_ r0, irq_enable
 	mov r0, #0
 	strb_ r0, irq_request
-	mov pc, lr
-	
+	bx lr
+
 
 @------------------------------------
 framehook:

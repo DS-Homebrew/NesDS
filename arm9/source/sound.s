@@ -4,8 +4,8 @@
 	.global updatesound
 	.global soundwrite
 	.global _4015r
-pcmirqbakup = mapperdata+24
-pcmirqcount = mapperdata+28
+pcmirqbakup = mapperData+24
+pcmirqcount = mapperData+28
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ _4015r:
 @---------------------------------------------------------------------------------
 	ldr r1, =IPC_REG4015		@which is updated by s_apu.c
 	ldrb r0, [r1]
-	mov pc, lr
+	bx lr
 @---------------------------------------------------------------------------------
 updatesound: @called from line 0..  r0-r9 are free to use
 @---------------------------------------------------------------------------------
