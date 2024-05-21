@@ -176,7 +176,7 @@ writesuba:
 	cmp r1, #8
 	bcs 8f
 
-	ldr_ r2, vrommask
+	ldr_ r2, vromMask
 	add r2, r2, #1
 	movs r2, r2, lsr#10
 

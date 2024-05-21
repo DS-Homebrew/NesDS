@@ -335,7 +335,7 @@ we001:
 hsync:
 @-------------------------------------------------------------------
 	ldr_ r0, scanline
-	ldrb_ r1, ppuctrl1
+	ldrb_ r1, ppuCtrl1
 	ldrb_ r2, irq_type
 	cmp r2, #MMC3_IRQ_KLAX
 	bne skip1

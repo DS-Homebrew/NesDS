@@ -127,7 +127,7 @@ dm0:
 	addcc r5, r5, #1
 	add r5, r5, #1
 
-	ldrb_ r0,ppuctrl0frame	@8x16?
+	ldrb_ r0,ppuCtrl0Frame	@8x16?
 	tst r0,#0x20
 	bne dm4
 @- - - - - - - - - - - - - 8x8 size
@@ -445,7 +445,7 @@ joy1_R:		@4017
 
 	add r2, r2, r1
 
-	ldr_ r1, lighty
+	ldr_ r1, lightY
 
 	add r2, r2, r1, lsl#8		@r1 = renderdata
 	ldrb r2, [r2]

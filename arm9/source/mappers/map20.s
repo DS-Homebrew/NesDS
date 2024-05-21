@@ -109,7 +109,7 @@ mapper20init:
 	@MechanicalSound
 
 	ldr r0, =NES_VRAM
-	str_ r0, vrombase
+	str_ r0, vromBase
 
 	ldr r0, =NES_DRAM - 0x6000
 	str_ r0, memmap_tbl + 12
@@ -141,7 +141,7 @@ mapper20init:
 	ldr r0, =hsync
 	str_ r0, scanlineHook
 	ldr r0, =frameend
-	str_ r0, endframehook
+	str_ r0, endFrameHook
 
 	@mov r0, #NESCMD_DISK_THROTTLE_OFF
 

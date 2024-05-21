@@ -45,7 +45,7 @@ mapper252init:
 	bl filler
 
 	adr r0, framehook
-	str_ r0, newframehook
+	str_ r0, newFrameHook
 
 	ldmfd sp!, {pc}
 
@@ -169,9 +169,9 @@ w3:
 
 @---------------------------------------------------------------------------------
 hook:
-	ldrb_ r0,ppuctrl1
+	ldrb_ r0,ppuCtrl1
 	orr r0, r0, #0x18
-	strb_ r0,ppuctrl1		@NOT let bg or sp to hide...
+	strb_ r0,ppuCtrl1		@NOT let bg or sp to hide...
 
 	ldrb_ r0, irq_enable
 	tst r0, #2

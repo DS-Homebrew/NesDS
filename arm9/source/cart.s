@@ -140,7 +140,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	str_ r0,romMask			@romMask=romsize-1
 
 	add r0,r3,r1,lsl#14		@r0 = rom end.(romsize + rom start)
-	str_ r0,vrombase		@set vrom base
+	str_ r0,vromBase		@set vrom base
 
 	ldrb r4,[r3,#-11]		@8K CHR-ROM page count 
 	movne r4, #0			@nsf has none?
@@ -158,9 +158,9 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	cmp r4,#64
 	movhi r1,#128
 	rsbs r0,r2,r1,lsl#13		@r0 = VROM page size * 8K - 1
-	str_ r0,vrommask		@vrommask=vromsize-1
+	str_ r0,vromMask		@vromMask=vromsize-1
 	ldrmi r0,=NES_VRAM
-	strmi_ r0,vrombase		@vrombase=NES VRAM if vromsize=0
+	strmi_ r0,vromBase		@vromBase=NES VRAM if vromsize=0
 
 	stmfd sp!, {r3-r4, r12}
 	mov r0, #0			@init val, cal crc for prgrom
@@ -179,7 +179,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	bl filler
 
 	mov m6502_pc,#0			@(eliminates any encodePC errors during mapper*init)
-	str_ m6502_pc,lastbank
+	str_ m6502_pc,m6502LastBank
 
 	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
@@ -226,10 +226,10 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	str r0,[r1]			@reset 4016 write (mapper99 messes with it) 
 
 	ldr r1,=void
-	str_ r1, newframehook
-	str_ r1, endframehook
-	@str_ r1, hblankhook
-	str_ r1, ppuchrlatch
+	str_ r1, newFrameHook
+	str_ r1, endFrameHook
+	@str_ r1, hblankHook
+	str_ r1, ppuChrLatch
 
 	ldr r0, =0x4000004
 	mov r1, #0x8
@@ -347,9 +347,9 @@ fixromptrs:	@add r2 to some things
 	add r6,r6,r2
 	stmia r1,{r3-r6}
 
-	ldr_ r3,lastbank
+	ldr_ r3,m6502LastBank
 	add r3,r3,r2
-	str_ r3,lastbank
+	str_ r3,m6502LastBank
 
 	ldr_ r3,cpuregs+6*4	@6502 PC
 	add r3,r3,r2
@@ -402,7 +402,7 @@ ls3:	mov r1,r3
 	@ldr r0,nes_chr_map+4
 	@bl bg_chr_req
 	bl updateBGCHR
-	ldrb_ r0,ppuctrl1
+	ldrb_ r0,ppuCtrl1
 	bl ctrl1_W
 
 	ldmfd sp!,{r4-r7,globalptr,pc}
@@ -515,8 +515,8 @@ map89AB_:
 	add r0,r1,r0,lsl#14
 	str_ r0,memmap_tbl+16
 	str_ r0,memmap_tbl+20
-flush:		@update m6502_pc & lastbank
-	ldr_ r1,lastbank
+flush:		@update m6502_pc & m6502LastBank
+	ldr_ r1,m6502LastBank
 	sub m6502_pc,m6502_pc,r1
 	encodePC
 	bx lr

@@ -29,7 +29,7 @@ N = 0x80
 	and r1,m6502_pc,#0xE000
 	adr_ r2,memmap_tbl
 	ldr r0,[r2,r1,lsr#11]
-	str_ r0,lastbank
+	str_ r0,m6502LastBank
 	add m6502_pc,m6502_pc,r0
 .endm
 

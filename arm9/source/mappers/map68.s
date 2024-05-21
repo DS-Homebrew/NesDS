@@ -57,7 +57,7 @@ write3:
 @----------------------
 setNTmanualy:
 	stmfd sp!, {r3-r9, lr}
-	ldr_ r3, vrombase
+	ldr_ r3, vromBase
 	add r3, r3, #(0x80<<10)			@cal the base
 	ldrb_ r4, reg2
 	ldrb_ r5, reg3
@@ -87,7 +87,7 @@ setNTmanualy:
 	addeq r0, r0, #0x8000
 	cmp r1, #3
 	addeq r0, r0, #0x0100
-	str_ r0, bg0cnt
+	str_ r0, bg0Cnt
 
 	ldmfd sp!, {r3-r9, pc}
 

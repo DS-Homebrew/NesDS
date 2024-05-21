@@ -105,7 +105,7 @@ dswifix(which is for nifi) src is added.
 Mapper240 added.
 fixed the tmpfile.
 DPCM weakened, sounds better?
-A bug with ppustat fixed. e.g.'teenage mutant ninja turtles'
+A bug with ppuStat fixed. e.g.'teenage mutant ninja turtles'
 A bug with palette fixed.
 Patch update. Battleloads (Europe) <Double Dragons> added.
 SRAM can be saved whatever a game supports.

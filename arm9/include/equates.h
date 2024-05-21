@@ -125,44 +125,44 @@ _m_ writemem_tbl,8*4
 _m_ memmap_tbl,8*4
 _m_ cpuregs,7*4
 _m_ m6502_s,4
-_m_ lastbank,4
+_m_ m6502LastBank,4
 _m_ nexttimeout,4
 _m_ scanline,4
 _m_ scanlineHook,4
 _m_ frame,4
 _m_ cyclesPerScanline,4
-_m_ lastscanline,4
+_m_ lastScanline,4
 _m_ unused_align,4
 			@ppu.s
-_m_ fpsvalue,4
-_m_ adjustblend,4
+_m_ fpsValue,4
+_m_ adjustBlend,4
  @ppustate:
-_m_ vramaddr,4
-_m_ vramaddr2,4
+_m_ vramAddr,4
+_m_ vramAddr2,4
 _m_ scrollX,4
 _m_ scrollY,4
 _m_ scrollYtemp,4
 _m_ sprite0y,4
-_m_ readtemp,4
-_m_ bg0cnt,4
+_m_ readTemp,4
+_m_ bg0Cnt,4
 _m_ sprite0x,1
-_m_ vramaddrinc,1
-_m_ ppustat,1
+_m_ vramAddrInc,1
+_m_ ppuStat,1
 _m_ toggle,1
-_m_ ppuctrl0,1
-_m_ ppuctrl0frame,1
-_m_ ppuctrl1,1
-_m_ ppuoamadr,1
+_m_ ppuCtrl0,1
+_m_ ppuCtrl0Frame,1
+_m_ ppuCtrl1,1
+_m_ ppuOamAdr,1
 _m_ nes_chr_map,16
 
-_m_ vrommask,4
-_m_ vrombase,4
+_m_ vromMask,4
+_m_ vromBase,4
 
 			@cart.s
-_m_ newframehook,4
-_m_ endframehook,4
-_m_ hblankhook,4
-_m_ ppuchrlatch,4
+_m_ newFrameHook,4
+_m_ endFrameHook,4
+_m_ hblankHook,4
+_m_ ppuChrLatch,4
 _m_ mapperData,96
 _m_ romBase,4
 
@@ -174,7 +174,7 @@ _m_ prgSize32k,4     @ADDED
 _m_ emuFlags,4 @ADDED
 _m_ prgcrc,4
 
-_m_ lighty,4
+_m_ lightY,4
 
 _m_ loopy_t,4
 _m_ loopy_x,4
@@ -182,7 +182,7 @@ _m_ loopy_y,4
 _m_ loopy_v,4
 _m_ loopy_shift,4
 _m_ bglastline, 4
-_m_ rendercount, 4
+_m_ renderCount, 4
 _m_ tempData, 20*4
 
 _m_ nsfid, 5
@@ -206,8 +206,8 @@ _m_ nsfinit, 4
 _m_ nsfsongno, 4
 _m_ nsfsongmode, 4
 
-_m_ pixstart, 4
-_m_ pixend, 4
+_m_ pixStart, 4
+_m_ pixEnd, 4
 
 _m_ af_st, 4	@auto fire state
 _m_ af_start, 4 @auto fire start

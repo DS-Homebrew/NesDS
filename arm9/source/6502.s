@@ -71,7 +71,7 @@ _00:@   BRK
 	DEBUGCOUNT BRK
 	bl debugstep
 
-	ldr_ r0,lastbank
+	ldr_ r0,m6502LastBank
 	sub r1,m6502_pc,r0
 	add r0,r1,#1
 	push16			@save PC
@@ -189,7 +189,7 @@ _1E:@   ASL $nnnn,X
 _20:@   JSR $nnnn
 @---------------------------------------------------------------------------------
 	ldrb r2,[m6502_pc],#1
-	ldr_ r1,lastbank
+	ldr_ r1,m6502LastBank
 	sub r0,m6502_pc,r1
 	ldrb r1,[m6502_pc]
 	orr m6502_pc,r2,r1,lsl#8
@@ -1031,7 +1031,7 @@ _FE:@   INC $nnnn,X
 @---------------------------------------------------------------------------------
 line0:
 	mov r0,#0
-	strb_ r0,ppustat			@vbl clear, sprite0 clear
+	strb_ r0,ppuStat			@vbl clear, sprite0 clear
 	str_ r0,scanline			@reset scanline count
 
 	bl newframe					@display update
@@ -1064,8 +1064,8 @@ line1_to_119:
 line119:
 	bl ppusync
 	
-	ldrb_ r0,ppuctrl0
-	strb_ r0,ppuctrl0frame		@Contra likes this
+	ldrb_ r0,ppuCtrl0
+	strb_ r0,ppuCtrl0Frame		@Contra likes this
 
 	adr addy,line120_to_240
 	str_ addy,nexttimeout
@@ -1092,10 +1092,10 @@ NMIDELAY = CYCLE*21
 
 	add cycles,cycles,#NMIDELAY	@NMI is delayed a few cycles..
 
-@	ldrb r1,ppustat
+@	ldrb r1,ppuStat
 @	orr r1,r1,#0x90		@vbl & vram write
 	mov r1,#0x80		@vbl flag
-	strb_ r1,ppustat
+	strb_ r1,ppuStat
 
 	adr addy,line241NMI
 	str_ addy,nexttimeout
@@ -1106,7 +1106,7 @@ line241NMI:
 	add r0,r0,#1
 	str_ r0,frame
 
-	ldrb_ r0,ppuctrl0
+	ldrb_ r0,ppuCtrl0
 	tst r0,#0x80
 	beq 0f			@NMI?
 
@@ -1125,7 +1125,7 @@ line241NMI:
 	bl updatesound
 
 	adr lr, 2f
-	ldr_ pc, endframehook
+	ldr_ pc, endFrameHook
 2:
 	ldmfd sp!,{m6502_nz-m6502_pc,globalptr,cpu_zpage,pc}
 
@@ -1190,7 +1190,7 @@ noinit:
 	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0, lsl#8
 
-	ldr_ r1,lastbank
+	ldr_ r1,m6502LastBank
 	sub m6502_pc,m6502_pc,r1
 	cmp m6502_pc, #0x4700
 	ldrne_ pc,scanlineHook
@@ -1249,7 +1249,7 @@ line242_to_end:
 	add cycles,cycles,r0
 
 	ldr_ r1,scanline
-	ldr_ r2,lastscanline
+	ldr_ r2,lastScanline
 	add r1,r1,#1
 	str_ r1,scanline
 	cmp r1,r2
@@ -1302,7 +1302,7 @@ irq6502:
 @---------------------------------------------------------------------------------
 Vec6502:
 @---------------------------------------------------------------------------------
-	ldr_ r0,lastbank
+	ldr_ r0,m6502LastBank
 	sub r0,m6502_pc,r0
 	push16					@save PC
 
@@ -1341,7 +1341,7 @@ ntsc_pal_reset:
 	str_ r1,cyclesPerScanline
 	ldreq r1,=261			@NTSC
 	ldrne r1,=311			@PAL
-	str_ r1,lastscanline
+	str_ r1,lastScanline
 	mov globalptr, r2
 
 	bx lr
@@ -1453,7 +1453,7 @@ __pc:
 __sp:
 	.word 0 @m6502_s:
 __lastbank:
-	.word 0 @lastbank: last memmap added to PC (used to calculate current PC)
+	.word 0 @m6502LastBank: last memmap added to PC (used to calculate current PC)
 
 	.word 0 @nexttimeout:  jump here when cycles runs out
 __scanline:
@@ -1462,7 +1462,7 @@ __scanline:
 frametotal:		@let ui.c see frame count for savestates
 	.word 0 @frame
 	.word 0 @cyclesPerScanline (341*CYCLE or 320*CYCLE)
-	.word 0 @lastscanline (261 or 311)
+	.word 0 @lastScanline (261 or 311)
 
 	.word 0 @(unused, for alignment)
 	
@@ -1470,41 +1470,41 @@ frametotal:		@let ui.c see frame count for savestates
 
 FPSValue:
 	.word 0
-	.word 0 @adjustblend
+	.word 0 @adjustBlend
 ppustate:
-	.word 0 @vramaddr
-	.word 0 @vramaddr2 (temp)
+	.word 0 @vramAddr
+	.word 0 @vramAddr2 (temp)
 	.word 0 @scrollX
 	.word 0 @scrollY
 	.word 0 @scrollYtemp
 	.word 0 @sprite0y
-	.word 0 @readtemp
-	.word 0 @bg0cnt (mirroring control)
+	.word 0 @readTemp
+	.word 0 @bg0Cnt (mirroring control)
 
 	.byte 0 @sprite0x
-	.byte 1 @vramaddrinc
-	.byte 0 @ppustat
+	.byte 1 @vramAddrInc
+	.byte 0 @ppuStat
 	.byte 0 @toggle
-	.byte 0 @ppuctrl0
-	.byte 0 @ppuctrl0frame	;state of $2000 at frame start
-	.byte 0 @ppuctrl1
-	.byte 0 @ppuoamadr
+	.byte 0 @ppuCtrl0
+	.byte 0 @ppuCtrl0Frame	;state of $2000 at frame start
+	.byte 0 @ppuCtrl1
+	.byte 0 @ppuOamAdr
 __nes_chr_map:
 	.skip 16	@nes_chr_map 	VROM map for 0000-1FFF (1k bank numbers)
 	
-	.word 0 @vrommask
-	.word 0 @vrombase
+	.word 0 @vromMask
+	.word 0 @vromBase
 
 @ppustate end
 @**!! update load/savestate if you move things around in here
 
 @--- cart ---
 
-	.word void 	@newframehook.
-	.word void 	@endframehook, for some special VRAM mirrorings.
+	.word void 	@newFrameHook.
+	.word void 	@endFrameHook, for some special VRAM mirrorings.
 __hblankhook:
-	.word void	@hblankhook, for games that need to do something when h-blank occurs.
-	.word void	@ppuchrlatch
+	.word void	@hblankHook, for games that need to do something when h-blank occurs.
+	.word void	@ppuChrLatch
 mapperstate:
 	.skip 96	@mapperData
 
@@ -1523,7 +1523,7 @@ __emuflags:
 	.word 0 	@emuFlags
 	.word 0		@prgcrc
 
-	.word 0		@lighty
+	.word 0		@lightY
 
 softrdata:
 	.word 0 	@loopy_t
@@ -1533,7 +1533,7 @@ softrdata:
 	.word 0 	@loopy_shift
 	.word 0 	@bglastline
 __rendercount:
-	.word 0 	@rendercount
+	.word 0 	@renderCount
 		@tempData
 	.word 0		@tileofs
 	.word 0		@ntbladr

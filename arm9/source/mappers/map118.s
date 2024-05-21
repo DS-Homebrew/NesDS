@@ -241,7 +241,7 @@ hsync:
 	ldr_ r0, scanline
 	cmp r0, #240
 	bcs hq
-	ldrb_ r1, ppuctrl1
+	ldrb_ r1, ppuCtrl1
 	tst r1, #0x18
 	beq hq
 

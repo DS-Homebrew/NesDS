@@ -203,7 +203,7 @@ mirr4:
 
 @-------------------------------------
 gol1:
-	ldr_ r0, vrommask
+	ldr_ r0, vromMask
 	tst r0, #0x80000000			@means that there is no vrom
 	bne vrom0
 
@@ -233,7 +233,7 @@ vrom0:
 
 @-------------------------------------
 gol2:
-	ldr_ r0, vrommask
+	ldr_ r0, vromMask
 	tst r0, #0x80000000			@means that there is no vrom
 	bne vrom02
 
@@ -321,7 +321,7 @@ b1:
 	bl mirror2V_
 
 b2:
-	ldr_ r0, vrommask
+	ldr_ r0, vromMask
 	tst r0, #0x80000000
 	bne b21
 

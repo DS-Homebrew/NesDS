@@ -438,7 +438,7 @@ vromnt:
 
 	mov r0, #0x1C00
 	add r0, r0, #0xc000
-	str_ r0, bg0cnt
+	str_ r0, bg0Cnt
 
 	ldmfd sp!, {pc}
 
@@ -446,7 +446,7 @@ vromnt:
 hbhook:
 @--------------------------------
 	ldr_ r0, scanline
-	ldrb_ r1, ppuctrl1
+	ldrb_ r1, ppuCtrl1
 	cmp r0, #240
 	bcs hk0
 	tst r1, #0x18

@@ -39,10 +39,10 @@ map10start:
 @	str_ r0,scanlineHook
 
 	adr r0,framehook
-	str_ r0,newframehook
+	str_ r0,newFrameHook
 
 	adr r0, chrlatch2
-	str_ r0, ppuchrlatch
+	str_ r0, ppuChrLatch
 
 	mov r0,#-1
 	b map89ABCDEF_		@everything to last bank
@@ -133,7 +133,7 @@ f000: @-------------------------
 framehook:
 	stmfd sp!, {r3-r9}
 
-	ldrb_ r6, ppuctrl0
+	ldrb_ r6, ppuCtrl0
 	tst r6, #0x10
 	ldreqb_ r5, latch_a
 	ldrneb_ r5, latch_b
@@ -181,8 +181,8 @@ latlp:
 	ldrb r4, [r7, r8, lsr#3]
 
 rechr:
-	ldr_ r3, vrombase
-	ldrb_ r6, ppuctrl0
+	ldr_ r3, vromBase
+	ldrb_ r6, ppuCtrl0
 	tst r6, #0x10
 	bne chrb
 chra:
@@ -232,8 +232,8 @@ lend:
 
 @---------------------------------------------------------------------------------
 chrlatch:
-	ldr_ r4, vrombase		@r4 returns the new ptr
-	tst r1, #0x8			@r1 = ppuctrl0, r0 = tile#
+	ldr_ r4, vromBase		@r4 returns the new ptr
+	tst r1, #0x8			@r1 = ppuCtrl0, r0 = tile#
 	bne spchrb
 spchra:
 	ldrb_ r2, latch_a

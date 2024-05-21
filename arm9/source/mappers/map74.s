@@ -90,7 +90,7 @@ mapper74init:
 	str_ r0,scanlineHook
 
 	adr r0, framehook
-	str_ r0,newframehook
+	str_ r0,newFrameHook
 
 	ldr r0,=VRAM_chr		@enable/disable chr write
 	ldr r1,=vram_write_tbl		@ set the first 8 function pointers to 'void'?
@@ -197,7 +197,7 @@ hsync:
 	cmp r0, #240
 	bcs hk
 
-	ldrb_ r1, ppuctrl1
+	ldrb_ r1, ppuCtrl1
 	tst r1, #0x18
 	beq hk
 

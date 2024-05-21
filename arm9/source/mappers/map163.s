@@ -143,7 +143,7 @@ hook:
 	ldrb_ r0, reg1
 	tst r0, #0x80
 	beq hk
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x18
 	beq hk
 

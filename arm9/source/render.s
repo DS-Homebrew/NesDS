@@ -59,9 +59,9 @@ Bit2Rev		= SPwrite + 4
 @---------------------------------------------------------------------------------
 scanlinestart:
 @---------------------------------------------------------------------------------
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x18			@tst (bgdisp | spdisp)
-	moveq pc, lr
+	bxeq lr
 	ldr_ r2, loopy_v
 	ldr_ r1, loopy_t
 	ldr r0, =0xFBE0
@@ -75,14 +75,14 @@ scanlinestart:
 	str_ r2, loopy_y		@loopy_y = (loopy_v&0x7000)>>12
 	ldr_ r0, loopy_x
 	str_ r0, loopy_shift		@loopy_shift = loopy_x
-	mov pc, lr
+	bx lr
 
 @---------------------------------------------------------------------------------
 scanlinenext:
 @---------------------------------------------------------------------------------
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x18			@tst (bgdisp | spdisp)
-	moveq pc, lr
+	bxeq lr
 
 	ldr_ r2, loopy_v
 	and r1, r2, #0x7000
@@ -107,7 +107,7 @@ lpvend:
 	and r1, r1, #7
 	str_ r1, loopy_y
 	str_ r2, loopy_v
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------
 soft_render:
@@ -122,28 +122,28 @@ soft_render:
 @for allpixel
 
 	ldr_ r0, scanline
-	ldr_ r1, pixstart
+	ldr_ r1, pixStart
 	cmp r0, r1
-	movcc pc, lr
-	ldr_ r1, pixend
+	bxcc lr
+	ldr_ r1, pixEnd
 	cmp r0, r1
-	movhi pc, lr
+	bxhi lr
 	bne normal_sp
 @wait for vbl sync:
 	ldr_ r0, emuFlags
 	tst r0, #FASTFORWARD
-	movne pc, lr
+	bxne lr
 
-	ldr_ r0, pixstart
+	ldr_ r0, pixStart
 	cmp r0, #0
-	movne pc, lr
+	bxne lr
 
 	stmfd sp!, {r3-r4, lr}
 	bl swiWaitForVBlank
 	ldmfd sp!, {r3-r4, pc}
 
 soft_r:
-	ldrb_ r1, rendercount
+	ldrb_ r1, renderCount
 	cmp r1, #0
 	bne dummy_render
 	ldrb_ r0, scanline/*
@@ -163,11 +163,11 @@ normal_sp:
 	ldr_ r0, scanline
 	bl bg_render
 
-	ldrb_ r0, ppustat		@PPUREG[2] &= ~PPU_SPMAX_FLAG;
+	ldrb_ r0, ppuStat		@PPUREG[2] &= ~PPU_SPMAX_FLAG;
 	bic r0, #0x20
-	strb_ r0, ppustat
+	strb_ r0, ppuStat
 
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x10
 	ldr_ r0, scanline
 	blne sp_render
@@ -176,15 +176,15 @@ normal_sp:
 @--------------------------------------------
 dummy_render:
 @--------------------------------------------
-	ldrb_ r0, ppustat
+	ldrb_ r0, ppuStat
 	bic r0, #0x20
-	strb_ r0, ppustat
+	strb_ r0, ppuStat
 	
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x10
-	moveq pc, lr
+	bxeq lr
 	
-	ldrb_ r1, ppuctrl0
+	ldrb_ r1, ppuCtrl0
 	tst r1, #0x20
 	movne r2, #15
 	moveq r2, #7
@@ -204,19 +204,19 @@ dummy_lp:
 	bne dummy_nt
 	
 	cmp r3, #0
-	ldreqb_ r1, ppustat
+	ldreqb_ r1, ppuStat
 	orreq r1, r1, #0x40
-	streqb_ r1, ppustat
+	streqb_ r1, ppuStat
 
 	add r6, r6, #1
 	cmp r6, #8
 	bne dummy_nt
-	ldrb_ r0, ppustat
+	ldrb_ r0, ppuStat
 	orr r0, #0x20
-	strb_ r0, ppustat
+	strb_ r0, ppuStat
 	
 	ldmfd sp!, {r3-r6}
-	mov pc, lr
+	bx lr
 
 dummy_nt:
 	add r3, r3, #1
@@ -224,7 +224,7 @@ dummy_nt:
 	bne dummy_lp
 
 	ldmfd sp!, {r3-r6}
-	mov pc, lr
+	bx lr
 @--------------------------------------------
 sp_render:
 @r0 = linenumber
@@ -237,7 +237,7 @@ sp_render:
 	mov r12, #0			@spmax = 0
 					@r11 = spraddr, r9 = sp_y, r8 = sp_h, r7 = chr_h, r6 = chr_l, r5 = sp, r4 = i
 	ldr r5, =NES_SPRAM		@r5 = sp
-	ldrb_ r1, ppuctrl0
+	ldrb_ r1, ppuCtrl0
 	tst r1, #0x20
 	movne r8, #15			@r8 = sp_h = (PPUREG[0]&PPU_SP16_BIT)?15:7
 	moveq r8, #7
@@ -253,7 +253,7 @@ sp_lp:
 	cmp r9, r8
 	bhi sp_next
 	
-	ldrb_ r3, ppuctrl0
+	ldrb_ r3, ppuCtrl0
 	tst r3, #0x20			@ PPUREG[0]&PPU_SP16_BIT
 	bne sp16
 sp8:
@@ -303,8 +303,8 @@ show_sp:
 
 	mov r0, r11
 	adr lr, 0f
-	ldr_ pc, ppuchrlatch
-0:	
+	ldr_ pc, ppuChrLatch
+0:
 	ldrb r0, [r5, #2]
 	tst r0, #0x40
 	beq sp_noh
@@ -317,7 +317,7 @@ sp_noh:
 	orr r11, r6, r7			@SPpat = chr_l|chr_h
 	cmp r4, #0
 	bne sp_mask
-	ldrb_ r3, ppustat
+	ldrb_ r3, ppuStat
 	tst r3, #0x40
 	bne sp_mask
 hitcheck:
@@ -334,12 +334,12 @@ hitcheck:
 	ldrb r1, [r2, #1]
 	orr r2, r1, r0, lsl#8
 	mov r0, r2, lsr r7		@r0 = BGmsk = (((WORD)pBGw[BGpos+0]<<8)|(WORD)pBGw[BGpos+1])>>BGsft
-					@still r3 = ppustat
+					@still r3 = ppuStat
 	ands r0, r0, r11
 	beq hitend
 	
 	orr r3, r3, #0x40
-	strb_ r3, ppustat
+	strb_ r3, ppuStat
 hitend:
 	ldmfd sp!, {r6, r7}
 
@@ -445,9 +445,9 @@ sp_attr:
 	ldmfd sp!, {r4, r8-r9}
 	add r12, r12, #1
 	cmp r12, #8
-	ldreqb_ r0, ppustat
+	ldreqb_ r0, ppuStat
 	orreq r0, r0, #0x20
-	streqb_ r0, ppustat
+	streqb_ r0, ppuStat
 	beq sp_end
 
 sp_next:
@@ -463,7 +463,7 @@ sp_end:
 bg_render:
 @r0 = linenumber r1 is free
 @--------------------------------------------
-	ldrb_ r1, ppuctrl1
+	ldrb_ r1, ppuCtrl1
 	tst r1, #0x8
 	bne bg_normal
 	
@@ -476,7 +476,7 @@ bg_render:
 	mov r2, #256/4
 	b filler
 
-	mov pc, lr
+	bx lr
 
 	
 bg_normal:
@@ -490,7 +490,7 @@ bg_normal:
 	sub r1, r1, r2			@r1 = pScn = lpScanline+(8-loopy_shift)
 	str_ r1, pScn			@store pScn
 	
-	ldrb_ r1, ppuctrl0
+	ldrb_ r1, ppuCtrl0
 	and r1, r1, #0x10
 	mov r1, r1, lsl#8		@r1 = tileofs
 	str_ r1, tileofs		@store tileofs
@@ -683,7 +683,7 @@ bgnext:
 
 	mov r0, r9
 	adr lr, 0f
-	ldr_ pc, ppuchrlatch
+	ldr_ pc, ppuChrLatch
 0:
 	add r4, r4, #1			@ntbl_x += 1
 	cmp r4, #32
@@ -728,7 +728,7 @@ bg_btm:
 	subs r0, r0, #1
 	bne bg_btm
 	ldmfd sp!,{r0-r2}
-	mov pc,lr
+	bx lr
 
 @--------------------------------------------
 bg_render_reset:
@@ -806,7 +806,7 @@ synclp2:
 	bne synclp2
 	
 	ldmfd sp!, {r2-r3}
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------
 dma_async:
@@ -829,7 +829,7 @@ dma_async:
 	str r0, [r2], #4
 	str r3, [r2]
 	ldmfd sp!, {r2-r3}
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------
 dma_async_fix:	
@@ -841,7 +841,7 @@ dma_async_fix:
 	str r0, [r2], #4
 	str r3, [r2]
 	ldmfd sp!, {r2-r3}
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------
 dma_sync_fix:	
@@ -858,7 +858,7 @@ synclp:
 	bne synclp
 	
 	ldmfd sp!, {r2-r3}
-	mov pc, lr
+	bx lr
 
 .section .bss, "aw"
 .align 4
