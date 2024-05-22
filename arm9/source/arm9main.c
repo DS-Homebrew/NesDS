@@ -173,23 +173,23 @@ int main(int _argc, char **_argv) {
 			oldkey = IPC_KEYS;
 
 			if(keydown & KEY_LEFT) {
-				if(__nsfsongno == 0) {
-					__nsfsongno = nsfheader.TotalSong-1;
+				if(__nsfSongNo == 0) {
+					__nsfSongNo = nsfHeader.TotalSong-1;
 				} else {
-					__nsfsongno--;
+					__nsfSongNo--;
 				}
 			}
 			if(keydown & KEY_RIGHT) {
-				if(++__nsfsongno > nsfheader.TotalSong-1) {
-					__nsfsongno = 0;
+				if(++__nsfSongNo > nsfHeader.TotalSong-1) {
+					__nsfSongNo = 0;
 				}
 			}		
 			if(keydown & KEY_UP) {
-				__nsfplay = 1;
-				__nsfinit = 1;
+				__nsfPlay = 1;
+				__nsfInit = 1;
 			}		
 			if(keydown & KEY_DOWN) {
-				__nsfplay = 0;
+				__nsfPlay = 0;
 				Sound_reset();
 			}
 		}

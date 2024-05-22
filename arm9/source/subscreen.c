@@ -65,29 +65,29 @@ int debugdump() {
 	if(1 && (__emuflags & NSFFILE)) {
 		u32 *ip=(u32*)&mapperstate;
 		consoletext	(64 * 4 + 0 * 32, "version", 0);
-		hex8		(64 * 4 + 0 * 32 + 18, nsfheader.Version);
+		hex8		(64 * 4 + 0 * 32 + 18, nsfHeader.Version);
 		consoletext	(64 * 4 + 1 * 32, "startson", 0);
-		hex8		(64 * 4 + 1 * 32 + 18, nsfheader.StartSong);
+		hex8		(64 * 4 + 1 * 32 + 18, nsfHeader.StartSong);
 		consoletext	(64 * 4 + 2 * 32, "totalsong", 0);
-		hex8		(64 * 4 + 2 * 32 + 18, nsfheader.TotalSong);
+		hex8		(64 * 4 + 2 * 32 + 18, nsfHeader.TotalSong);
 		consoletext	(64 * 4 + 3 * 32, "LoadAddr", 0);
-		hex16		(64 * 4 + 3 * 32 + 18, nsfheader.LoadAddress);
+		hex16		(64 * 4 + 3 * 32 + 18, nsfHeader.LoadAddress);
 		consoletext	(64 * 4 + 4 * 32, "InitAddr", 0);
-		hex16		(64 * 4 + 4 * 32 + 18, nsfheader.InitAddress);
+		hex16		(64 * 4 + 4 * 32 + 18, nsfHeader.InitAddress);
 		consoletext	(64 * 4 + 5 * 32, "PlayAddr", 0);
-		hex16		(64 * 4 + 5 * 32 + 18, nsfheader.PlayAddress);
+		hex16		(64 * 4 + 5 * 32 + 18, nsfHeader.PlayAddress);
 		for(i=0;i<10;i++) {
 			hex32(64*7+i*32,ip[i]);
 		}
 		
 		consoletext	(64 * 16 + 0 * 32, "songno", 0);
-		hex16		(64 * 16 + 0 * 32 + 18, __nsfsongno);
+		hex16		(64 * 16 + 0 * 32 + 18, __nsfSongNo);
 		consoletext	(64 * 16 + 1 * 32, "songmode", 0);
-		hex16		(64 * 16 + 1 * 32 + 18, __nsfsongmode);
+		hex16		(64 * 16 + 1 * 32 + 18, __nsfSongMode);
 		consoletext	(64 * 16 + 2 * 32, "play", 0);
-		hex16		(64 * 16 + 2 * 32 + 18, __nsfplay);
+		hex16		(64 * 16 + 2 * 32 + 18, __nsfPlay);
 		consoletext	(64 * 16 + 3 * 32, "init", 0);
-		hex16		(64 * 16 + 3 * 32 + 18, __nsfinit);
+		hex16		(64 * 16 + 3 * 32 + 18, __nsfInit);
 
 		
 		for(i = 0; i < 4; i++) {

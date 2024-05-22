@@ -121,7 +121,7 @@ void Handler(int packetID, int readlength)
 						guest_framecount = 0;
 						global_playcount = 0;
 						joyflags &= ~AUTOFIRE;
-						__af_st = __af_start;
+						__af_state = __af_start;
 						menu_game_reset();	//menu is closed.
 					} else {		//bad crc. disconnect the comm.
 						nifi_stat = 0;
@@ -147,7 +147,7 @@ void Handler(int packetID, int readlength)
 						guest_framecount = 0;
 						global_playcount = 0;
 						joyflags &= ~AUTOFIRE;
-						__af_st = __af_start;
+						__af_state = __af_start;
 						menu_game_reset();	//menu is closed.
 					} else {					//CRC error, the both sides should choose the some game.
 						nifi_stat = 0;

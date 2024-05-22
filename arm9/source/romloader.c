@@ -51,11 +51,11 @@ int is_nsf_file(char *name, char *rom)
 {
 	//actually the first four chars should be "NESM"
 	if(strstr(name, ".NSF") || strstr(name, ".nsf")) {
-		memcpy(&nsfheader, rom, sizeof(nsfheader));
+		memcpy(&nsfHeader, rom, sizeof(nsfHeader));
 		__emuflags |= NSFFILE;
-		__nsfsongno = 0;
-		__nsfplay = 0;
-		__nsfinit = 0;
+		__nsfSongNo = 0;
+		__nsfPlay = 0;
+		__nsfInit = 0;
 		IPC_MAPPER = 256;
 		return 1;
 	}

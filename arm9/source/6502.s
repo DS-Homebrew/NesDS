@@ -40,7 +40,7 @@
 	.global __rendercount
 	.global __barcode
 	.global __barcode_out
-	.global __af_st
+	.global __af_state
 	.global __af_start
 	.global __prgsize16k
 	.global all_pix_start
@@ -48,12 +48,12 @@
 	.global ntsc_pal_reset
 	.global debugwrite
 	.global debugwrite_c
-	.global nsfheader
+	.global nsfHeader
 
-	.global __nsfplay
-	.global __nsfinit
-	.global __nsfsongno
-	.global __nsfsongmode
+	.global __nsfPlay
+	.global __nsfInit
+	.global __nsfSongNo
+	.global __nsfSongMode
 		
 pcmirqbakup = mapperData+24
 pcmirqcount = mapperData+28
@@ -1549,16 +1549,16 @@ __rendercount:
 	.word rev_data	@pBit2Rev
 	.skip 4 * (20 - 12)
 
-nsfheader:
+nsfHeader:
 	.skip 128
 
-__nsfplay:
+__nsfPlay:
 	.word 0
-__nsfinit:
+__nsfInit:
 	.word 0
-__nsfsongno:
+__nsfSongNo:
 	.word 0
-__nsfsongmode:
+__nsfSongMode:
 	.word 0
 
 all_pix_start:
@@ -1566,7 +1566,7 @@ all_pix_start:
 all_pix_end:
 	.word 0
 
-__af_st:
+__af_state:
 	.word 0		@af_st
 __af_start:
 	.word 0x101	@af_start 30 fps
