@@ -11,7 +11,7 @@ mapper111init:
 
 	adr r0,mapper111write
 //	str_ r0,rp2A03MemWrite
-	str_ r0,writemem_tbl+12
+	str_ r0,m6502WriteTbl+12
 
 	bx lr
 @---------------------------------------------------------------------------------

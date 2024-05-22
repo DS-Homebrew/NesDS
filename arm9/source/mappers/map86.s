@@ -9,7 +9,7 @@ mapper86init:	@Jaleco - Moero!! Pro Yakyuu, Urusei Yatsura...
 @---------------------------------------------------------------------------------
 	.word void,void,void,void
 	adr r1,write86
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 	mov r0,#0
 	b map89ABCDEF_
 @---------------------------------------------------------------------------------

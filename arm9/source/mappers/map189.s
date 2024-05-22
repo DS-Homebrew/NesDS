@@ -67,8 +67,8 @@ mapper189init:
 	str_ r0,scanlineHook
 
 	adr r0, writel
-	str_ r0, writemem_tbl+12
-	str_ r0, writemem_tbl+8
+	str_ r0, m6502WriteTbl+12
+	str_ r0, m6502WriteTbl+8
 
 	ldr_ r0, prgcrc
 	ldr r1, =0x2A9E

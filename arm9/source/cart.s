@@ -41,6 +41,7 @@ mappertbl:
 	.word 24,mapper24init
 	.word 25,mapper25init
 	.word 26,mapper26init
+	.word 30,mapper30init
 	.word 32,mapper32init
 	.word 33,mapper33init
 	.word 34,mapper34init
@@ -74,6 +75,7 @@ mappertbl:
 	.word 97,mapper97init
 	.word 99,mapper99init
 	.word 105,mapper105init
+	.word 111,mapper111init
 	.word 118,mapper118init
 	.word 119,mapper119init
 	.word 140,mapper66init
@@ -82,7 +84,7 @@ mappertbl:
 	.word 153,mapper16init
 	.word 157,mapper16init
 	.word 158,mapper64init
-	.word 159,mapper159init	
+	.word 159,mapper159init
 	.word 163,mapper163init
 	.word 180,mapper180init
 	.word 184,mapper184init
@@ -129,7 +131,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 
 	mov r2,#1
 	ldrb r1,[r3,#-12]		@r1 = 16K PRG-ROM page count
-	movne r0, #1			@nsf has 16k?
+	movne r1, #1			@nsf has 16k?
 	str_ r1,prgSize16k		@some games' prg rom not == to (2**n), shit...
 	mov r0, r1, lsl#1
 	str_ r0,prgSize8k
@@ -137,7 +139,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	str_ r0,prgSize32k
 
 	rsb r0,r2,r1,lsl#14		@r0 = page count * 16K - 1
-	str_ r0,romMask			@romMask=romsize-1
+	str_ r0,romMask			@romMask=romSize-1
 
 	add r0,r3,r1,lsl#14		@r0 = rom end.(romsize + rom start)
 	str_ r0,vromBase		@set vrom base
@@ -158,11 +160,11 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	cmp r4,#64
 	movhi r1,#128
 	rsbs r0,r2,r1,lsl#13		@r0 = VROM page size * 8K - 1
-	str_ r0,vromMask		@vromMask=vromsize-1
+	str_ r0,vromMask		@vromMask=vromSize-1
 	ldrmi r0,=NES_VRAM
-	strmi_ r0,vromBase		@vromBase=NES VRAM if vromsize=0
+	strmi_ r0,vromBase		@vromBase=NES VRAM if vromSize=0
 
-	stmfd sp!, {r3-r4, r12}
+	stmfd sp!, {r3, r12}
 	mov r0, #0			@init val, cal crc for prgrom
 	ldr_ r1, romBase		@src
 	ldr_ r2, prgSize8k		@size
@@ -170,7 +172,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	swi 0x0e0000			@swicrc16
 	str_ r0, prgcrc
 	DEBUGINFO PRGCRC, r0
-	ldmfd sp!, {r3-r4, r12}
+	ldmfd sp!, {r3, r12}
 
 	ldr r0,=void
 	ldrmi r0,=VRAM_chr		@enable/disable chr write
@@ -236,19 +238,19 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	strh r1, [r0]			@disable hblank process.
 
 	ldr r1,=IO_R			@reset other writes..
-	str_ r1,readmem_tbl+8
-	ldr r1,=sram_R			@reset other writes..
-	str_ r1,readmem_tbl+12
+	str_ r1,m6502ReadTbl+8
+	ldr r1,=mem_R60			@reset other writes..
+	str_ r1,m6502ReadTbl+12
 	ldr r1,=IO_W			@reset other writes..
-	str_ r1,writemem_tbl+8
+	str_ r1,m6502WriteTbl+8
 	ldr r1,=sram_W
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 	ldr r1,=NES_RAM-0x5800		@$6000 for mapper 40, 69 & 90 that has rom here.
-	str_ r1,memmap_tbl+12
+	str_ r1,m6502MemTbl+12
 	ldr r1,=NES_XRAM-0x2000
-	str_ r1,memmap_tbl+4
+	str_ r1,m6502MemTbl+4
 	ldr r1,=NES_XRAM-0x4000
-	str_ r1,memmap_tbl+8
+	str_ r1,m6502MemTbl+8
 
 	ldrb r1,[r3,#-10]		@get mapper#
 	ldrb r2,[r3,#-9]
@@ -280,11 +282,11 @@ lc0:	ldr r2,[r1],#8
 	beq lc1
 	bpl lc0
 lc1:				@call mapperXXinit
-	adr_ r5,writemem_tbl+16
+	adr_ r5,m6502WriteTbl+16
 	ldr r0,[r1,#-4]		@r0 = mapperxxxinit
 	ldmia r0!,{r1-r4}
 	stmia r5,{r1-r4}	@set default (write) operation for NES(0x8000 ~ 0xFFFF), maybe 'void', according to Mapper.
-	blx r0			@go maper_init
+	blx r0				@ go mapper_init
 
 	ldrb_ r1,cartFlags
 	tst r1,#MIRROR		@set default mirror, horizontal mirroring
@@ -311,10 +313,12 @@ savestate:
 
 	adr r4,savelst			@r4=list of stuff to copy
 	mov r3,#(lstend-savelst)/8	@r3=items in list
-ss1:	ldr r2,[r4],#4				@r2=what to copy
+ss1:
+	ldr r2,[r4],#4				@r2=what to copy
 	ldr r1,[r4],#4				@r1=how much to copy
 	add r0,r0,r1
-ss0:	ldr r5,[r2],#4
+ss0:
+	ldr r5,[r2],#4
 	str r5,[r6],#4
 	subs r1,r1,#4
 	bne ss0
@@ -339,7 +343,7 @@ lstend:
 @c_defs: #define SAVESTATESIZE (0x2800+0x3000+96+64+16+96+16+44+48)
 
 fixromptrs:	@add r2 to some things
-	adr_ r1,memmap_tbl+16
+	adr_ r1,m6502MemTbl+16
 	ldmia r1,{r3-r6}
 	add r3,r3,r2
 	add r4,r4,r2
@@ -397,9 +401,9 @@ ls3:	mov r1,r3
 	tst r4,#0x1800
 	bne ls4
 @---
-	@ldr r0,nes_chr_map		@init BG CHR
+	@ldr r0,nesChrMap		@init BG CHR
 	@bl bg_chr_req
-	@ldr r0,nes_chr_map+4
+	@ldr r0,nesChrMap+4
 	@bl bg_chr_req
 	bl updateBGCHR
 	ldrb_ r0,ppuCtrl1
@@ -420,7 +424,7 @@ NES_reset:
 	bl CPU_reset
 	
 	mov r0, #0
-	str_ r0, af_st			@clear autofire state
+	str_ r0, af_state			@clear autofire state
 
 	bl nespatch
 
@@ -438,7 +442,7 @@ map67_:	@rom paging.. r0=page#
 	subcs r0, r0, r2
 	bcs 0b
 	add r0,r1,r0,lsl#13
-	str_ r0,memmap_tbl+12
+	str_ r0,m6502MemTbl+12
 	b flush
 @---------------------------------------------------------------------------------
 map89_:	@rom paging.. r0=page#
@@ -453,7 +457,7 @@ map89_:	@rom paging.. r0=page#
 	subcs r0, r0, r2
 	bcs 0b
 	add r0,r1,r0,lsl#13
-	str_ r0,memmap_tbl+16
+	str_ r0,m6502MemTbl+16
 	b flush
 @---------------------------------------------------------------------------------
 mapAB_:
@@ -468,7 +472,7 @@ mapAB_:
 	subcs r0, r0, r2
 	bcs 0b
 	add r0,r1,r0,lsl#13
-	str_ r0,memmap_tbl+20
+	str_ r0,m6502MemTbl+20
 	b flush
 @---------------------------------------------------------------------------------
 mapCD_:
@@ -483,7 +487,7 @@ mapCD_:
 	subcs r0, r0, r2
 	bcs 0b
 	add r0,r1,r0,lsl#13
-	str_ r0,memmap_tbl+24
+	str_ r0,m6502MemTbl+24
 	b flush
 @---------------------------------------------------------------------------------
 mapEF_:
@@ -498,7 +502,7 @@ mapEF_:
 	subcs r0, r0, r2
 	bcs 0b
 	add r0,r1,r0,lsl#13
-	str_ r0,memmap_tbl+28
+	str_ r0,m6502MemTbl+28
 	b flush
 @---------------------------------------------------------------------------------
 map89AB_:
@@ -513,8 +517,8 @@ map89AB_:
 	subcs r0, r0, r2
 	bcs 0b
 	add r0,r1,r0,lsl#14
-	str_ r0,memmap_tbl+16
-	str_ r0,memmap_tbl+20
+	str_ r0,m6502MemTbl+16
+	str_ r0,m6502MemTbl+20
 flush:		@update m6502_pc & m6502LastBank
 	ldr_ r1,m6502LastBank
 	sub m6502_pc,m6502_pc,r1
@@ -533,8 +537,8 @@ mapCDEF_:
 	subcs r0, r0, r2
 	bcs 0b
 	add r0,r1,r0,lsl#14
-	str_ r0,memmap_tbl+24
-	str_ r0,memmap_tbl+28
+	str_ r0,m6502MemTbl+24
+	str_ r0,m6502MemTbl+28
 	b flush
 @---------------------------------------------------------------------------------
 map89ABCDEF_:
@@ -549,9 +553,9 @@ map89ABCDEF_:
 	subcs r0, r0, r2
 	bcs 0b
 	add r0,r1,r0,lsl#15
-	str_ r0,memmap_tbl+16
-	str_ r0,memmap_tbl+20
-	str_ r0,memmap_tbl+24
-	str_ r0,memmap_tbl+28
+	str_ r0,m6502MemTbl+16
+	str_ r0,m6502MemTbl+20
+	str_ r0,m6502MemTbl+24
+	str_ r0,m6502MemTbl+28
 	b flush
 @---------------------------------------------------------------------------------

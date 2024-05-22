@@ -359,16 +359,16 @@ EMU_VBlank:	@call every vblank
 	DEBUGINFO CARTFLAG, r1
 
 	ldr r0, =IPC_MEMTBL
-	ldr_ r1,memmap_tbl+16
+	ldr_ r1,m6502MemTbl+16
 	add r1, r1, #0x8000
 	str r1, [r0], #4
-	ldr_ r1,memmap_tbl+20
+	ldr_ r1,m6502MemTbl+20
 	add r1, r1, #0xA000
 	str r1, [r0], #4
-	ldr_ r1,memmap_tbl+24
+	ldr_ r1,m6502MemTbl+24
 	add r1, r1, #0xC000
 	str r1, [r0], #4
-	ldr_ r1,memmap_tbl+28
+	ldr_ r1,m6502MemTbl+28
 	add r1, r1, #0xE000
 	str r1, [r0]
 
@@ -477,7 +477,7 @@ ppusync:		@called on NES scanline 0..239 (r0=line)
 
 0:
 	ldr_ r0, scanline
-	adr_ r2,nes_chr_map
+	adr_ r2,nesChrMap
 	ldr r3,=nes_maps
 	add r3, r3, r0, lsl#4
 	ldr r1,[r2], #4
@@ -1263,7 +1263,7 @@ chr1k:
 	ldr_ r2,vromMask
 	and r0,r0,r2,lsr#10
 
-	adr_ r2,nes_chr_map
+	adr_ r2,nesChrMap
 	add r2, r2, r1, lsl#1
 	strh r0,[r2]
 	
@@ -1290,7 +1290,7 @@ chr2k:
 	and r0,r0,r2,lsr#11
 
 	mov r0,r0,lsl#1
-	adr_ r2,nes_chr_map
+	adr_ r2,nesChrMap
 	add r2, r2, r1, lsl#1
 	strh r0,[r2]
 	orr r0,r0,#1
@@ -1313,10 +1313,10 @@ chr0123_:
 	orr r1,r0,r0,lsl#16
 	mov r1, r1, lsl#2
 	orr r2, r1, #0x00010000
-	str_ r2,nes_chr_map
+	str_ r2,nesChrMap
 	ldr r2,=0x00030002
 	orr r2,r1,r2
-	str_ r2,nes_chr_map+4
+	str_ r2,nesChrMap+4
 
 	ldr_ r1,vromBase
 	add r1,r1,r0,lsl#12
@@ -1337,16 +1337,16 @@ chr01234567_:
 	orr r1,r0,r0,lsl#16
 	mov r1, r1, lsl#3
 	orr r2, r1, #0x00010000
-	str_ r2,nes_chr_map
+	str_ r2,nesChrMap
 	ldr r2,=0x00030002
 	orr r2,r1,r2
-	str_ r2,nes_chr_map+4
+	str_ r2,nesChrMap+4
 	ldr r2,=0x00050004
 	orr r2,r1,r2
-	str_ r2,nes_chr_map+8
+	str_ r2,nesChrMap+8
 	ldr r2,=0x00070006
 	orr r2,r1,r2
-	str_ r2,nes_chr_map+12
+	str_ r2,nesChrMap+12
 
 	ldr_ r1,vromBase
 	add r1,r1,r0,lsl#13
@@ -1368,10 +1368,10 @@ chr4567_:
 	orr r1,r0,r0,lsl#16
 	mov r1, r1, lsl#2
 	orr r2, r1, #0x00010000
-	str_ r2,nes_chr_map+8
+	str_ r2,nesChrMap+8
 	ldr r2,=0x00030002
 	orr r2,r1,r2
-	str_ r2,nes_chr_map+12
+	str_ r2,nesChrMap+12
 
 	ldr_ r1,vromBase
 	add r1,r1,r0,lsl#12
@@ -1390,10 +1390,10 @@ updateBGCHR:	@see if BG CHR needs to change, setup BGxCNTBUFF
 	ldrb_ r2,ppuCtrl0
 	tst r2,#0x10
 	stmfd sp!,{r2-r9, lr}
-	ldreq_ r0,nes_chr_map
-	ldreq_ r8,nes_chr_map+4
-	ldrne_ r0,nes_chr_map+8	@r0=new bg chr group
-	ldrne_ r8,nes_chr_map+12
+	ldreq_ r0,nesChrMap
+	ldreq_ r8,nesChrMap+4
+	ldrne_ r0,nesChrMap+8	@r0=new bg chr group
+	ldrne_ r8,nesChrMap+12
 
 	bl bg_chr_req
 	ldmfd sp!,{r2-r9, pc}
@@ -1411,8 +1411,8 @@ uc3:
 	tst r2,#0x08
 	bne uc2
 uc1:
-	ldr_ r0,nes_chr_map
-	ldr_ r8,nes_chr_map + 4
+	ldr_ r0,nesChrMap
+	ldr_ r8,nesChrMap + 4
 	ldr r1,agb_obj_map
 	ldr r9,agb_obj_map + 4
 	eor r1,r1,r0
@@ -1425,8 +1425,8 @@ uc1:
 	adr r6,agb_obj_map
 	b unpack_tiles
 uc2:
-	ldr_ r0,nes_chr_map+8
-	ldr_ r8,nes_chr_map+12
+	ldr_ r0,nesChrMap+8
+	ldr_ r8,nesChrMap+12
 	ldr r1,agb_obj_map+8
 	ldr r9,agb_obj_map+12
 	eor r9,r9,r8

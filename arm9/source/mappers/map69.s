@@ -58,15 +58,14 @@ irqB69:
 mapJinx:
 @---------------------------------------------------------------------------------
 	tst r0,#0x40
-	ldreq r1,=rom_R60			@Swap in ROM at $6000-$7FFF.
-	ldrne r1,=sram_R		@Swap in sram at $6000-$7FFF.
-	str_ r1,readmem_tbl+12
+	ldr r1,=mem_R60			@Swap in mem at $6000-$7FFF.
+	str_ r1,m6502ReadTbl+12
 	ldreq r1,=empty_W		@ROM.
 	ldrne r1,=sram_W		@sram.
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 	beq map67_
 	ldr r1,=NES_RAM-0x5800		@sram at $6000.
-	str_ r1,memmap_tbl+12
+	str_ r1,m6502MemTbl+12
 	bx lr
 @---------------------------------------------------------------------------------
 hook:

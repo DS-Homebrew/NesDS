@@ -33,7 +33,6 @@
 	.global __lastbank
 	.global __sp
 	.global __scanline
-	.global __nes_chr_map
 	.global __memmap_tbl
 	.global __rombase
 	.global debugstep
@@ -476,7 +475,7 @@ _6A:@   ROR
 _6C:@   JMP ($nnnn)
 @---------------------------------------------------------------------------------
 	doABS
-	adr_ r1,memmap_tbl
+	adr_ r1,m6502MemTbl
 	and r2,addy,#0xE000
 	ldr r1,[r1,r2,lsr#11]
 	ldrb m6502_pc,[r1,addy]!
@@ -1313,7 +1312,7 @@ VecCont:
 	orr cycles,cycles,#CYC_I	@disable IRQ
 @	bic cycles,cycles,#CYC_D	@and decimal mode
 
-	ldr_ r0,memmap_tbl+7*4
+	ldr_ r0,m6502MemTbl+7*4
 	ldrb m6502_pc,[r0,r12]!
 	ldrb r2,[r0,#1]
 	orr m6502_pc,m6502_pc,r2,lsl#8
@@ -1357,7 +1356,7 @@ CPU_reset:	@called by loadcart (r0-r9 are free to use)
 	mov m6502_x,#0
 	mov m6502_y,#0
 	mov m6502_nz,#0
-	adr_ m6502_rmem,readmem_tbl
+	adr_ m6502_rmem,m6502ReadTbl
 	ldr r0,=NES_RAM+0x100
 	str_ r0,m6502_s		@S=0xFD (0x100-3)
 	mov cycles,#0		@D=0, C=0, V=0, I=1 disable IRQ.
@@ -1409,16 +1408,16 @@ op_table:
 	.word _D0,_D1,_xx,_xx,_xx,_D5,_D6,_xx,_D8,_D9,_xx,_xx,_xx,_DD,_DE,_xx
 	.word _E0,_E1,_xx,_xx,_E4,_E5,_E6,_xx,_E8,_E9,_EA,_xx,_EC,_ED,_EE,_xx
 	.word _F0,_F1,_xx,_xx,_xx,_F5,_F6,_xx,_F8,_F9,_xx,_xx,_xx,_FD,_FE,_xx
-  @readmem_tbl
+  @m6502ReadTbl
 	.word ram_R	@$0000
 	.word PPU_R	@$2000
 	.word IO_R	@$4000
-	.word sram_R	@$6000
+	.word mem_R60	@$6000
 	.word rom_R80	@$8000
 	.word rom_RA0	@$A000
 	.word rom_RC0	@$C000
 	.word rom_RE0	@$E000
-  @writemem_tbl
+  @m6502WriteTbl
 	.word ram_W	@$0000
 	.word PPU_W	@$2000
 	.word IO_W	@$4000
@@ -1427,7 +1426,7 @@ op_table:
 	.word mem_WA0	@$A000
 	.word mem_WC0	@$C000
 	.word mem_WE0	@$E000
-   @memmap_tbl
+   @m6502MemTbl
 __memmap_tbl:
 	.word NES_RAM		@$0000   0000-7fff
 	.word NES_XRAM-0x2000	@$2000    should
@@ -1490,7 +1489,7 @@ ppustate:
 	.byte 0 @ppuCtrl1
 	.byte 0 @ppuOamAdr
 __nes_chr_map:
-	.skip 16	@nes_chr_map 	VROM map for 0000-1FFF (1k bank numbers)
+	.skip 16	@nesChrMap 	VROM map for 0000-1FFF (1k bank numbers)
 	
 	.word 0 @vromMask
 	.word 0 @vromBase
@@ -1514,7 +1513,6 @@ __rombase:
 	
 @add others
 	.word 0 	@romMask
-	.word 0 	@romnumber
 	.word 0 	@prgSize8k
 __prgsize16k:
 	.word 0 	@prgSize16k
@@ -1567,7 +1565,7 @@ all_pix_end:
 	.word 0
 
 __af_state:
-	.word 0		@af_st
+	.word 0		@af_state
 __af_start:
 	.word 0x101	@af_start 30 fps
 __palsyncline:

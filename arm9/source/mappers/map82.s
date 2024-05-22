@@ -11,7 +11,7 @@ mapper82init:@		Taito something...
 	.word void,void,void,void
 
 	adr r1,write0
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 	bx lr
 @---------------------------------------------------------------------------------
 write0:		@$8000-8001

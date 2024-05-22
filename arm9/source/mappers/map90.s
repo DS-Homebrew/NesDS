@@ -86,9 +86,9 @@ mapper90init:
 	strb r0, sw_val			@for multi-in-one switch.
 
 	adr r1, readl
-	str_ r1,readmem_tbl+8
+	str_ r1,m6502ReadTbl+8
 	adr r1,writel
-	str_ r1,writemem_tbl+8
+	str_ r1,m6502WriteTbl+8
 
 	ldr r0,=hbhook
 	str_ r0,scanlineHook

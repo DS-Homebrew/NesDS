@@ -13,7 +13,7 @@ mapper17init:
 	.word void,void,void,void
 
 	adr r1,write0
-	str_ r1,writemem_tbl+8
+	str_ r1,m6502WriteTbl+8
 
 	adr r0,hook
 	str_ r0,scanlineHook

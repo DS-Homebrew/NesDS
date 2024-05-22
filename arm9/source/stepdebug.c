@@ -107,8 +107,9 @@ void stepdebug()
 	}
 	
 	count = pstep - stepinfo;
-	if(count > 18 * 4)
+	if(count > 18 * 4) {
 		count = 18 * 4;
+	}
 	for(i = 0; i < count; i++) {
 		shex(ptbuf + 192 + i*8, stepinfo[i] >> 12, 3);
 		if(stepinfo[i] & 0x100) {
@@ -118,6 +119,7 @@ void stepdebug()
 		}
 		shex(ptbuf + 197 + i*8, stepinfo[i], 1);
 	}
+
 	consoletext(0, ptbuf, 0);
 	//memset( ptbuf + 192 + count * 8, 32, (18 * 4 - count) * 8);
 	

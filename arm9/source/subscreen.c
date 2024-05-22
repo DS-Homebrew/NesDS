@@ -33,9 +33,9 @@ int debugdump() {
 	u32 *p;
 	char **cc;
 
-	debuginfo[13]=IPC_ALIVE;
-	debuginfo[14]=IPC_TMP0;
-	debuginfo[15]=IPC_TMP1;
+	debuginfo[ALIVE]=IPC_ALIVE;
+	debuginfo[TMP0]=IPC_TMP0;
+	debuginfo[TMP1]=IPC_TMP1;
 	
 	p=debuginfo;
 	cc=debugtxt;
@@ -61,7 +61,7 @@ int debugdump() {
 	if(count++ != 20)
 		return 0;*/
 
-	debuginfo[21] = __emuflags;
+	debuginfo[EMUFLAG] = __emuflags;
 	if(1 && (__emuflags & NSFFILE)) {
 		u32 *ip=(u32*)&mapperstate;
 		consoletext	(64 * 4 + 0 * 32, "version", 0);

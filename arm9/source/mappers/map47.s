@@ -44,7 +44,7 @@ mapper47init:
 	bl mapper4init+4*4
 
 	adr r0, writel
-	str_ r0, writemem_tbl+12
+	str_ r0, m6502WriteTbl+12
 
 	ldmfd sp!, {lr}
 	bx lr

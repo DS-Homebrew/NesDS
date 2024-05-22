@@ -112,12 +112,12 @@ mapper20init:
 	str_ r0, vromBase
 
 	ldr r0, =NES_DRAM - 0x6000
-	str_ r0, memmap_tbl + 12
-	str_ r0, memmap_tbl + 16
-	str_ r0, memmap_tbl + 20
-	str_ r0, memmap_tbl + 24
+	str_ r0, m6502MemTbl + 12
+	str_ r0, m6502MemTbl + 16
+	str_ r0, m6502MemTbl + 20
+	str_ r0, m6502MemTbl + 24
 	ldr r0, =diskbios - 0xE000
-	str_ r0, memmap_tbl + 28
+	str_ r0, m6502MemTbl + 28
 
 	ldr r2, =0xFFFFFFFF
 	mov r1, #0x100/4
@@ -133,11 +133,11 @@ mapper20init:
 	str_ r1, disk_w
 
 	adr r0, exread
-	str_ r0, readmem_tbl + 8
+	str_ r0, m6502ReadTbl + 8
 	adr r0, exwrite
-	str_ r0, writemem_tbl + 8
+	str_ r0, m6502WriteTbl + 8
 	ldr r0, =writel
-	str_ r0, writemem_tbl + 12
+	str_ r0, m6502WriteTbl + 12
 	ldr r0, =hsync
 	str_ r0, scanlineHook
 	ldr r0, =frameend

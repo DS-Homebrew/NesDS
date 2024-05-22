@@ -16,10 +16,10 @@ mapper40init:		@SMB2j
 	adr r0,hook
 	str_ r0,scanlineHook
 
-	ldr r0,=rom_R60			@Set ROM at $6000-$7FFF.
-	str_ r0,readmem_tbl+12
+	ldr r0,=mem_R60			@Set ROM at $6000-$7FFF.
+	str_ r0,m6502ReadTbl+12
 	ldr r0,=empty_W			@ROM.
-	str_ r0,writemem_tbl+12
+	str_ r0,m6502WriteTbl+12
 
 	bl write0
 

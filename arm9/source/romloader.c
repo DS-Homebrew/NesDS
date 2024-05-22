@@ -86,9 +86,9 @@ void do_rommenu() {
 	if(!roms) {
 		if(!active_interface) {			//another driver is present, but init failed
 			consoletext(64*3,"Device failed.",0);
-		} else						//no DLDI error, no files
+		} else {						//no DLDI error, no files
 			consoletext(64*3,"No roms found.",0);
-		
+		}
 		while(1) swiWaitForVBlank();
 	}
 	showconsole();
@@ -337,9 +337,9 @@ int init_rommenu() {
 	struct dirent *cnt = NULL;
 	struct stat statbuf;
 
-	if(!active_interface)		//DLDI trouble
+	if(!active_interface) {		//DLDI trouble
 		return 0;
-
+	}
 	files = (char**)rom_files;
 	nextfile=(char*)&files[MAXFILES];
 	dir=opendir(".");			//chdir to root
@@ -516,9 +516,9 @@ int bootext() {
 	chdir(inibuf); //might be overwritten in readFrontend()
 
 	// if we didn't have an ini, this'll be blank
-	if (disksyspath[0] == 0)
+	if (disksyspath[0] == 0) {
 		strcpy(disksyspath, defaultDisksyspath);
-
+	}
 	FILE* bios = fopen(disksyspath, "r");
 	if (bios != NULL) {
 		fseek(bios, 0, SEEK_END);

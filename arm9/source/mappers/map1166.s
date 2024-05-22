@@ -16,7 +16,7 @@ mapper66init:
 	.word write66,write66,write66,write66
 
 	ldr r1,mapper66init
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 
 	ldrb_ r0,cartFlags
 	orr r0,r0,#MIRROR

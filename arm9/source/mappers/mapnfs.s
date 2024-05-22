@@ -37,17 +37,17 @@ mappernsfinit:	@play nsf files
 	@skip pal reset
 	@remap the memtable
 	ldr r0, =wram + 0xa000 - 0x4000
-	str_ r0, memmap_tbl + 8
+	str_ r0, m6502MemTbl + 8
 	ldr r0, =wram + 0x0000 - 0x6000
-	str_ r0, memmap_tbl + 12
+	str_ r0, m6502MemTbl + 12
 	ldr r0, =wram + 0x2000 - 0x8000
-	str_ r0, memmap_tbl + 16
+	str_ r0, m6502MemTbl + 16
 	ldr r0, =wram + 0x4000 - 0xA000
-	str_ r0, memmap_tbl + 20
+	str_ r0, m6502MemTbl + 20
 	ldr r0, =wram + 0x6000 - 0xC000
-	str_ r0, memmap_tbl + 24
+	str_ r0, m6502MemTbl + 24
 	ldr r0, =wram + 0x8000 - 0xE000
-	str_ r0, memmap_tbl + 28
+	str_ r0, m6502MemTbl + 28
 
 	@read the exchip flag
 	adrl_ r0, nsfextrachipselect
@@ -195,9 +195,9 @@ bankswitchend:
 
 
 	adr r0, exread
-	str_ r0, readmem_tbl + 8
+	str_ r0, m6502ReadTbl + 8
 	adr r0, exwrite
-	str_ r0, writemem_tbl + 8
+	str_ r0, m6502WriteTbl + 8
 
 	@pal/ntsc?
 

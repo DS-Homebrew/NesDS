@@ -15,10 +15,10 @@ mapper42init:
 	.word chr01234567_,void,void,write3
 	mov addy,lr
 
-	ldr r1,=rom_R60			@Swap in ROM at $6000-$7FFF.
-	str_ r1,readmem_tbl+12
+	ldr r1,=mem_R60			@Swap in ROM at $6000-$7FFF.
+	str_ r1,m6502ReadTbl+12
 	ldr r1,=empty_W		@ROM.
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 
 	mov r0,#-1
 	bl map89ABCDEF_

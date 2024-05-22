@@ -10,7 +10,7 @@ mapper34init:	@Impossible Mission 2 & Deadly Towers
 	.word map89ABCDEF_,map89ABCDEF_,map89ABCDEF_,map89ABCDEF_	@ Deadly Towers
 
 	adr r1,write0
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 
 	mov r0,#0
 	b map89ABCDEF_

@@ -12,7 +12,7 @@ mapper240init:
 	.word void, void, void, void
 
 	adr r1,write0
-	str_ r1,writemem_tbl+8
+	str_ r1,m6502WriteTbl+8
 
 	bx lr
 

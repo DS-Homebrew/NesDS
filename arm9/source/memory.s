@@ -5,11 +5,11 @@
 	.global void
 	.global empty_R
 	.global empty_W
+	.global rom_W
 	.global ram_R
 	.global ram_W
-	.global sram_R
 	.global sram_W
-	.global rom_R60
+	.global mem_R60
 	.global rom_R80
 	.global rom_RA0
 	.global rom_RC0
@@ -44,6 +44,7 @@ void: @- - - - - - - - -empty function
 @	mov r0,#0	@VS excitebike liked this, read from $3DDE ($2006).
 	bx lr
 @---------------------------------------------------------------------------------
+rom_W:			@write ROM address (error)
 empty_W:		@write bad address (error)
 @---------------------------------------------------------------------------------
 	DEBUGINFO WRITE,addy
@@ -61,78 +62,72 @@ ram_W:	@ram write ($0000-$1FFF)
 	strb r0,[cpu_zpage,addy]
 	bx lr
 @---------------------------------------------------------------------------------
-sram_R:	@sram read ($6000-$7FFF)
-@---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+12		
-	ldrb r0,[r1,addy]
-	bx lr
-@---------------------------------------------------------------------------------
 sram_W:	@sram write ($6000-$7FFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+12		
+	ldr_ r1,m6502MemTbl+12
 	strb r0,[r1,addy]
 	ldr_ r1, emuFlags
 	orr r1, r1, #NEEDSRAM
 	str_ r1, emuFlags
 	bx lr
 @---------------------------------------------------------------------------------
-rom_R60:	@rom read ($6000-$7FFF) (8K)
+mem_R60:	@mem read ($6000-$7FFF) (8K)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+12		@[memmap_tbl+12] = romBase + (page# * 8K)
+	ldr_ r1,m6502MemTbl+12		@[m6502MemTbl+12] = romBase + (page# * 8K)
 	ldrb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 rom_R80:	@rom read ($8000-$9FFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+16
+	ldr_ r1,m6502MemTbl+16
 	ldrb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 rom_RA0:	@rom read ($A000-$BFFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+20
+	ldr_ r1,m6502MemTbl+20
 	ldrb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 rom_RC0:	@rom read ($C000-$DFFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+24
+	ldr_ r1,m6502MemTbl+24
 	ldrb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 rom_RE0:	@rom read ($E000-$FFFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+28
+	ldr_ r1,m6502MemTbl+28
 	ldrb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 mem_W80:	@rom write ($8000-$9FFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+16
+	ldr_ r1,m6502MemTbl+16
 	strb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 mem_WA0:	@rom write ($A000-$BFFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+20
+	ldr_ r1,m6502MemTbl+20
 	strb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 mem_WC0:	@rom write ($C000-$DFFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+24
+	ldr_ r1,m6502MemTbl+24
 	strb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 mem_WE0:	@rom write ($E000-$FFFF)
 @---------------------------------------------------------------------------------
-	ldr_ r1,memmap_tbl+28
+	ldr_ r1,m6502MemTbl+28
 	strb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
-@rom_R	@rom read ($8000-$FFFF) (actually $6000-$FFFF now)
+@mem_R	@mem read ($8000-$FFFF) (actually $6000-$FFFF now)
 @---------------------------------------------------------------------------------
-@	adr r2,memmap_tbl
+@	adr r2,m6502MemTbl
 @	ldr r1,[r2,r1,lsr#11] @r1=addy & 0xe000
 @	ldrb r0,[r1,addy]
 @	bx lr
@@ -191,7 +186,7 @@ NES_DISK:
 .align 4
 
 rom_files:
-	.skip MAXFILES * 64 + MAXFILES * 4	@this will take a lot of memory. filename shoudnot be longer than 64 in average.
+	.skip MAXFILES * 64 + MAXFILES * 4	@this will take a lot of memory. filename should not be longer than 64 in average.
 rom_start:
 	.skip 0x40000 + 16		@this is the bigest size for FDS game.
 NES_DRAM:				@if the game is a FDS one, this is available. otherwise not.

@@ -37,10 +37,10 @@ mapper5init:
 	.word void,void,void,void
 
 	adr r1,write0
-	str_ r1,writemem_tbl+8
+	str_ r1,m6502WriteTbl+8
 
 	adr r1,mmc5_r
-	str_ r1,readmem_tbl+8
+	str_ r1,m6502ReadTbl+8
 
 	mov r0,#3
 	strb_ r0,prgsize
@@ -338,7 +338,7 @@ mmc5_c00w:
 	ldr r2, =NDS_BG+0x2000
 	b writeBG
 @---------------------------------------------------------------------------------
-@ never reach here, the NES_XRAM is read from memmap_tbl
+@ never reach here, the NES_XRAM is read from m6502MemTbl
 mmc5_c00r:
 	ldr r1, =NES_XRAM - 0x4000
 	ldrb r0, [r1, addy]

@@ -57,14 +57,14 @@ mapper198init:
 	bl setbank_ppu
 
 	adr r0, readl
-	str_ r0, readmem_tbl+8
+	str_ r0, m6502ReadTbl+8
 	adr r0, writel
-	str_ r0, writemem_tbl+8
+	str_ r0, m6502WriteTbl+8
 /*
 	adr r0, readh
-	str_ r0, readmem_tbl+12
+	str_ r0, m6502ReadTbl+12
 	adr r0, writeh
-	str_ r0, writemem_tbl+12
+	str_ r0, m6502WriteTbl+12
 */
 	ldmfd sp!, {pc}
 

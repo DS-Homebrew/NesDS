@@ -89,7 +89,7 @@ PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 	stmfd sp!,{r3-r8,lr}
 
 	and r1,r0,#0xe0
-	adr_ addy,memmap_tbl
+	adr_ addy,m6502MemTbl
 	ldr addy,[addy,r1,lsr#3]
 	and r0,r0,#0xff
 	add addy,addy,r0,lsl#8	@addy=DMA source
@@ -372,7 +372,7 @@ joy2state: .byte 0
 joy3state: .byte 0      
 joy0serial: .word 0
 joy1serial: .word 0
-@nrplayers DCD 0	@Number of players in multilink.
+@nrplayers .long 0	@Number of players in multilink.
 @---------------------------------------------------------------------------------
 joy0_W:		@4016
 @writing operation to reset/clear joypad status.
@@ -438,7 +438,7 @@ joy1_R:		@4017
 	ands r2, r2, #KEY_TOUCH
 	orrne r0, r0, #0x10
 
-	ldr r2, =renderdata
+	ldr r2, =renderData
 
 	ldr r1, =IPC_TOUCH_X
 	ldrh r1, [r1]
@@ -447,7 +447,7 @@ joy1_R:		@4017
 
 	ldr_ r1, lightY
 
-	add r2, r2, r1, lsl#8		@r1 = renderdata
+	add r2, r2, r1, lsl#8		@r2 = renderData
 	ldrb r2, [r2]
 
 	adr r1, bright
@@ -569,26 +569,26 @@ rj5:
 @---------------------------------
 af_fresh:		@adjust the frequency of the auto-fire
 	ldr r2,joyflags
-	ldr_ r1, af_st
+	ldr_ r1, af_state
 	tst r1, #0xff00
-	beq aup
+	beq aUp
 	sub r1, #0x100
-	str_ r1, af_st
+	str_ r1, af_state
 	orr r2, r2, #AUTOFIRE
-	b aend
-aup:
+	b aEnd
+aUp:
 	tst r1, #0xff
-	beq afresh
+	beq aFresh
 	sub r1, r1, #0x1
-	str_ r1, af_st
+	str_ r1, af_state
 	bic r2, r2, #AUTOFIRE
-	b aend
-afresh:
+	b aEnd
+aFresh:
 	ldr_ r1, af_start
 	sub r1, #0x100
-	str_ r1, af_st
+	str_ r1, af_state
 	orr r2, r2, #AUTOFIRE
-aend:
+aEnd:
 	@eor r2,r2,#AUTOFIRE	@toggle autofire state
 	str r2,joyflags
 	

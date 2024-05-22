@@ -37,7 +37,7 @@ mapper91init:
 	str_ r0,scanlineHook
 
 	adr r1,writel
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 
 	ldmfd sp!, {pc}
 @---------------------------------------------------------------------------------

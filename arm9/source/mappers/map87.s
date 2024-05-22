@@ -10,7 +10,7 @@ mapper87init:	@Konami - City Connection, Goonies...
 	.word write87,write87,write87,write87
 
 	adr r1,write87
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 
 	bx lr
 @---------------------------------------------------------------------------------

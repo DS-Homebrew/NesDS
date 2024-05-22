@@ -10,7 +10,7 @@ mapper184init:
 	.word write184,write184,write184,write184
 
 	adr r0,write184
-	str_ r0,writemem_tbl+12
+	str_ r0,m6502WriteTbl+12
 	bx lr
 @---------------------------------------------------------------------------------
 write184:

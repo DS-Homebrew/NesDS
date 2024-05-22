@@ -18,7 +18,7 @@ mapper159init:@		Bandai
 	bic r1,r1,#SRAM			@don't use SRAM on this mapper
 	strb_ r1,cartFlags		@set cartFlags
 	ldr r1,mapper159init
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 
 	ldr r0,=hook
 	str_ r0,scanlineHook

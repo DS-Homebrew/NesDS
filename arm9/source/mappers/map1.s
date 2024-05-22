@@ -115,7 +115,7 @@ write:		@($8000-$9FFF)
 	cmp r2, #0
 	ldreq r0, =NES_SRAM - 0x6000
 	ldrne r0, =NES_SRAM + 0x2000 - 0x6000	@too big.... in vnes, wram is 128k
-	str_ r0,memmap_tbl+12
+	str_ r0,m6502MemTbl+12
 	mov r0, #0
 	strb_ r2, wram_bank
 	strb_ r1, wram_count
@@ -302,7 +302,7 @@ bigprom:
 	tst r0, #0x18
 	ldreq r0, =NES_SRAM - 0x6000
 	ldrne r0, =NES_SRAM + 0x2000 - 0x6000
-	str_ r0,memmap_tbl+12
+	str_ r0,m6502MemTbl+12
 
 b1:
 	cmp r2, #0

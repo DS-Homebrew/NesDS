@@ -364,7 +364,7 @@ void do_quickf(int func)
 		}
 		break;
 	case 11:
-		if(debuginfo[MAPPER] == 20) {		//16 = MAPPER
+		if(debuginfo[MAPPER] == 20) {
 			fdscmdwrite(0);
 		}
 		break;

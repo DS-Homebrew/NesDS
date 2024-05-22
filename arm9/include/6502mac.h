@@ -27,7 +27,7 @@ N = 0x80
 
 .macro encodePC		@translate from 6502 PC to rom offset
 	and r1,m6502_pc,#0xE000
-	adr_ r2,memmap_tbl
+	adr_ r2,m6502ReadTbl
 	ldr r0,[r2,r1,lsr#11]
 	str_ r0,m6502LastBank
 	add m6502_pc,m6502_pc,r0
@@ -127,7 +127,7 @@ N = 0x80
 
 .macro writememabs
 	and r1,addy,#0xe000
-	adr_ r2,writemem_tbl
+	adr_ r2,m6502WriteTbl
 	adr lr,0f
 	ldr pc,[r2,r1,lsr#11]	@in: addy,r0=val(bits 8-31=?)
 0:				@out: r0,r1,r2,addy=?

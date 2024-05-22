@@ -17,10 +17,10 @@ mapper19init:
 	.word map19_8,map19_A,map19_C,map19_E
 
 	adr r1,write0
-	str_ r1,writemem_tbl+8
+	str_ r1,m6502WriteTbl+8
 
 	adr r1,map19_r
-	str_ r1,readmem_tbl+8
+	str_ r1,m6502ReadTbl+8
 
 	adr r0,hook
 	str_ r0,scanlineHook

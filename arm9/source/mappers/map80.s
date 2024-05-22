@@ -16,7 +16,7 @@ mapper80init:	@Taito
 	strb r1,[r0]
 
 	adr r0,write80
-	str_ r0,writemem_tbl+12
+	str_ r0,m6502WriteTbl+12
 	ldr_ r0,romMask
 	tst r0,#0x20000
 	movne r0,#1

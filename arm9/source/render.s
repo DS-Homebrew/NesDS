@@ -6,7 +6,7 @@
 	.global bg_render_bottom
 	.global render_all
 	.global render_sub
-	.global renderdata
+	.global renderData
 	.global renderbgdata
 	.global scanlinenext
 	.global scanlinestart
@@ -38,8 +38,7 @@
 	.global bg_render
 	.global BGwrite_data	
 	.global SPwrite_data	
-	.global rev_data	
-@renderdata = 0x6040000 - 4
+@renderData = 0x6040000 - 4
 
 tileOfs 	= tempData
 ntblAdr 	= tileOfs + 4
@@ -229,8 +228,8 @@ sp_render:
 @r0 = linenumber
 @--------------------------------------------
 	stmfd sp!,{r2-r9, cpu_zpage, addy, lr}
-	ldr r1, =renderdata
-	add r1, r1, r0, lsl#8		@r1 = renderdata
+	ldr r1, =renderData
+	add r1, r1, r0, lsl#8		@r1 = renderData
 	str_ r1, pScn		@store pScn
 	
 	mov r12, #0			@spmax = 0
@@ -466,7 +465,7 @@ bg_render:
 	tst r1, #0x8
 	bne bg_normal
 
-	ldr r1, =renderdata
+	ldr r1, =renderData
 	add r1, r1, r0, lsl#8
 	ldr r0, =nes_palette
 	ldrb r0, [r0]
@@ -482,8 +481,8 @@ bg_normal:
 	stmfd sp!,{r2-r12, r14} @r2-r9, r10, r11, r12, r14
 	@Without Extension Latch
 
-	ldr r1, =renderdata
-	add r1, r1, r0, lsl#8		@r1 = renderdata
+	ldr r1, =renderData
+	add r1, r1, r0, lsl#8		@r1 = renderData
 	ldr_ r2, loopy_shift		@r2 = loopy_shift
 	@rsb r2, r2, #8
 	sub r1, r1, r2			@r1 = pScn = lpScanline+(8-loopy_shift)
@@ -717,7 +716,7 @@ bg_render_bottom:
 	orr r2, r2, r2, lsl#16
 	
 	str r2,[r1]
-	ldr r0, =renderdata
+	ldr r0, =renderData
 	bl dma_async_fix
 	ldmfd sp!,{r0-r2, pc}
 @------------
@@ -733,7 +732,7 @@ bg_btm:
 bg_render_reset:
 @--------------------------------------------
 	stmfd sp!,{r0-r1, lr}
-	ldr r0, =renderdata
+	ldr r0, =renderData
 	ldr r1, =renderbgdata
 	@mov r2, #256
 	bl dma_async
@@ -745,7 +744,7 @@ render_transfer:
 	stmfd sp!,{r0-r2, lr}
 	ldr r2, =0x6040000
 	add r0, r2, r0, lsl#8
-	ldr r1, =renderdata
+	ldr r1, =renderData
 	bl dma_async
 	ldmfd sp!, {r0-r2, pc}
 	
@@ -754,7 +753,7 @@ render_all:
 @--------------------------------------------
 	stmfd sp!,{r0-r2, lr}
 	ldr r0, =0x6000000
-	ldr r1, =renderdata@ + 256 * 8
+	ldr r1, =renderData@ + 256 * 8
 	bl dma_async
 	ldmfd sp!, {r0-r2, pc}
 
@@ -763,7 +762,7 @@ render_sub:
 @--------------------------------------------
 	stmfd sp!,{r0-r4, lr}
 	ldr r0, =0x6200000
-	ldr r1, =renderdata
+	ldr r1, =renderData
 	
 	ldr r4, =all_pix_start
 	ldr r2, [r4]
@@ -785,7 +784,7 @@ render_sub2:
 @--------------------------------------------
 	stmfd sp!,{r0-r2, lr}
 	ldr r0, =0x6200000
-	ldr r1, =renderdata@ + 256 * 8
+	ldr r1, =renderData@ + 256 * 8
 	bl dma_async
 	ldmfd sp!, {r0-r2, pc}
 
@@ -862,7 +861,7 @@ synclp:
 .section .bss, "aw"
 .align 4
 
-renderdata:
+renderData:
 	.word 0
 	.skip 256 * 256 + 16
 renderbgdata:

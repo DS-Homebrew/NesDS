@@ -34,13 +34,13 @@ mapper16init:
 	stmfd sp!, {lr}
 
 	adr r1, writel
-	str_ r1,writemem_tbl+12
+	str_ r1,m6502WriteTbl+12
 
 	ldr r0,=hook
 	str_ r0,scanlineHook
 
 	adr r1, readl
-	str_ r1, readmem_tbl+12
+	str_ r1, m6502ReadTbl+12
 
 	ldr r0, =NES_SRAM
 	bl x24c01_reset
