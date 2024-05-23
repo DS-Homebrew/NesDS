@@ -9,8 +9,6 @@
 extern "C"{
 #endif
 
-extern volatile s16 buffer[MIXBUFSIZE*20];
-
 extern u32 interrupts_to_wait_arm7;
 extern int ipc_region;
 extern void soundinterrupt(void);

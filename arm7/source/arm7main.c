@@ -5,6 +5,8 @@
 #include "audiosys.h"
 #include "handler.h"
 
+#include "arm7.h"
+
 #define MIXFREQ 0x5e00
 #define MIXBUFSIZE 128
 
