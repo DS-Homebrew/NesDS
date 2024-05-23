@@ -27,7 +27,7 @@ N = 0x80
 
 .macro encodePC		@translate from 6502 PC to rom offset
 	and r1,m6502_pc,#0xE000
-	adr_ r2,m6502ReadTbl
+	adr_ r2,m6502MemTbl
 	ldr r0,[r2,r1,lsr#11]
 	str_ r0,m6502LastBank
 	add m6502_pc,m6502_pc,r0
