@@ -98,6 +98,11 @@ extern u32 Wifi_GetIP();
 extern int Wifi_RawTxFrame_NIFI(u16 datalen, u16 rate, u16 * data);
 extern void arm9_synctoarm7Custom();
 extern void Timer_50ms(void);
+
+extern bool Wifi_InitDefault(bool useFirmwareSettings);
+extern u32 Wifi_TxBufferWordsAvailable();
+extern void Wifi_TxBufferWrite(s32 start, s32 len, u16 * data);
+
 #ifdef __cplusplus
 }
 #endif
