@@ -30,8 +30,8 @@ void reg4015interrupt(u32 msg, void *none)
 void writeAPU(u32 val,u32 addr) 
 {
 	if(IPC_APUW - IPC_APUR < 256 && addr != 0x4011 && 
-			((addr > 0x8000 && (debuginfo[16] == 24 || debuginfo[16] == 26)) ||
-			(addr < 0x4018 || debuginfo[16] == 20))) {
+			((addr > 0x8000 && (debuginfo[MAPPER] == 24 || debuginfo[MAPPER] == 26)) ||
+			(addr < 0x4018 || debuginfo[MAPPER] == 20))) {
 		fifoSendValue32(FIFO_USER_07,(addr << 8) | val);
 		IPC_APUW++;
 	}
@@ -364,22 +364,22 @@ void do_quickf(int func)
 		}
 		break;
 	case 11:
-		if(debuginfo[16] == 20) {		//16 = MAPPER
+		if(debuginfo[MAPPER] == 20) {
 			fdscmdwrite(0);
 		}
 		break;
 	case 12:
-		if(debuginfo[16] == 20) {
+		if(debuginfo[MAPPER] == 20) {
 			fdscmdwrite(1);
 		}
 		break;
 	case 13:
-		if(debuginfo[16] == 20) {
+		if(debuginfo[MAPPER] == 20) {
 			fdscmdwrite(2);
 		}
 		break;
 	case 14:
-		if(debuginfo[16] == 20) {
+		if(debuginfo[MAPPER] == 20) {
 			fdscmdwrite(3);
 		}
 		break;

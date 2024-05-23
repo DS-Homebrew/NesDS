@@ -63,13 +63,13 @@ void shex(unsigned char *p,int d,int n) {
 
 void stepdebug()
 {/* 
-	static int framecount = 0;
-	static int line, keys, oldkeys, opcount = 0;
+	static int frameCount = 0;
+	static int line, keys, oldkeys, opCount = 0;
 	unsigned int i, count;
 	i = 0;
-	opcount++;
+	opCount++;
 	if(line == 240 && __scanline == 241) {
-		framecount++;
+		frameCount++;
 		swiWaitForVBlank();
 		//keys = IPC_KEYS;
 		keys &= ~KEY_SELECT;
@@ -83,13 +83,13 @@ void stepdebug()
 		return;
 	}
 	line = __scanline;
-	shex32(ptbuf + 6, framecount);
+	shex32(ptbuf + 6, frameCount);
 	shex16(ptbuf + 20, __scanline);
 	shex16(ptbuf + 32 + 3, __pc - __lastbank);
 	shex8(ptbuf + 32 + 8, *__pc);
 	shex8(ptbuf + 32 + 11, *(__pc + 1));
 	shex8(ptbuf + 32 + 14, *(__pc + 2));
-	shex32(ptbuf + 50, opcount);
+	shex32(ptbuf + 50, opCount);
 	
 	shex8(ptbuf + 64 + 2, __a>>24);
 	shex8(ptbuf + 64 + 7, __x>>24);
@@ -107,8 +107,9 @@ void stepdebug()
 	}
 	
 	count = pstep - stepinfo;
-	if(count > 18 * 4)
+	if(count > 18 * 4) {
 		count = 18 * 4;
+	}
 	for(i = 0; i < count; i++) {
 		shex(ptbuf + 192 + i*8, stepinfo[i] >> 12, 3);
 		if(stepinfo[i] & 0x100) {
@@ -118,6 +119,7 @@ void stepdebug()
 		}
 		shex(ptbuf + 197 + i*8, stepinfo[i], 1);
 	}
+
 	consoletext(0, ptbuf, 0);
 	//memset( ptbuf + 192 + count * 8, 32, (18 * 4 - count) * 8);
 	

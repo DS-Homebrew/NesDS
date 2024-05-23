@@ -105,7 +105,7 @@ dswifix(which is for nifi) src is added.
 Mapper240 added.
 fixed the tmpfile.
 DPCM weakened, sounds better?
-A bug with ppustat fixed. e.g.'teenage mutant ninja turtles'
+A bug with ppuStat fixed. e.g.'teenage mutant ninja turtles'
 A bug with palette fixed.
 Patch update. Battleloads (Europe) <Double Dragons> added.
 SRAM can be saved whatever a game supports.
@@ -452,7 +452,7 @@ IPC			27fff00 -> 2800000	(uncached)
 scratch memory is (Image$$EWRAM$$ZI$$Limit -> 23f8000), used for file list storage, rom storage, game recording
 
 other ptrs:
-	rombase = Image$$EWRAM$$ZI$$Limit
+	romBase = Image$$EWRAM$$ZI$$Limit
 	freemem_start = end of rom
 	freemem_end=23f8000
 	(all of freemem_start -> end is used for recording)

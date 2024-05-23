@@ -1,41 +1,41 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 
 	.global mapper42init
 
- countdown = mapperdata+0
- rombank = mapperdata+1
+ countdown = mapperData+0
+ rombank = mapperData+1
 
 @----------------------------------------------------------------------------
+.section .text,"ax"
+@---------------------------------------------------------------------------------
 mapper42init:
 @----------------------------------------------------------------------------
 	.word chr01234567_,void,void,write3
 	mov addy,lr
 
-	ldr r1,=rom_R60			@Swap in ROM at $6000-$7FFF.
-	str_ r1,readmem_tbl+12
+	ldr r1,=mem_R60			@Swap in ROM at $6000-$7FFF.
+	str_ r1,m6502ReadTbl+12
 	ldr r1,=empty_W		@ROM.
-	str_ r1,writemem_tbl+12
-	
+	str_ r1,m6502WriteTbl+12
+
 	mov r0,#-1
 	bl map89ABCDEF_
-	
+
 @	ldr r0,=MMC3_IRQ_Hook
-@	str r0,scanlinehook
+@	str r0,scanlineHook
 
 	mov r0,#0
 	bl map67_IRQ_Hook
 
-	mov pc,addy
+	bx addy
 
 @----------------------------------------------------------------------------
 write0:		@$8000-8001
 @----------------------------------------------------------------------------
 @	tst addy,#3
-@	movne pc,lr
+@	bxne lr
 	b chr01234567_
 @----------------------------------------------------------------------------
 write3:		@E000-E003
@@ -43,7 +43,7 @@ write3:		@E000-E003
 	and r1,addy,#3
 	ldr pc,[pc,r1,lsl#2]
 nothing:
-	mov pc,lr
+	bx lr
 @----------------------------------------------------------------------------
 commandlist:	.word map67_,cmd1,nothing,nothing
 cmd0:

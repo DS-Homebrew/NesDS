@@ -1,24 +1,24 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper18init
-	prg_xx = mapperdata+0 @4 bytes
-	chr_xx = mapperdata+4 @8 bytes
-	latch = mapperdata+12
-	counter = mapperdata+16
-	irqen = mapperdata+20
+	prg_xx = mapperData+0 @4 bytes
+	chr_xx = mapperData+4 @8 bytes
+	latch = mapperData+12
+	counter = mapperData+16
+	irqen = mapperData+20
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper18init:	@Jaleco SS8806..
 @---------------------------------------------------------------------------------
 	.word write8000,writeA000,writeC000,writeE000
 
 	adr r0,hook
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 write8000:
 @---------------------------------------------------------------------------------
@@ -64,29 +64,29 @@ wE0: @- - - - - - - - - - - - - - -
 	bic r2,r2,#0xF
 	orr r0,r2,r0
 	str_ r0,latch
-	mov pc,lr
+	bx lr
 wE1: @- - - - - - - - - - - - - - -
 	bic r2,r2,#0xF0
 	orr r0,r2,r0,lsl#4
 	str_ r0,latch
-	mov pc,lr
+	bx lr
 wE2: @- - - - - - - - - - - - - - -
 	bic r2,r2,#0xF00
 	orr r0,r2,r0,lsl#8
 	str_ r0,latch
-	mov pc,lr
+	bx lr
 wE3: @- - - - - - - - - - - - - - -
 	bic r2,r2,#0xF000
 	orr r0,r2,r0,lsl#12
 	str_ r0,latch
-	mov pc,lr
+	bx lr
 wF0: @- - - - - - - - - - - - - - -
 	str_ r2,counter
-	mov pc,lr
+	bx lr
 wF1: @- - - - - - - - - - - - - - -
 	and r0,r0,#1
 	strb_ r0,irqen
-	mov pc,lr
+	bx lr
 wF2: @- - - - - - - - - - - - - - -
 	movs r1,r0,lsr#2
 	tst r0,#1

@@ -1,18 +1,17 @@
 #include "equates.h"
 #include "6502mac.h"
+
 	.global soft_render
-	.global dmaCopy_s
 	.global nes_palette
-	.global render_fun
 	.global bg_render_bottom
 	.global render_all
 	.global render_sub
-	.global renderdata
+	.global renderData
 	.global renderbgdata
 	.global scanlinenext
 	.global scanlinestart
 	.global rev_data
-	
+
 	@for crash check
 	.global normal_sp
 	.global dummy_render
@@ -39,13 +38,12 @@
 	.global bg_render
 	.global BGwrite_data	
 	.global SPwrite_data	
-	.global rev_data	
-@renderdata = 0x6040000 - 4
+@renderData = 0x6040000 - 4
 
-tileofs 	= tempdata
-ntbladr 	= tileofs + 4
-attradr 	= ntbladr + 4
-ntbl_x  	= attradr + 4
+tileOfs 	= tempData
+ntblAdr 	= tileOfs + 4
+attrAdr 	= ntblAdr + 4
+ntbl_x  	= attrAdr + 4
 attrsft 	= ntbl_x + 4
 pNTBL 		= attrsft + 4
 pScn		= pNTBL + 4
@@ -59,9 +57,9 @@ Bit2Rev		= SPwrite + 4
 @---------------------------------------------------------------------------------
 scanlinestart:
 @---------------------------------------------------------------------------------
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x18			@tst (bgdisp | spdisp)
-	moveq pc, lr
+	bxeq lr
 	ldr_ r2, loopy_v
 	ldr_ r1, loopy_t
 	ldr r0, =0xFBE0
@@ -75,14 +73,14 @@ scanlinestart:
 	str_ r2, loopy_y		@loopy_y = (loopy_v&0x7000)>>12
 	ldr_ r0, loopy_x
 	str_ r0, loopy_shift		@loopy_shift = loopy_x
-	mov pc, lr
+	bx lr
 
 @---------------------------------------------------------------------------------
 scanlinenext:
 @---------------------------------------------------------------------------------
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x18			@tst (bgdisp | spdisp)
-	moveq pc, lr
+	bxeq lr
 
 	ldr_ r2, loopy_v
 	and r1, r2, #0x7000
@@ -107,13 +105,13 @@ lpvend:
 	and r1, r1, #7
 	str_ r1, loopy_y
 	str_ r2, loopy_v
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------
 soft_render:
 @r0 for scanline r1=free
 @--------------------------------------------
-	ldr_ r1, emuflags
+	ldr_ r1, emuFlags
 	tst r1, #SOFTRENDER
 	bne soft_r
 
@@ -122,28 +120,28 @@ soft_render:
 @for allpixel
 
 	ldr_ r0, scanline
-	ldr_ r1, pixstart
+	ldr_ r1, pixStart
 	cmp r0, r1
-	movcc pc, lr
-	ldr_ r1, pixend
+	bxcc lr
+	ldr_ r1, pixEnd
 	cmp r0, r1
-	movhi pc, lr
+	bxhi lr
 	bne normal_sp
 @wait for vbl sync:
-	ldr_ r0, emuflags
+	ldr_ r0, emuFlags
 	tst r0, #FASTFORWARD
-	movne pc, lr
+	bxne lr
 
-	ldr_ r0, pixstart
+	ldr_ r0, pixStart
 	cmp r0, #0
-	movne pc, lr
+	bxne lr
 
 	stmfd sp!, {r3-r4, lr}
 	bl swiWaitForVBlank
 	ldmfd sp!, {r3-r4, pc}
 
 soft_r:
-	ldrb_ r1, rendercount
+	ldrb_ r1, renderCount
 	cmp r1, #0
 	bne dummy_render
 	ldrb_ r0, scanline/*
@@ -163,11 +161,11 @@ normal_sp:
 	ldr_ r0, scanline
 	bl bg_render
 
-	ldrb_ r0, ppustat		@PPUREG[2] &= ~PPU_SPMAX_FLAG;
+	ldrb_ r0, ppuStat		@PPUREG[2] &= ~PPU_SPMAX_FLAG;
 	bic r0, #0x20
-	strb_ r0, ppustat
+	strb_ r0, ppuStat
 
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x10
 	ldr_ r0, scanline
 	blne sp_render
@@ -176,15 +174,15 @@ normal_sp:
 @--------------------------------------------
 dummy_render:
 @--------------------------------------------
-	ldrb_ r0, ppustat
+	ldrb_ r0, ppuStat
 	bic r0, #0x20
-	strb_ r0, ppustat
+	strb_ r0, ppuStat
 	
-	ldrb_ r0, ppuctrl1
+	ldrb_ r0, ppuCtrl1
 	tst r0, #0x10
-	moveq pc, lr
+	bxeq lr
 	
-	ldrb_ r1, ppuctrl0
+	ldrb_ r1, ppuCtrl0
 	tst r1, #0x20
 	movne r2, #15
 	moveq r2, #7
@@ -204,19 +202,19 @@ dummy_lp:
 	bne dummy_nt
 	
 	cmp r3, #0
-	ldreqb_ r1, ppustat
+	ldreqb_ r1, ppuStat
 	orreq r1, r1, #0x40
-	streqb_ r1, ppustat
+	streqb_ r1, ppuStat
 
 	add r6, r6, #1
 	cmp r6, #8
 	bne dummy_nt
-	ldrb_ r0, ppustat
+	ldrb_ r0, ppuStat
 	orr r0, #0x20
-	strb_ r0, ppustat
+	strb_ r0, ppuStat
 	
 	ldmfd sp!, {r3-r6}
-	mov pc, lr
+	bx lr
 
 dummy_nt:
 	add r3, r3, #1
@@ -224,20 +222,20 @@ dummy_nt:
 	bne dummy_lp
 
 	ldmfd sp!, {r3-r6}
-	mov pc, lr
+	bx lr
 @--------------------------------------------
 sp_render:
 @r0 = linenumber
 @--------------------------------------------
 	stmfd sp!,{r2-r9, cpu_zpage, addy, lr}
-	ldr r1, =renderdata
-	add r1, r1, r0, lsl#8		@r1 = renderdata
+	ldr r1, =renderData
+	add r1, r1, r0, lsl#8		@r1 = renderData
 	str_ r1, pScn		@store pScn
 	
 	mov r12, #0			@spmax = 0
 					@r11 = spraddr, r9 = sp_y, r8 = sp_h, r7 = chr_h, r6 = chr_l, r5 = sp, r4 = i
 	ldr r5, =NES_SPRAM		@r5 = sp
-	ldrb_ r1, ppuctrl0
+	ldrb_ r1, ppuCtrl0
 	tst r1, #0x20
 	movne r8, #15			@r8 = sp_h = (PPUREG[0]&PPU_SP16_BIT)?15:7
 	moveq r8, #7
@@ -253,7 +251,7 @@ sp_lp:
 	cmp r9, r8
 	bhi sp_next
 	
-	ldrb_ r3, ppuctrl0
+	ldrb_ r3, ppuCtrl0
 	tst r3, #0x20			@ PPUREG[0]&PPU_SP16_BIT
 	bne sp16
 sp8:
@@ -303,8 +301,8 @@ show_sp:
 
 	mov r0, r11
 	adr lr, 0f
-	ldr_ pc, ppuchrlatch
-0:	
+	ldr_ pc, ppuChrLatch
+0:
 	ldrb r0, [r5, #2]
 	tst r0, #0x40
 	beq sp_noh
@@ -317,7 +315,7 @@ sp_noh:
 	orr r11, r6, r7			@SPpat = chr_l|chr_h
 	cmp r4, #0
 	bne sp_mask
-	ldrb_ r3, ppustat
+	ldrb_ r3, ppuStat
 	tst r3, #0x40
 	bne sp_mask
 hitcheck:
@@ -334,12 +332,12 @@ hitcheck:
 	ldrb r1, [r2, #1]
 	orr r2, r1, r0, lsl#8
 	mov r0, r2, lsr r7		@r0 = BGmsk = (((WORD)pBGw[BGpos+0]<<8)|(WORD)pBGw[BGpos+1])>>BGsft
-					@still r3 = ppustat
+					@still r3 = ppuStat
 	ands r0, r0, r11
 	beq hitend
 	
 	orr r3, r3, #0x40
-	strb_ r3, ppustat
+	strb_ r3, ppuStat
 hitend:
 	ldmfd sp!, {r6, r7}
 
@@ -445,9 +443,9 @@ sp_attr:
 	ldmfd sp!, {r4, r8-r9}
 	add r12, r12, #1
 	cmp r12, #8
-	ldreqb_ r0, ppustat
+	ldreqb_ r0, ppuStat
 	orreq r0, r0, #0x20
-	streqb_ r0, ppustat
+	streqb_ r0, ppuStat
 	beq sp_end
 
 sp_next:
@@ -463,11 +461,11 @@ sp_end:
 bg_render:
 @r0 = linenumber r1 is free
 @--------------------------------------------
-	ldrb_ r1, ppuctrl1
+	ldrb_ r1, ppuCtrl1
 	tst r1, #0x8
 	bne bg_normal
-	
-	ldr r1, =renderdata
+
+	ldr r1, =renderData
 	add r1, r1, r0, lsl#8
 	ldr r0, =nes_palette
 	ldrb r0, [r0]
@@ -476,49 +474,49 @@ bg_render:
 	mov r2, #256/4
 	b filler
 
-	mov pc, lr
+	bx lr
 
-	
+
 bg_normal:
 	stmfd sp!,{r2-r12, r14} @r2-r9, r10, r11, r12, r14
 	@Without Extension Latch
-		
-	ldr r1, =renderdata
-	add r1, r1, r0, lsl#8		@r1 = renderdata
+
+	ldr r1, =renderData
+	add r1, r1, r0, lsl#8		@r1 = renderData
 	ldr_ r2, loopy_shift		@r2 = loopy_shift
 	@rsb r2, r2, #8
 	sub r1, r1, r2			@r1 = pScn = lpScanline+(8-loopy_shift)
 	str_ r1, pScn			@store pScn
-	
-	ldrb_ r1, ppuctrl0
+
+	ldrb_ r1, ppuCtrl0
 	and r1, r1, #0x10
-	mov r1, r1, lsl#8		@r1 = tileofs
-	str_ r1, tileofs		@store tileofs
-	
+	mov r1, r1, lsl#8		@r1 = tileOfs
+	str_ r1, tileOfs		@store tileOfs
+
 	ldr_ r5, loopy_v		@r3 = loopy_v
 	bic r2, r5, #0xF000		@r2 = loopy_v&0x0FFF
-	add r1, r2, #0x2000		@r1 = ntbladr
-	str_ r1, ntbladr		@store ntbladr
-	
-	and r2, r1, #0x001F		@r2 = ntbl_x  = ntbladr&0x001F
-	and r3, r1, #0x40		
-	mov r3, r3, lsr#4		@r3 = attrsft = (ntbladr&0x0040)>>4
+	add r1, r2, #0x2000		@r1 = ntblAdr
+	str_ r1, ntblAdr		@store ntblAdr
+
+	and r2, r1, #0x001F		@r2 = ntbl_x  = ntblAdr&0x001F
+	and r3, r1, #0x40
+	mov r3, r3, lsr#4		@r3 = attrsft = (ntblAdr&0x0040)>>4
 	str_ r2, ntbl_x			@store ntbl_x
 	str_ r3, attrsft		@store attrsft
-	
+
 	mov r3, r1, lsr#10
 	ldr r2, =vram_map
-	ldr r3, [r2, r3, lsl#2]		@r3 = pNTBL = PPU_MEM_BANK[ntbladr>>10]
+	ldr r3, [r2, r3, lsl#2]		@r3 = pNTBL = PPU_MEM_BANK[ntblAdr>>10]
 	str_ r3, pNTBL
-	
+
 	and r2, r5, #0xC00
 	and r4, r5, #0x380
 	add r1, r2, r4, lsr#4
 	add r1, r1, #0x2300
-	add r1, r1, #0xC0		@r1 = attradr = 0x23C0+(loopy_v&0x0C00)+((loopy_v&0x0380)>>4)
-	bic r1, r1, #0xFC00		@r1 = attradr &= 0x3FF
-	str_ r1, attradr
-	
+	add r1, r1, #0xC0		@r1 = attrAdr = 0x23C0+(loopy_v&0x0C00)+((loopy_v&0x0380)>>4)
+	bic r1, r1, #0xFC00		@r1 = attrAdr &= 0x3FF
+	str_ r1, attrAdr
+
 	mov r12, #0xFF			@not fixed, r12 = cache_attr
 	add r11, r12, #0xFF00		@not fixed, r11 = cache_tile
 	mov r11, r11, lsl#16
@@ -526,22 +524,22 @@ bg_normal:
 	mov r8, #0			@fixed, r8 = 0 ~ 32
 	ldr_ r7, pNTBL			@fixed, r7 = pNTBL
 	ldr_ r6, attr			@fixed, r6 = attr
-	ldr_ r5, ntbladr		@fixed, r5 = ntbladr
+	ldr_ r5, ntblAdr		@fixed, r5 = ntblAdr
 	ldr_ r4, ntbl_x			@fixed, r4 = ntbl_x
-	ldr_ r3, attradr		@fixed, r3 = attradr
-					
+	ldr_ r3, attrAdr		@fixed, r3 = attrAdr
+
 					@not fixed, r3 = chr_h
 					@not fixed, r2 = chr_l
 bglp:
-					@tileadr = tileofs+pNTBL[ntbladr&0x03FF]*0x10+loopy_y
-	ldr_ r0, tileofs
+					@tileadr = tileOfs+pNTBL[ntblAdr&0x03FF]*0x10+loopy_y
+	ldr_ r0, tileOfs
 	bic r1, r5, #0xFC00
 	ldr_ r2, loopy_y
 	ldrb r1, [r7, r1]
 	add r9, r0, r2
 	add r9, r9, r1, lsl#4		@r9 = tileadr, as shown before
-	
-					@attr = ((pNTBL[attradr+(ntbl_x>>2)]>>((ntbl_x&2)+attrsft))&3)<<2;
+
+					@attr = ((pNTBL[attrAdr+(ntbl_x>>2)]>>((ntbl_x&2)+attrsft))&3)<<2;
 	add r0, r3, r4, lsr#2
 	ldrb r0, [r7, r0]
 	and r1, r4, #2
@@ -550,13 +548,13 @@ bglp:
 	mov r0, r0, lsr r1
 	and r0, r0, #3
 	mov r6, r0, lsl#2
-	
+
 	cmp r11, r9
 	cmpeq r12, r6
 	cmpeq r8, #0
 	bne bgnocache
-	
-	
+
+
 	ldr_ r0, pScn
 	sub r2, r0, #8
 	ldrb r1, [r2], #1		@*(LPDWORD)(pScn+0) = *(LPDWORD)(pScn-8)
@@ -591,11 +589,11 @@ bgnocache:
 	ldr r0, [r2, r0, lsl#2]
 	ldrb r11, [r0, r1]!		@r11 = chr_l
 	ldrb r12, [r0, #8]		@r12 = chr_h
-	
+
 	orr r0, r11, r12		@*pBGw = chr_h|chr_l
 	ldr_ r1, BGwrite
 	strb r0, [r1, r8]
-	
+
 	ldr r5, =nes_palette
 	add r5, r5, r6			@r5 = pBGPAL
 	and r0, r11, #0xAA
@@ -604,9 +602,9 @@ bgnocache:
 	and r0, r11, #0x55
 	and r2, r12, #0x55
 	orr r4, r0, r2, lsl#1		@r4 = c2 = (chr_l&0x55)|((chr_h<<1)&0xAA)
-	
+
 	ldr_ r2, pScn			@r2 = pScn
-	
+
 	cmp r8, #0
 	bne 0f				@normal
 
@@ -620,7 +618,7 @@ bgnocache:
 	strccb r0, [r2, #1]		@pScn[1] = pBGPAL[(c2>>6)];
 	bic r3, r3, #0xC0		@clear bit6 bit7
 	bic r4, r4, #0xC0
-	
+
 		cmp r11, #3
 		ldrccb r0, [r5, r3, lsr#4]	@r0 = pBGPAL[(c1>>4)&3]
 		strccb r0, [r2, #2]		@pScn[2] = pBGPAL[(c1>>4)&3]
@@ -629,7 +627,7 @@ bgnocache:
 		strccb r0, [r2, #3]		@pScn[3] = pBGPAL[(c2>>4)&3];
 		bic r3, r3, #0x30		@clear bit4 bit5
 		bic r4, r4, #0x30
-	
+
 		cmp r11, #5
 		ldrccb r0, [r5, r3, lsr#2]	@r0 = pBGPAL[(c1>>2)&3]
 		strccb r0, [r2, #4]		@pScn[4] = pBGPAL[(c1>>2)&3]
@@ -638,13 +636,13 @@ bgnocache:
 		strccb r0, [r2, #5]		@pScn[5] = pBGPAL[(c2>>2)&3];
 		bic r3, r3, #0xC		@clear bit2 bit3
 		bic r4, r4, #0xC
-	
+
 		cmp r11, #7
 		ldrccb r0, [r5, r3]		@r0 = pBGPAL[c1&3]
 		strccb r0, [r2, #6]		@pScn[6] = pBGPAL[c1&3]
 		ldrb r0, [r5, r4]		@r0 = pBGPAL[c2&3]
 		strb r0, [r2, #7]		@pScn[7] = pBGPAL[c2&3];
-	
+
 	ldmfd sp!, {r3 - r5, r11 - r12}
 	b bgnext
 0:
@@ -654,26 +652,26 @@ bgnocache:
 	strb r0, [r2, #1]		@pScn[1] = pBGPAL[(c2>>6)];
 	bic r3, r3, #0xC0		@clear bit6 bit7
 	bic r4, r4, #0xC0
-	
+
 		ldrb r0, [r5, r3, lsr#4]	@r0 = pBGPAL[(c1>>4)&3]
 		strb r0, [r2, #2]		@pScn[2] = pBGPAL[(c1>>4)&3]
 		ldrb r0, [r5, r4, lsr#4]	@r0 = pBGPAL[(c2>>4)&3]
 		strb r0, [r2, #3]		@pScn[3] = pBGPAL[(c2>>4)&3];
 		bic r3, r3, #0x30		@clear bit4 bit5
 		bic r4, r4, #0x30
-	
+
 		ldrb r0, [r5, r3, lsr#2]	@r0 = pBGPAL[(c1>>2)&3]
 		strb r0, [r2, #4]		@pScn[4] = pBGPAL[(c1>>2)&3]
 		ldrb r0, [r5, r4, lsr#2]	@r0 = pBGPAL[(c2>>2)&3]
 		strb r0, [r2, #5]		@pScn[5] = pBGPAL[(c2>>2)&3];
 		bic r3, r3, #0xC		@clear bit2 bit3
 		bic r4, r4, #0xC
-	
+
 		ldrb r0, [r5, r3]		@r0 = pBGPAL[c1&3]
 		strb r0, [r2, #6]		@pScn[6] = pBGPAL[c1&3]
 		ldrb r0, [r5, r4]		@r0 = pBGPAL[c2&3]
 		strb r0, [r2, #7]		@pScn[7] = pBGPAL[c2&3];
-	
+
 	ldmfd sp!, {r3 - r5, r11 - r12}
 
 bgnext:
@@ -683,23 +681,23 @@ bgnext:
 
 	mov r0, r9
 	adr lr, 0f
-	ldr_ pc, ppuchrlatch
+	ldr_ pc, ppuChrLatch
 0:
 	add r4, r4, #1			@ntbl_x += 1
 	cmp r4, #32
-	addne r5, r5, #1		@ntbladr++
+	addne r5, r5, #1		@ntblAdr++
 	bne bgnext1
 
 	mov r4, #0
 	eor r5, r5, #0x1F
-	eor r5, r5, #0x400		@ntbladr ^= 0x41F
+	eor r5, r5, #0x400		@ntblAdr ^= 0x41F
 	and r2, r5, #0x380
 	mov r2, r2, lsr#4
-	add r3, r2, #0x3C0		@attradr = 0x03C0+((ntbladr&0x0380)>>4)
+	add r3, r2, #0x3C0		@attrAdr = 0x03C0+((ntblAdr&0x0380)>>4)
 	mov r2, r5, lsr#10
 	ldr r0, =vram_map
-	ldr r7, [r0, r2, lsl#2]		@pNTBL = PPU_MEM_BANK[ntbladr>>10]
-	
+	ldr r7, [r0, r2, lsl#2]		@pNTBL = PPU_MEM_BANK[ntblAdr>>10]
+
 bgnext1:
 	add r8, r8, #1
 	cmp r8, #33
@@ -718,7 +716,7 @@ bg_render_bottom:
 	orr r2, r2, r2, lsl#16
 	
 	str r2,[r1]
-	ldr r0, =renderdata
+	ldr r0, =renderData
 	bl dma_async_fix
 	ldmfd sp!,{r0-r2, pc}
 @------------
@@ -728,13 +726,13 @@ bg_btm:
 	subs r0, r0, #1
 	bne bg_btm
 	ldmfd sp!,{r0-r2}
-	mov pc,lr
+	bx lr
 
 @--------------------------------------------
 bg_render_reset:
 @--------------------------------------------
 	stmfd sp!,{r0-r1, lr}
-	ldr r0, =renderdata
+	ldr r0, =renderData
 	ldr r1, =renderbgdata
 	@mov r2, #256
 	bl dma_async
@@ -746,7 +744,7 @@ render_transfer:
 	stmfd sp!,{r0-r2, lr}
 	ldr r2, =0x6040000
 	add r0, r2, r0, lsl#8
-	ldr r1, =renderdata
+	ldr r1, =renderData
 	bl dma_async
 	ldmfd sp!, {r0-r2, pc}
 	
@@ -755,7 +753,7 @@ render_all:
 @--------------------------------------------
 	stmfd sp!,{r0-r2, lr}
 	ldr r0, =0x6000000
-	ldr r1, =renderdata@ + 256 * 8
+	ldr r1, =renderData@ + 256 * 8
 	bl dma_async
 	ldmfd sp!, {r0-r2, pc}
 
@@ -764,7 +762,7 @@ render_sub:
 @--------------------------------------------
 	stmfd sp!,{r0-r4, lr}
 	ldr r0, =0x6200000
-	ldr r1, =renderdata
+	ldr r1, =renderData
 	
 	ldr r4, =all_pix_start
 	ldr r2, [r4]
@@ -786,7 +784,7 @@ render_sub2:
 @--------------------------------------------
 	stmfd sp!,{r0-r2, lr}
 	ldr r0, =0x6200000
-	ldr r1, =renderdata@ + 256 * 8
+	ldr r1, =renderData@ + 256 * 8
 	bl dma_async
 	ldmfd sp!, {r0-r2, pc}
 
@@ -806,7 +804,7 @@ synclp2:
 	bne synclp2
 	
 	ldmfd sp!, {r2-r3}
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------
 dma_async:
@@ -829,7 +827,7 @@ dma_async:
 	str r0, [r2], #4
 	str r3, [r2]
 	ldmfd sp!, {r2-r3}
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------
 dma_async_fix:	
@@ -841,7 +839,7 @@ dma_async_fix:
 	str r0, [r2], #4
 	str r3, [r2]
 	ldmfd sp!, {r2-r3}
-	mov pc, lr
+	bx lr
 
 @--------------------------------------------
 dma_sync_fix:	
@@ -858,12 +856,12 @@ synclp:
 	bne synclp
 	
 	ldmfd sp!, {r2-r3}
-	mov pc, lr
+	bx lr
 
 .section .bss, "aw"
 .align 4
 
-renderdata:
+renderData:
 	.word 0
 	.skip 256 * 256 + 16
 renderbgdata:

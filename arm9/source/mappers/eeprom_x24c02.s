@@ -3,16 +3,16 @@
 	.global x24c02_write
 	.global x24c02_read
 @-------------------------------------------
-	peepdata = mapperdata + 64
-	now_state = mapperdata + 68
-	next_state = mapperdata + 72
-	bitcnt = mapperdata + 76
-	addr = mapperdata + 80
-	data = mapperdata + 81
-	sda = mapperdata + 82
-	scl_old = mapperdata + 83
-	sda_old = mapperdata + 84
-	rw = mapperdata + 85
+	peepdata = mapperData + 64
+	now_state = mapperData + 68
+	next_state = mapperData + 72
+	bitcnt = mapperData + 76
+	addr = mapperData + 80
+	data = mapperData + 81
+	sda = mapperData + 82
+	scl_old = mapperData + 83
+	sda_old = mapperData + 84
+	rw = mapperData + 85
 @-------------------------------------------
 X24C02_IDLE = 0			@ Idle
 X24C02_DEVADDR = 1		@ Device address set
@@ -24,7 +24,7 @@ X24C02_NAK = 6			@ Not Acknowledge
 X24C02_ACK_WAIT = 7		@ Acknowledge wait
 
 .section .text, "ax"
-.align 4
+.align 2
 
 @-------------------------------------------
 x24c02_reset:
@@ -41,7 +41,7 @@ x24c02_reset:
 	mov r1, #X24C02_IDLE
 	str_ r1, now_state
 	str_ r1, next_state
-	mov pc, lr
+	bx lr
 
 @-------------------------------------------
 x24c02_write:
@@ -52,9 +52,9 @@ x24c02_write:
 @r5 scl_old_temp
 @r4 sda_old_temp
 
-	ldr_ r2, emuflags
+	ldr_ r2, emuFlags
 	orr r2, r2, #NEEDSRAM
-	str_ r2, emuflags
+	str_ r2, emuFlags
 
 	stmfd sp!, {r3-r9}
 	ldrb_ r3, scl_old
@@ -83,7 +83,7 @@ x24c02_write:
 	mov r2, #0xFF
 	strb_ r2, sda
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 stopcnd:
 	cmp r5, #0
@@ -94,7 +94,7 @@ stopcnd:
 	mov r2, #0xFF
 	strb_ r2, sda
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 sclrise:
 	ands r9, r9, r9
@@ -131,7 +131,7 @@ xdevaddrr:
 	orrne r2, r2, r5, lsl r4
 	strb_ r2, data
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xaddressr:
 	ldr_ r3, bitcnt
@@ -147,7 +147,7 @@ xaddressr:
 	orrne r2, r2, r5, lsl r4
 	strb_ r2, addr
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xreadr:
 	ldr_ r3, bitcnt
@@ -160,12 +160,12 @@ xreadr:
 	movne r4, #1
 	moveq r4, #0
 	strb_ r4, sda
-	
+
 xreadendr:
 	add r3, r3, #1
 	str_ r3, bitcnt
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xwriter:
 	ldr_ r3, bitcnt
@@ -181,19 +181,19 @@ xwriter:
 	add r3, r3, #1
 	str_ r3, bitcnt
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xnakr:
 	mov r2, #0xFF
 	strb_ r2, sda
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xackr:
 	mov r2, #0
 	strb_ r2, sda
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xackwaitr:
 	ands r1, r1, r1
@@ -205,7 +205,7 @@ xackwaitr:
 	ldrb r6, [r4, r5]
 	strb_ r6, data
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 sclfall:
 	ands r8, r8, r8
@@ -255,7 +255,7 @@ xdevaddrf:
 	mov r2, #0
 	str_ r2, bitcnt
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xdev1:
 	mov r2, #X24C02_ADDRESS
@@ -263,7 +263,7 @@ xdev1:
 	mov r2, #0
 	str_ r2, bitcnt
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xdev2:
 	mov r2, #X24C02_NAK
@@ -273,7 +273,7 @@ xdev2:
 	mov r2, #0xff
 	strb_ r2, sda
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xaddressf:
 	ldr_ r4, bitcnt
@@ -291,7 +291,7 @@ xaddressf:
 	mov r2, #0
 	str_ r2, bitcnt
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xreadf:
 	ldr_ r4, bitcnt
@@ -304,7 +304,7 @@ xreadf:
 	@and r0, r0, #0xFF
 	strb_ r0, addr
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xwritef:
 	ldr_ r4, bitcnt
@@ -324,7 +324,7 @@ xwritef:
 	mov r2, #0
 	str_ r2, bitcnt
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xnakf:
 	mov r2, #X24C02_IDLE
@@ -334,7 +334,7 @@ xnakf:
 	mov r2, #0xFF
 	strb_ r2, sda
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xackf:
 	ldr_ r0, next_state
@@ -344,7 +344,7 @@ xackf:
 	mov r0, #0xFF
 	strb_ r0, sda
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
+	bx lr
 
 xackwaitf:
 	ldr_ r0, next_state
@@ -356,23 +356,10 @@ xackwaitf:
 
 xend:
 	ldmfd sp!, {r3-r9}
-	mov pc, lr
-	
+	bx lr
+
 
 @-------------------------------------------
 x24c02_read:
 	ldrb_ r0, sda
-	mov pc, lr
-
-	
-
-	
-
-
-
-
-
-
-	
-
-
+	bx lr

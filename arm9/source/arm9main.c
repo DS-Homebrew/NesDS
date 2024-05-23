@@ -35,7 +35,7 @@ void showversion()
 * description:	NTSC for 60fps, PAL for 50fps. Call this function to sync with NES emulation.
 ******************************/
 void vblankinterrupt() {
-	debuginfo[6]++;
+	debuginfo[VBLS]++;
 	EMU_VBlank();
 	irqDisable(IRQ_VCOUNT);			//we should disable this...
 }
@@ -157,8 +157,8 @@ int main(int _argc, char **_argv) {
 		}
 		if(debuginfo[VBLS]>59) {
 			debuginfo[VBLS]-=60;
-			debuginfo[1] = debuginfo[0];
-			debuginfo[0] = 0;
+			debuginfo[ERR1] = debuginfo[ERR0];
+			debuginfo[ERR0] = 0;
 			debuginfo[FPS]=framecount;
 			framecount=0;
 		}
@@ -173,23 +173,23 @@ int main(int _argc, char **_argv) {
 			oldkey = IPC_KEYS;
 
 			if(keydown & KEY_LEFT) {
-				if(__nsfsongno == 0) {
-					__nsfsongno = nsfheader.TotalSong-1;
+				if(__nsfSongNo == 0) {
+					__nsfSongNo = nsfHeader.TotalSong-1;
 				} else {
-					__nsfsongno--;
+					__nsfSongNo--;
 				}
 			}
 			if(keydown & KEY_RIGHT) {
-				if(++__nsfsongno > nsfheader.TotalSong-1) {
-					__nsfsongno = 0;
+				if(++__nsfSongNo > nsfHeader.TotalSong-1) {
+					__nsfSongNo = 0;
 				}
 			}		
 			if(keydown & KEY_UP) {
-				__nsfplay = 1;
-				__nsfinit = 1;
+				__nsfPlay = 1;
+				__nsfInit = 1;
 			}		
 			if(keydown & KEY_DOWN) {
-				__nsfplay = 0;
+				__nsfPlay = 0;
 				Sound_reset();
 			}
 		}
@@ -269,7 +269,7 @@ void play() {
 		}
 	} else {
 		if (__emuflags & SOFTRENDER) {
-			if (!(forward) && (fcount >= debuginfo[6] && fcount - debuginfo[6] < 10) ) // disable VBlank to speed up emulation.
+			if (!(forward) && (fcount >= debuginfo[VBLS] && fcount - debuginfo[VBLS] < 10) ) // disable VBlank to speed up emulation.
 				swiWaitForVBlank();
 		} else {
 			if(!(forward)) {

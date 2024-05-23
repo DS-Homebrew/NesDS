@@ -1,28 +1,28 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper67init
 	.global map67_IRQ_Hook
-	countdown = mapperdata+0
-	irqen = mapperdata+4
-	suntoggle = mapperdata+5
+	countdown = mapperData+0
+	irqen = mapperData+4
+	suntoggle = mapperData+5
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper67init:	@Sunsoft, Fantazy Zone 2 (J)
 @---------------------------------------------------------------------------------
 	.word write0,write1,write2,write3
 
 	adr r0,map67_IRQ_Hook
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 write0:		@8800,9800
 @---------------------------------------------------------------------------------
 	tst addy,#0x0800
-	moveq pc,lr
+	bxeq lr
 	tst addy,#0x1000
 	beq chr01_
 	b   chr23_
@@ -30,7 +30,7 @@ write0:		@8800,9800
 write1:		@A800-B800
 @---------------------------------------------------------------------------------
 	tst addy,#0x0800
-	moveq pc,lr
+	bxeq lr
 	tst addy,#0x1000
 	beq chr45_
 	b   chr67_
@@ -41,7 +41,7 @@ write2:		@C000,C800,D800
 	movne r1,#0
 	strneb_ r1,suntoggle
 	strneb_ r0,irqen
-	movne pc,lr
+	bxne lr
 
 	ldrb_ r1,suntoggle
 	cmp r1,#0
@@ -49,12 +49,12 @@ write2:		@C000,C800,D800
 	strneb_ r0,countdown
 	eor r1,r1,#1
 	strb_ r1,suntoggle
-	mov pc,lr
+	bx lr
 @---------------------------------------------------------------------------------
 write3:		@E800,F800
 @---------------------------------------------------------------------------------
 	tst addy,#0x0800
-	moveq pc,lr
+	bxeq lr
 	tst addy,#0x1000
 	bne map89AB_
 	b mirrorKonami_

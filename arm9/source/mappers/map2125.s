@@ -1,17 +1,17 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 @---------------------------------------------------------------------------------
 	.global mapper21init
 	.global mapper25init
-	latch = mapperdata+0
-	irqen = mapperdata+1
-	k4irq = mapperdata+2
-	counter = mapperdata+3
-	k4sel = mapperdata+4
-	k4map1 = mapperdata+5
-	chr_xx = mapperdata+8 @16 bytes
+	latch = mapperData+0
+	irqen = mapperData+1
+	k4irq = mapperData+2
+	counter = mapperData+3
+	k4sel = mapperData+4
+	k4map1 = mapperData+5
+	chr_xx = mapperData+8 @16 bytes
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper21init:	@gradius 2, wai wai world 2..
 mapper25init:
@@ -32,7 +32,7 @@ write9000:
 	ands addy,addy,#3
 	beq mirrorKonami_
 	cmp addy,#1
-	movne pc,lr
+	bxne lr
 w91:
 	strb_ r0,k4sel
 romswitch:

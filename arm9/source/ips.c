@@ -39,9 +39,11 @@ int ipspatch(char *pfile, int *sizfile, const char *pips, const unsigned int siz
 	if(sizips<8||memcmp(pips,"PATCH",5))return 2;
 	if(!pfile)*sizfile=0;
 	while(1){
-		if(offset+3>sizips)return 1;address=read24(pips+offset);offset+=3;
+		if(offset+3>sizips)return 1;
+		address=read24(pips+offset);offset+=3;
 		if(address==0x454f46&&offset==sizips)break;
-		if(offset+2>sizips)return 1;size=read16(pips+offset);offset+=2;
+		if(offset+2>sizips)return 1;
+		size=read16(pips+offset);offset+=2;
 		if(size){
 			if(offset+size>sizips)return 1;
 			if(!pfile){
@@ -54,7 +56,8 @@ int ipspatch(char *pfile, int *sizfile, const char *pips, const unsigned int siz
 			memcpy(pfile+address,pips+offset,size);
 			offset+=size;
 		}else{
-			if(offset+3>sizips)return 1;size=read16(pips+offset);offset+=2;
+			if(offset+3>sizips)return 1;
+			size=read16(pips+offset);offset+=2;
 			if(!pfile){
 				if(*sizfile<address+size)*sizfile=address+size;
 				offset++;

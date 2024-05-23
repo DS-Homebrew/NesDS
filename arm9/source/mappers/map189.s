@@ -1,37 +1,37 @@
 @---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper189init
 	.word write0, write1, write2, write3
-	
-	reg0 = mapperdata
-	reg1 = mapperdata+1
-	reg2 = mapperdata+2
-	reg3 = mapperdata+3
-	reg4 = mapperdata+4
-	reg5 = mapperdata+5
-	reg6 = mapperdata+6
-	reg7 = mapperdata+7
-	
-	chr01 = mapperdata+8
-	chr23 = mapperdata+9
-	chr4  = mapperdata+10
-	chr5  = mapperdata+11
-	chr6  = mapperdata+12
-	chr7  = mapperdata+13
-	
-	irq_enable	= mapperdata+20
-	irq_counter	= mapperdata+21
-	irq_latch	= mapperdata+22
-	patch		= mapperdata+24
-	lwd		= mapperdata+25
 
-	datar0		= mapperdata+26
+	reg0 = mapperData
+	reg1 = mapperData+1
+	reg2 = mapperData+2
+	reg3 = mapperData+3
+	reg4 = mapperData+4
+	reg5 = mapperData+5
+	reg6 = mapperData+6
+	reg7 = mapperData+7
 
-	
+	chr01 = mapperData+8
+	chr23 = mapperData+9
+	chr4  = mapperData+10
+	chr5  = mapperData+11
+	chr6  = mapperData+12
+	chr7  = mapperData+13
+
+	irq_enable	= mapperData+20
+	irq_counter	= mapperData+21
+	irq_latch	= mapperData+22
+	patch		= mapperData+24
+	lwd		= mapperData+25
+
+	datar0		= mapperData+26
+
+
+@---------------------------------------------------------------------------------
+.section .text,"ax"
 @---------------------------------------------------------------------------------
 mapper189init:
 @---------------------------------------------------------------------------------
@@ -40,10 +40,10 @@ mapper189init:
 	mov r0, #0
 	str_ r0, reg0
 	str_ r0, reg4
-	
+
 	mov r0, #-1
 	bl map89ABCDEF_
-	
+
 	mov r0, #0
 	strb_ r0, chr01
 	mov r0, #2
@@ -56,19 +56,19 @@ mapper189init:
 	strb_ r0, chr6
 	mov r0, #7
 	strb_ r0, chr7
-	
+
 	bl setbank_ppu
-	
+
 	mov r0, #0
 	str_ r0, irq_enable
 	strb_ r0, patch
-	
+
 	adr r0, hsync
-	str_ r0,scanlinehook
+	str_ r0,scanlineHook
 
 	adr r0, writel
-	str_ r0, writemem_tbl+12
-	str_ r0, writemem_tbl+8
+	str_ r0, m6502WriteTbl+12
+	str_ r0, m6502WriteTbl+8
 
 	ldr_ r0, prgcrc
 	ldr r1, =0x2A9E
@@ -83,7 +83,7 @@ writel:
 	bcc IO_W
 
 	strb_ r0, datar0
-	
+
 	stmfd sp!, {lr}
 	mov r1, addy, lsr#8
 	cmp r1, #0x41
@@ -98,7 +98,7 @@ writel:
 	bne chpatch
 	and r0, r0, #0x3
 	bl map89ABCDEF_
-	
+
 chpatch:
 
 	ldrb_ r0, patch
@@ -186,7 +186,7 @@ setbank_ppu:
 	ldrb_ r0, reg0
 	tst r0, #0x80
 	beq 0f
-	
+
 	mov r1, #4
 	ldrb_ r0, chr01
 	bl chr1k
@@ -214,7 +214,7 @@ setbank_ppu:
 	ldrb_ r0, chr7
 	bl chr1k
 	ldmfd sp!, {pc}
-	
+
 0:
 	mov r1, #0
 	ldrb_ r0, chr01
@@ -250,15 +250,15 @@ hsync:
 	ldr_ r0, scanline
 	cmp r0, #240
 	bcs hk
-	
-	ldrb_ r1, ppuctrl1
+
+	ldrb_ r1, ppuCtrl1
 	tst r1, #0x18
 	beq hk
-	
+
 	ldrb_ r1, irq_enable
 	ands r1, r1, r1
 	beq hk
-	
+
 	ldrb_ r1, irq_counter
 	subs r1, r1, #1
 	strb_ r1, irq_counter
@@ -294,26 +294,26 @@ write1:
 @------------------------------------
 	tst r0, #1
 	b mirror2V_
-	
+
 @------------------------------------
 write2:
 @------------------------------------
 	tst addy, #1
 	bne wc001
-	
+
 	strb_ r0, irq_counter
-	mov pc, lr
+	bx lr
 
 wc001:
 	strb_ r0, irq_latch
-	mov pc, lr
-	
+	bx lr
+
 @------------------------------------
 write3:
 @------------------------------------
 	and r0, addy, #1
 	strb_ r0, irq_enable
-	mov pc, lr
+	bx lr
 @------------------------------------
 a5000xordat:
 .byte 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x49, 0x19, 0x09, 0x59, 0x49, 0x19, 0x09

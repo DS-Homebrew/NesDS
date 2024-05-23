@@ -33,14 +33,13 @@
 	.global __lastbank
 	.global __sp
 	.global __scanline
-	.global __nes_chr_map
 	.global __memmap_tbl
 	.global __rombase
 	.global debugstep
 	.global __rendercount
 	.global __barcode
 	.global __barcode_out
-	.global __af_st
+	.global __af_state
 	.global __af_start
 	.global __prgsize16k
 	.global all_pix_start
@@ -48,15 +47,15 @@
 	.global ntsc_pal_reset
 	.global debugwrite
 	.global debugwrite_c
-	.global nsfheader
+	.global nsfHeader
 
-	.global __nsfplay
-	.global __nsfinit
-	.global __nsfsongno
-	.global __nsfsongmode
+	.global __nsfPlay
+	.global __nsfInit
+	.global __nsfSongNo
+	.global __nsfSongMode
 		
-pcmirqbakup = mapperdata+24
-pcmirqcount = mapperdata+28
+pcmirqbakup = mapperData+24
+pcmirqcount = mapperData+28
 @---------------------------------------------------------------------------------
 .section .itcm, "ax"
 @---------------------------------------------------------------------------------
@@ -71,7 +70,7 @@ _00:@   BRK
 	DEBUGCOUNT BRK
 	bl debugstep
 
-	ldr_ r0,lastbank
+	ldr_ r0,m6502LastBank
 	sub r1,m6502_pc,r0
 	add r0,r1,#1
 	push16			@save PC
@@ -189,7 +188,7 @@ _1E:@   ASL $nnnn,X
 _20:@   JSR $nnnn
 @---------------------------------------------------------------------------------
 	ldrb r2,[m6502_pc],#1
-	ldr_ r1,lastbank
+	ldr_ r1,m6502LastBank
 	sub r0,m6502_pc,r1
 	ldrb r1,[m6502_pc]
 	orr m6502_pc,r2,r1,lsl#8
@@ -476,7 +475,7 @@ _6A:@   ROR
 _6C:@   JMP ($nnnn)
 @---------------------------------------------------------------------------------
 	doABS
-	adr_ r1,memmap_tbl
+	adr_ r1,m6502MemTbl
 	and r2,addy,#0xE000
 	ldr r1,[r1,r2,lsr#11]
 	ldrb m6502_pc,[r1,addy]!
@@ -1031,7 +1030,7 @@ _FE:@   INC $nnnn,X
 @---------------------------------------------------------------------------------
 line0:
 	mov r0,#0
-	strb_ r0,ppustat			@vbl clear, sprite0 clear
+	strb_ r0,ppuStat			@vbl clear, sprite0 clear
 	str_ r0,scanline			@reset scanline count
 
 	bl newframe					@display update
@@ -1039,17 +1038,17 @@ line0:
 	mov r0,#0
 	bl ppusync
 
-	ldr_ r0,cyclesperscanline
+	ldr_ r0,cyclesPerScanline
 	ldr_ r1,frame
 	tst r1,#1
 	subeq r0,r0,#CYCLE			@Every other frame has 1/3 less CPU cycle.
 	add cycles,cycles,r0
 	adr r0,line1_to_119
 	str_ r0,nexttimeout
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line1_to_119:
-	ldr_ r0,cyclesperscanline
+	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0
 
 	ldr_ r0,scanline
@@ -1059,20 +1058,20 @@ line1_to_119:
 	beq line119
 	
 	bl ppusync
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line119:
 	bl ppusync
 	
-	ldrb_ r0,ppuctrl0
-	strb_ r0,ppuctrl0frame		@Contra likes this
+	ldrb_ r0,ppuCtrl0
+	strb_ r0,ppuCtrl0Frame		@Contra likes this
 
 	adr addy,line120_to_240
 	str_ addy,nexttimeout
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line120_to_240:
-	ldr_ r0,cyclesperscanline
+	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0
 
 	ldr_ r0,scanline
@@ -1084,7 +1083,7 @@ line120_to_240:
 	streq_ addy,nexttimeout
 	blne ppusync
 
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line241:
 NMIDELAY = CYCLE*21
@@ -1092,10 +1091,10 @@ NMIDELAY = CYCLE*21
 
 	add cycles,cycles,#NMIDELAY	@NMI is delayed a few cycles..
 
-@	ldrb r1,ppustat
+@	ldrb r1,ppuStat
 @	orr r1,r1,#0x90		@vbl & vram write
 	mov r1,#0x80		@vbl flag
-	strb_ r1,ppustat
+	strb_ r1,ppuStat
 
 	adr addy,line241NMI
 	str_ addy,nexttimeout
@@ -1106,7 +1105,7 @@ line241NMI:
 	add r0,r0,#1
 	str_ r0,frame
 
-	ldrb_ r0,ppuctrl0
+	ldrb_ r0,ppuCtrl0
 	tst r0,#0x80
 	beq 0f			@NMI?
 
@@ -1125,7 +1124,7 @@ line241NMI:
 	bl updatesound
 
 	adr lr, 2f
-	ldr_ pc, endframehook
+	ldr_ pc, endFrameHook
 2:
 	ldmfd sp!,{m6502_nz-m6502_pc,globalptr,cpu_zpage,pc}
 
@@ -1156,7 +1155,7 @@ NSF_Run:
 	ldr r2, =0x2000/4
 	bl filler
 0:
-	ldr_ r0,cyclesperscanline
+	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0, lsl#14
 
 	ldr addy, =0x4015
@@ -1184,33 +1183,33 @@ NSF_Run:
 	
 	mov r0, #0
 	str_ r0, nsfinit
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 
 noinit:
-	ldr_ r0,cyclesperscanline
+	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0, lsl#8
 
-	ldr_ r1,lastbank
+	ldr_ r1,m6502LastBank
 	sub m6502_pc,m6502_pc,r1
 	cmp m6502_pc, #0x4700
-	ldrne_ pc,scanlinehook
+	ldrne_ pc,scanlineHook
 
 	ldr m6502_pc, =0x4720
 	encodePC
 	ldr r0,=NES_RAM+0x100
 	str_ r0, m6502_s
 	mov m6502_a, #0
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 
 noplay:
-	ldr_ r0,cyclesperscanline
+	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0, lsl#8
 
 	ldr m6502_pc, =0x4700
 	encodePC
 	ldr r0,=NES_RAM+0x100
 	str_ r0, m6502_s
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 
 nsf_out:
 	adr_ r2,cpuregs
@@ -1229,7 +1228,7 @@ EMU_Run:
 	ldmia r0,{m6502_nz-m6502_pc}	@restore 6502 state
 
 
-	ldr_ r0,cyclesperscanline
+	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0
 	
 	mov r0,#241
@@ -1238,26 +1237,26 @@ EMU_Run:
 	adr r1,line242_to_end
 	str_ r1,nexttimeout
 
-	ldr_ r1,emuflags
+	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
 	bne NSF_Run
 
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line242_to_end:
-	ldr_ r0,cyclesperscanline
+	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0
 
 	ldr_ r1,scanline
-	ldr_ r2,lastscanline
+	ldr_ r2,lastScanline
 	add r1,r1,#1
 	str_ r1,scanline
 	cmp r1,r2
-	ldrne_ pc,scanlinehook
+	ldrne_ pc,scanlineHook
 
 	adr addy,line0
 	str_ addy,nexttimeout
-	ldr_ pc,scanlinehook
+	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 pcm_scanlinehook:
 @---------------------------------------------------------------------------------
@@ -1268,7 +1267,7 @@ pcm_scanlinehook:
 		b hk0
 
 	ldr_ r0,pcmirqcount
-@	ldr r1,cyclesperscanline
+@	ldr r1,cyclesPerScanline
 @	subs r0,r0,r1,lsr#4
 	subs r0,r0,#121			@Fire Hawk=122
 	str_ r0,pcmirqcount
@@ -1302,7 +1301,7 @@ irq6502:
 @---------------------------------------------------------------------------------
 Vec6502:
 @---------------------------------------------------------------------------------
-	ldr_ r0,lastbank
+	ldr_ r0,m6502LastBank
 	sub r0,m6502_pc,r0
 	push16					@save PC
 
@@ -1313,7 +1312,7 @@ VecCont:
 	orr cycles,cycles,#CYC_I	@disable IRQ
 @	bic cycles,cycles,#CYC_D	@and decimal mode
 
-	ldr_ r0,memmap_tbl+7*4
+	ldr_ r0,m6502MemTbl+7*4
 	ldrb m6502_pc,[r0,r12]!
 	ldrb r2,[r0,#1]
 	orr m6502_pc,m6502_pc,r2,lsl#8
@@ -1333,15 +1332,15 @@ ntsc_pal_reset:
 	mov r2, globalptr
 	ldr globalptr,=globals
 
-	ldr_ r0,emuflags
+	ldr_ r0,emuFlags
 	tst r0,#PALTIMING
 	
 	ldreq r1,=341*CYCLE		@NTSC		(113+2/3)*3
 	ldrne r1,=320*CYCLE		@PAL		(106+9/16)*3
-	str_ r1,cyclesperscanline
+	str_ r1,cyclesPerScanline
 	ldreq r1,=261			@NTSC
 	ldrne r1,=311			@PAL
-	str_ r1,lastscanline
+	str_ r1,lastScanline
 	mov globalptr, r2
 
 	bx lr
@@ -1357,7 +1356,7 @@ CPU_reset:	@called by loadcart (r0-r9 are free to use)
 	mov m6502_x,#0
 	mov m6502_y,#0
 	mov m6502_nz,#0
-	adr_ m6502_rmem,readmem_tbl
+	adr_ m6502_rmem,m6502ReadTbl
 	ldr r0,=NES_RAM+0x100
 	str_ r0,m6502_s		@S=0xFD (0x100-3)
 	mov cycles,#0		@D=0, C=0, V=0, I=1 disable IRQ.
@@ -1409,25 +1408,25 @@ op_table:
 	.word _D0,_D1,_xx,_xx,_xx,_D5,_D6,_xx,_D8,_D9,_xx,_xx,_xx,_DD,_DE,_xx
 	.word _E0,_E1,_xx,_xx,_E4,_E5,_E6,_xx,_E8,_E9,_EA,_xx,_EC,_ED,_EE,_xx
 	.word _F0,_F1,_xx,_xx,_xx,_F5,_F6,_xx,_F8,_F9,_xx,_xx,_xx,_FD,_FE,_xx
-  @readmem_tbl
+  @m6502ReadTbl
 	.word ram_R	@$0000
 	.word PPU_R	@$2000
 	.word IO_R	@$4000
-	.word sram_R	@$6000
+	.word mem_R60	@$6000
 	.word rom_R80	@$8000
 	.word rom_RA0	@$A000
 	.word rom_RC0	@$C000
 	.word rom_RE0	@$E000
-  @writemem_tbl
+  @m6502WriteTbl
 	.word ram_W	@$0000
 	.word PPU_W	@$2000
 	.word IO_W	@$4000
 	.word sram_W	@$6000
-	.word rom_W80	@$8000
-	.word rom_WA0	@$A000
-	.word rom_WC0	@$C000
-	.word rom_WE0	@$E000
-   @memmap_tbl
+	.word mem_W80	@$8000
+	.word mem_WA0	@$A000
+	.word mem_WC0	@$C000
+	.word mem_WE0	@$E000
+   @m6502MemTbl
 __memmap_tbl:
 	.word NES_RAM		@$0000   0000-7fff
 	.word NES_XRAM-0x2000	@$2000    should
@@ -1453,16 +1452,16 @@ __pc:
 __sp:
 	.word 0 @m6502_s:
 __lastbank:
-	.word 0 @lastbank: last memmap added to PC (used to calculate current PC)
+	.word 0 @m6502LastBank: last memmap added to PC (used to calculate current PC)
 
 	.word 0 @nexttimeout:  jump here when cycles runs out
 __scanline:
 	.word 0 @scanline
-	.word 0 @scanlinehook
+	.word 0 @scanlineHook
 frametotal:		@let ui.c see frame count for savestates
 	.word 0 @frame
-	.word 0 @cyclesperscanline (341*CYCLE or 320*CYCLE)
-	.word 0 @lastscanline (261 or 311)
+	.word 0 @cyclesPerScanline (341*CYCLE or 320*CYCLE)
+	.word 0 @lastScanline (261 or 311)
 
 	.word 0 @(unused, for alignment)
 	
@@ -1470,60 +1469,59 @@ frametotal:		@let ui.c see frame count for savestates
 
 FPSValue:
 	.word 0
-	.word 0 @adjustblend
+	.word 0 @adjustBlend
 ppustate:
-	.word 0 @vramaddr
-	.word 0 @vramaddr2 (temp)
+	.word 0 @vramAddr
+	.word 0 @vramAddr2 (temp)
 	.word 0 @scrollX
 	.word 0 @scrollY
 	.word 0 @scrollYtemp
 	.word 0 @sprite0y
-	.word 0 @readtemp
-	.word 0 @bg0cnt (mirroring control)
+	.word 0 @readTemp
+	.word 0 @bg0Cnt (mirroring control)
 
 	.byte 0 @sprite0x
-	.byte 1 @vramaddrinc
-	.byte 0 @ppustat
+	.byte 1 @vramAddrInc
+	.byte 0 @ppuStat
 	.byte 0 @toggle
-	.byte 0 @ppuctrl0
-	.byte 0 @ppuctrl0frame	;state of $2000 at frame start
-	.byte 0 @ppuctrl1
-	.byte 0 @ppuoamadr
+	.byte 0 @ppuCtrl0
+	.byte 0 @ppuCtrl0Frame	;state of $2000 at frame start
+	.byte 0 @ppuCtrl1
+	.byte 0 @ppuOamAdr
 __nes_chr_map:
-	.skip 16	@nes_chr_map 	VROM map for 0000-1FFF (1k bank numbers)
+	.skip 16	@nesChrMap 	VROM map for 0000-1FFF (1k bank numbers)
 	
-	.word 0 @vrommask
-	.word 0 @vrombase
+	.word 0 @vromMask
+	.word 0 @vromBase
 
 @ppustate end
 @**!! update load/savestate if you move things around in here
 
 @--- cart ---
 
-	.word void 	@newframehook.
-	.word void 	@endframehook, for some special VRAM mirrorings.
+	.word void 	@newFrameHook.
+	.word void 	@endFrameHook, for some special VRAM mirrorings.
 __hblankhook:
-	.word void	@hblankhook, for games that need to do something when h-blank occurs.
-	.word void	@ppuchrlatch
+	.word void	@hblankHook, for games that need to do something when h-blank occurs.
+	.word void	@ppuChrLatch
 mapperstate:
-	.skip 96	@mapperdata
+	.skip 96	@mapperData
 
 romstart:
 __rombase:
-	.word 0 	@rombase
+	.word 0 	@romBase
 	
 @add others
-	.word 0 	@rommask
-	.word 0 	@romnumber
-	.word 0 	@prgsize8k
+	.word 0 	@romMask
+	.word 0 	@prgSize8k
 __prgsize16k:
-	.word 0 	@prgsize16k
-	.word 0 	@prgsize32k
+	.word 0 	@prgSize16k
+	.word 0 	@prgSize32k
 __emuflags:
-	.word 0 	@emuflags
+	.word 0 	@emuFlags
 	.word 0		@prgcrc
 
-	.word 0		@lighty
+	.word 0		@lightY
 
 softrdata:
 	.word 0 	@loopy_t
@@ -1533,8 +1531,8 @@ softrdata:
 	.word 0 	@loopy_shift
 	.word 0 	@bglastline
 __rendercount:
-	.word 0 	@rendercount
-		@tempdata
+	.word 0 	@renderCount
+		@tempData
 	.word 0		@tileofs
 	.word 0		@ntbladr
 	.word 0		@attradr
@@ -1549,16 +1547,16 @@ __rendercount:
 	.word rev_data	@pBit2Rev
 	.skip 4 * (20 - 12)
 
-nsfheader:
+nsfHeader:
 	.skip 128
 
-__nsfplay:
+__nsfPlay:
 	.word 0
-__nsfinit:
+__nsfInit:
 	.word 0
-__nsfsongno:
+__nsfSongNo:
 	.word 0
-__nsfsongmode:
+__nsfSongMode:
 	.word 0
 
 all_pix_start:
@@ -1566,14 +1564,14 @@ all_pix_start:
 all_pix_end:
 	.word 0
 
-__af_st:
-	.word 0		@af_st
+__af_state:
+	.word 0		@af_state
 __af_start:
 	.word 0x101	@af_start 30 fps
 __palsyncline:
 	.word 0
 __cartflags:
-	.byte 0 	@cartflags
+	.byte 0 	@cartFlags
 __barcode:
 	.byte 0
 __barcode_out:

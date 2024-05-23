@@ -33,9 +33,9 @@ int debugdump() {
 	u32 *p;
 	char **cc;
 
-	debuginfo[13]=IPC_ALIVE;
-	debuginfo[14]=IPC_TMP0;
-	debuginfo[15]=IPC_TMP1;
+	debuginfo[ALIVE]=IPC_ALIVE;
+	debuginfo[TMP0]=IPC_TMP0;
+	debuginfo[TMP1]=IPC_TMP1;
 	
 	p=debuginfo;
 	cc=debugtxt;
@@ -61,39 +61,39 @@ int debugdump() {
 	if(count++ != 20)
 		return 0;*/
 
-	debuginfo[21] = __emuflags;
+	debuginfo[EMUFLAG] = __emuflags;
 	if(1 && (__emuflags & NSFFILE)) {
 		u32 *ip=(u32*)&mapperstate;
 		consoletext	(64 * 4 + 0 * 32, "version", 0);
-		hex8		(64 * 4 + 0 * 32 + 18, nsfheader.Version);
+		hex8		(64 * 4 + 0 * 32 + 18, nsfHeader.Version);
 		consoletext	(64 * 4 + 1 * 32, "startson", 0);
-		hex8		(64 * 4 + 1 * 32 + 18, nsfheader.StartSong);
+		hex8		(64 * 4 + 1 * 32 + 18, nsfHeader.StartSong);
 		consoletext	(64 * 4 + 2 * 32, "totalsong", 0);
-		hex8		(64 * 4 + 2 * 32 + 18, nsfheader.TotalSong);
+		hex8		(64 * 4 + 2 * 32 + 18, nsfHeader.TotalSong);
 		consoletext	(64 * 4 + 3 * 32, "LoadAddr", 0);
-		hex16		(64 * 4 + 3 * 32 + 18, nsfheader.LoadAddress);
+		hex16		(64 * 4 + 3 * 32 + 18, nsfHeader.LoadAddress);
 		consoletext	(64 * 4 + 4 * 32, "InitAddr", 0);
-		hex16		(64 * 4 + 4 * 32 + 18, nsfheader.InitAddress);
+		hex16		(64 * 4 + 4 * 32 + 18, nsfHeader.InitAddress);
 		consoletext	(64 * 4 + 5 * 32, "PlayAddr", 0);
-		hex16		(64 * 4 + 5 * 32 + 18, nsfheader.PlayAddress);
+		hex16		(64 * 4 + 5 * 32 + 18, nsfHeader.PlayAddress);
 		for(i=0;i<10;i++) {
 			hex32(64*7+i*32,ip[i]);
 		}
 		
 		consoletext	(64 * 16 + 0 * 32, "songno", 0);
-		hex16		(64 * 16 + 0 * 32 + 18, __nsfsongno);
+		hex16		(64 * 16 + 0 * 32 + 18, __nsfSongNo);
 		consoletext	(64 * 16 + 1 * 32, "songmode", 0);
-		hex16		(64 * 16 + 1 * 32 + 18, __nsfsongmode);
+		hex16		(64 * 16 + 1 * 32 + 18, __nsfSongMode);
 		consoletext	(64 * 16 + 2 * 32, "play", 0);
-		hex16		(64 * 16 + 2 * 32 + 18, __nsfplay);
+		hex16		(64 * 16 + 2 * 32 + 18, __nsfPlay);
 		consoletext	(64 * 16 + 3 * 32, "init", 0);
-		hex16		(64 * 16 + 3 * 32 + 18, __nsfinit);
+		hex16		(64 * 16 + 3 * 32 + 18, __nsfInit);
 
 		
 		for(i = 0; i < 4; i++) {
 			hex32(64 * 20 + i * 32, (u32)__memmap_tbl[i + 4] + 0x2000 * i + 0x8000);
 		}
-	} else if(debuginfo[16] == 20) {
+	} else if(debuginfo[MAPPER] == 20) {
 		u8 *p=(u8*)&mapperstate;//0x7000000;
 		u32 *ip=(u32*)&mapperstate;//0x7000000;
 		for(i=0;i<18;i++) {
