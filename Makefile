@@ -5,7 +5,7 @@ ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
-export TARGET := $(shell basename $(CURDIR))
+export TARGET := nesDS
 export TOPDIR := $(CURDIR)
 
 # GMAE_ICON is the image used to create the game icon, leave blank to use default rule
