@@ -1,16 +1,11 @@
-/*---------------------------------------------------------------------------------
-	derived from the default ARM7 core
----------------------------------------------------------------------------------*/
 #include <nds.h>
 #include <dswifi7.h>
-//#include <maxmod7.h>
 #include "c_defs.h"
 
 void nesmain();
 
-//---------------------------------------------------------------------------------
-void VblankHandler(void) {
-//---------------------------------------------------------------------------------
+void VblankHandler(void) 
+{
 	Wifi_Update();
 }
 
@@ -22,8 +17,11 @@ u8 *bootstub;
 u32 ndstype;
 typedef void (*type_void)();
 type_void bootstub_arm7;
-static void sys_exit(){
-	if(!bootstub_arm7){
+
+static void sys_exit()
+{
+	if(!bootstub_arm7)
+	{
 		if(ndstype>=2)writePowerManagement(0x10, 1);
 		else writePowerManagement(0, PM_SYSTEM_PWR);
 	}
@@ -31,24 +29,24 @@ static void sys_exit(){
 }
 
 extern int APU_paused;
-//---------------------------------------------------------------------------------
-int main() {
-//---------------------------------------------------------------------------------
+int main()
+{
 	readUserSettings();
-
 	irqInit();
 	fifoInit();
 	touchInit();
+
 	// Start the RTC tracking IRQ
 	initClockIRQ();
-
+	// Start Input tracking IRQ 
 	installSystemFIFO();
+	// Start WiFi IPC service
 	installWifiFIFO();
+
 	//irqSet(IRQ_VCOUNT, VcountHandler);
 	irqSet(IRQ_VBLANK, VblankHandler);
 
 	irqEnable(IRQ_TIMER1 | IRQ_VBLANK | IRQ_NETWORK);
-	
 	{
 		ndstype=0;
 		u32 myself = readPowerManagement(4); //(PM_BACKLIGHT_LEVEL);
@@ -58,6 +56,7 @@ int main() {
 
 	bootstub=(u8*)0x02ff4000;
 	bootstub_arm7=(*(u64*)bootstub==0x62757473746F6F62ULL)?(*(type_void*)(bootstub+0x0c)):0;
+
 	setPowerButtonCB(sys_exit); 
 
 	while(!fifoCheckValue32(FIFO_USER_06))		//wait for the value of ipc_region
@@ -67,8 +66,10 @@ int main() {
 	nesmain();
 
 	// Keep the ARM7 mostly idle
-	while (1) {
-		if ( 0 == (REG_KEYINPUT & (KEY_DOWN | KEY_B | KEY_L | KEY_R))) {
+	while (1) 
+	{
+		if ( 0 == (REG_KEYINPUT & (KEY_DOWN | KEY_B | KEY_L | KEY_R))) 
+		{
 			sys_exit();
 		}
 		inputGetAndSend();
