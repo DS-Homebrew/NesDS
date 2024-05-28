@@ -238,6 +238,11 @@ void listrom(int line,int rom,int highlight) {
 		menutext(line,s+1,highlight);
 }
 
+void mixer_reset()
+{
+	fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
+}
+
 /*****************************
 * name:         loadrom
 * function:		load a rom to memory, for NES emulation.
@@ -247,6 +252,8 @@ int loadrom() {
 	FILE *f; // rom file
 	int i; // romsize
 	char *roms; // rom data
+	__emuflags &= ~PALTIMING; // initialize PAL flag
+	mixer_reset(); //Avoid garbled sound issues
 
 	if(strstr(romfilename, ".fds") || strstr(romfilename, ".FDS")) {
 		if ((__emuflags & DISKBIOS) == 0) {
@@ -287,6 +294,19 @@ int loadrom() {
 	if(!is_nsf_file(romfilename, roms)) {
 		adjust_fds(romfilename, roms);
 		romcorrect(roms);
+		 //intitialize sound to avoid garbled sound
+		mixer_reset(); 
+	}
+	 //TODO: Add option to load last savestate after loading a rom
+	 // Prevent audio issues after loading roms, 
+	 // Set the correct timing for APU PAL pitch emulation
+	if ((__emuflags & PALTIMING) == 0)
+	{
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_NTSC);
+		mixer_reset();
+	} else {
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_PAL);
+		mixer_reset();
 	}
 	initcart(roms);
 	IPC_MAPPER = debuginfo[MAPPER];
