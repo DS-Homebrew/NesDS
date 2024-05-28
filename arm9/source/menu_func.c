@@ -296,13 +296,12 @@ void menu_input_start(void)
 	lastbutton = NULL;
 }
 
-
 char *blendnames[] = {
-	"Flicker", "None   ", "","\x7F-lerp ",
+	"Flicker", "  No   ", "","\x7F-lerp ",
 };
 
 char *rendernames[] = {
-	"SP-Perframe", "SP-Pertile ", "Pure-Soft   "
+	"Per Frame", "Per Tile  ", " Software "
 };
 
 char *brightxt[] = {
@@ -310,21 +309,16 @@ char *brightxt[] = {
 };
 
 char *paltxt[] = {
-	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","FireBrandX ","FBXDigiPrim","FBX NES PVM","Wii NES VC ","NES Classic","3DS NES VC "
+	"Loopy's Original","AsquireReal","ChrisCovell",
+	"CrashMan","MattConte","MESS Pal","PasoFami/99",
+	"Quor's Pal ","FireBrandX ","FBX DigPrime",
+	"FBX NES PVM","NES VC","NES Classic Mini","3DS VirtualC"
 };
 
 
 // Console text labels for the Display Settings Page
 void menu_display_start(void)
 {
-	consoletext(64*12 + 4, "Blend:", 0);
-	consoletext(64*12 + 16, blendnames[__emuflags&3], 0x1000);
-	consoletext(64*19 + 4, "Render Type:", 0);
-	consoletext(64*19 + 28, rendernames[(__emuflags >> 6)&3], 0x1000);
-	consoletext(64*4 + 42, "Frame-skip\rPureSoft:", 0);
-	hex8(64*5 + 30*2, soft_frameskip - 1);
-	consoletext(64*11 + 23*2, "Palette\rsync:", 0);
-	consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000); 
 	consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
 	hex8(64*8 + 36, palette_value);
 	consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
@@ -645,9 +639,9 @@ void menu_emu_br(void)
 			}
 		}
 		//consoletext(64*12 + 4, "Blend Type:", 0);
-		consoletext(64*12 + 16, blendnames[__emuflags&3], 0x1000);
+		consoletext(64*9 + 4, blendnames[__emuflags&3], 0x1000);
 		//consoletext(64*19 + 4, "Render Type:", 0);
-		consoletext(64*19 + 28, rendernames[(__emuflags >> 6)&3], 0x1000);
+		consoletext(64*17 + 3, rendernames[(__emuflags >> 6)&3], 0x1000);
 	} else if(lastbutton_cnt < 9) {
 		if(lastbutton_cnt & 1) {
 			if(soft_frameskip > 1)
@@ -657,32 +651,15 @@ void menu_emu_br(void)
 			if(soft_frameskip < 0xf)
 				soft_frameskip++;
 		}
-		hex8(64*5 + 30*2, soft_frameskip - 1);
+		hex8(64*22 + 26, soft_frameskip - 1);
 	}
 	else if(lastbutton_cnt == 9) {
 		__emuflags ^= PALSYNC;
 		if(__emuflags & (SOFTRENDER | PALTIMING))
 			__emuflags &= ~PALSYNC;
-		consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000); 
-	}
-	else if(lastbutton_cnt == 10) {
-		gammavalue++;
-		if (gammavalue > 4) {
-			gammavalue = 0;
-		}
-		consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
-		brightset();
-	}
-	else if(lastbutton_cnt == 11) {
-		palette_value++;
-			if (palette_value > 0xd) {
-				palette_value = 0;
-		}
-		hex8(64*8 + 36, palette_value);
-		consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
-		palset();
-		brightset();
-	}	menu_stat = 3;
+		consoletext(64*6 + 38, __emuflags&PALSYNC ? "\r    On  " : "\r    Off", 0x1000);
+	}	
+	menu_stat = 3;
 }
 
 
@@ -1208,19 +1185,13 @@ void menu_config_func(void)
 	case 1: //manual
 		__emuflags &= ~AUTOSRAM;
 		break;
-	case 2: //On top
-		__emuflags &=~SCREENSWAP;
-		break;
-	case 3: //On sub
-		__emuflags |= SCREENSWAP;
-		break;
-	case 4: //Use Saves Subdir
+	case 2: //Use Saves Subdir
 		use_saves_dir = true;
 		break;
-	case 5: // No Saves Subdir
+	case 3: // No Saves Subdir
 		use_saves_dir = false;
 		break;
-	case 6: //Sound reset
+	case 4: //Sound reset
 		fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
 		break;
 	}
