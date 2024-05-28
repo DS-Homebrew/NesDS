@@ -48,8 +48,20 @@ void writeAPU(u32 val,u32 addr)
 * argument:		none
 * description:		none
 ******************************/
-void Sound_reset() {
+void Sound_reset() 
+{
 	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+}
+
+void SoundUpdate()
+{
+	fifoSendValue32(FIFO_USER_08, FIFO_SOUND_UPDATE);
+}
+
+void soundHardReset()
+{
+    fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+    fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
 }
 
 int last_x, last_y;	//most recently touched coords

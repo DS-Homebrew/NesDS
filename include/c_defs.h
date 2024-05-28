@@ -87,6 +87,8 @@ void menutext(int line,char *s,int selected);
 void clearconsole(void);
 void hideconsole(void);
 void showconsole(void);
+void soundHardReset();
+void SoundUpdate();
 
 //subscreen.c
 int debugdump(void);

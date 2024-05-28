@@ -187,10 +187,11 @@ int main(int _argc, char **_argv) {
 			if(keydown & KEY_UP) {
 				__nsfPlay = 1;
 				__nsfInit = 1;
+				soundHardReset();
 			}		
 			if(keydown & KEY_DOWN) {
 				__nsfPlay = 0;
-				Sound_reset();
+				soundHardReset();
 			}
 		}
 			
