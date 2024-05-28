@@ -118,11 +118,11 @@ int sfreq = SOUND_FREQ(44100);
 // 	return P1_VL;
 // }
 
-int P1_VL = SOUND_VOL(0x3F); // VOL 0x5F
+int P1_VL = SOUND_VOL(0x41); // VOL 0x5F
 int P1_PN = SOUND_PAN(0x20); // PAN 0X20
 
 // Pulse 2
-int P2_VL = SOUND_VOL(0x3E); // VOL 0x5F
+int P2_VL = SOUND_VOL(0x40); // VOL 0x5F
 int P2_PN = SOUND_PAN(0x60); // PAN 0X60
 
 // Triangle
@@ -600,10 +600,11 @@ void fifointerrupt(u32 msg, void *none)			//This should be registered to a fifo 
 			resetAPU();
 			readAPU();
 			break;
-		// case FIFO_SOUND_UPDATE:
-		// 	resetAPU();
-		// 	restartsound(1);
-		// 	break; 	
+		case FIFO_SOUND_UPDATE:
+			resetAPU();
+			readAPU();
+			APU4015Reg();
+			break; 	
 	}
 }
 
