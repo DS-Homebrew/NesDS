@@ -618,48 +618,67 @@ void brightset(void) {
 //PPU_init();
 }
 
-void palset(void) {
-	if(palette_value == 0) {
-	memcpy(nes_rgb,nes_rgb_0,192);
-	}
-	else if(palette_value == 1) {
-	memcpy(nes_rgb,nes_rgb_1,192);
-	}
-	else if(palette_value == 2) {
-	memcpy(nes_rgb,nes_rgb_2,192);
-	}
-	else if(palette_value == 3) {
-	memcpy(nes_rgb,nes_rgb_3,192);	
-	}
-	else if(palette_value == 4) {
-	memcpy(nes_rgb,nes_rgb_4,192);	
-	}
-	else if(palette_value == 5) {
-	memcpy(nes_rgb,nes_rgb_5,192);	
-	}
-	else if(palette_value == 6) {
-	memcpy(nes_rgb,nes_rgb_6,192);	
-	}
-	else if(palette_value == 7) {
-	memcpy(nes_rgb,nes_rgb_7,192);
-	}
-	else if(palette_value == 8) {
-	memcpy(nes_rgb,nes_rgb_8,192);	
-	}
-	else if(palette_value == 9) {
-	memcpy(nes_rgb,nes_rgb_9,192);	
-	}
-	else if(palette_value == 10) {
-	memcpy(nes_rgb,nes_rgb_10,192);	
-	}
-	else if(palette_value == 11) {
-	memcpy(nes_rgb,nes_rgb_11,192);
-	}
-	else if(palette_value == 12) {
-	memcpy(nes_rgb,nes_rgb_12,192);
-	}
-	else if(palette_value == 13) {
-	memcpy(nes_rgb,nes_rgb_13,192);
+// Palette sets. Refactored to cases
+void palset(void)
+{
+	switch (palette_value)
+	{
+	// Loopy's Original
+	case 0:
+		memcpy(nes_rgb,nes_rgb_0,192);
+		break;	
+	// AsquireReal
+	case 1:
+		memcpy(nes_rgb,nes_rgb_1,192);
+		break;
+	// ChrisCovell
+	case 2:
+		memcpy(nes_rgb,nes_rgb_2,192);
+		break;	
+	//CrashMan
+	case 3:
+		memcpy(nes_rgb,nes_rgb_3,192);
+		break;
+	//MAttConte
+	case 4:
+		memcpy(nes_rgb,nes_rgb_4,192);
+		break;
+	// MESS Pal
+	case 5:
+		memcpy(nes_rgb,nes_rgb_5,192);
+		break;
+	// PascFami/99
+	case 6:
+		memcpy(nes_rgb,nes_rgb_6,192);
+		break;
+	// Quor's Pal
+	case 7:
+		memcpy(nes_rgb,nes_rgb_7,192);
+		break;
+	// FirebrandX
+	case 8:
+		memcpy(nes_rgb,nes_rgb_8,192);
+		break;
+	// FBX Dig Prime
+	case 9:
+		memcpy(nes_rgb,nes_rgb_9,192);
+		break;
+	// FBX NES PVM
+	case 10:
+		memcpy(nes_rgb,nes_rgb_10,192);
+		break;
+	// NES VC
+	case 11:
+		memcpy(nes_rgb,nes_rgb_11,192);
+		break;
+	// NES Classic
+	case 12:
+		memcpy(nes_rgb,nes_rgb_12,192);
+		break;
+	// 3DS VC
+	case 13:
+		memcpy(nes_rgb,nes_rgb_13,192);
+		break;
 	}
 };
 
