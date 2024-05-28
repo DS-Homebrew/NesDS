@@ -25,7 +25,7 @@ extern u32 agb_bg_map[];
 
 u8 gammavalue = 0;
 
-u8 nes_rgb[] = { 
+u8 nes_rgb[] = {
 	0x75,0x75,0x75, 0x27,0x1b,0x8f, 0x00,0x00,0xab, 0x47,0x00,0x9f, 0x8f,0x00,0x77, 0xab,0x00,0x13, 0xa7,0x00,0x00, 0x7f,0x0b,0x00,
 	0x43,0x2f,0x00, 0x00,0x47,0x00, 0x00,0x51,0x00, 0x00,0x3f,0x17, 0x1b,0x3f,0x5f, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00,
 	0xbc,0xbc,0xbc, 0x00,0x73,0xef, 0x23,0x3b,0xef, 0x83,0x00,0xf3, 0xbf,0x00,0xbf, 0xe7,0x00,0x5b, 0xdb,0x2b,0x00, 0xcb,0x4f,0x0f,
@@ -107,26 +107,7 @@ void menu_file_start(void)
 
 void menu_game_start(void)
 {
-	consoletext(64*11 + 34, "TIMING:", 0);
-	consoletext(64*11 + 48, (__emuflags&PALTIMING)? "PAL ":"NTSC", 0x1000);
-	consoletext(64*18 + 24, "ALL:", 0);
-	consoletext(64*18 + 32, (__emuflags&ALLPIXELON)? "YES":"NO ", 0x1000);
-}
-
-void menu_game_pal(void)
-{
-	menu_stat = 3;
-	__emuflags |= PALTIMING;
-	ntsc_pal_reset();
-	consoletext(64*11 + 48, "PAL ", 0x1000);
-}
-
-void menu_game_ntsc(void)
-{
-	menu_stat = 3;
-	__emuflags &= ~PALTIMING;
-	ntsc_pal_reset();
-	consoletext(64*11 + 48, "NTSC", 0x1000);
+ return;
 }
 
 void show_all_pixel(void)
@@ -332,6 +313,8 @@ char *paltxt[] = {
 	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","FireBrandX ","FBXDigiPrim","FBX NES PVM","Wii NES VC ","NES Classic","3DS NES VC "
 };
 
+
+// Console text labels for the Display Settings Page
 void menu_display_start(void)
 {
 	consoletext(64*12 + 4, "Blend:", 0);
@@ -345,6 +328,29 @@ void menu_display_start(void)
 	consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
 	hex8(64*8 + 36, palette_value);
 	consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
+	consoletext(64*18 + 24, "ALL:", 0);
+	consoletext(64*18 + 32, (__emuflags&ALLPIXELON)? "YES":"NO ", 0x1000);
+}
+
+// Console text labels for the Emulation Settings Page
+void menu_emu_start(void)
+{   // consoletext(*y + x,)
+	// Shows current setting for Regional timing
+	consoletext(64*4 + 2, "    <Region>", 0);
+	consoletext(64*6 + 13, (__emuflags&PALTIMING)? " PAL":" NTSC", 0x1000);
+	
+	//Screen Filtering Label
+	consoletext(64*9 + 2, "<        Filter>", 0);
+	consoletext(64*9 + 5, blendnames[__emuflags&3], 0x1000);
+	// Render Type Label
+	consoletext(64*17 + 1, "<          Render>", 0);
+	consoletext(64*17 + 3, rendernames[(__emuflags >> 6)&3], 0x1000);
+	// SoftRender FrameSkip
+	consoletext(64*22 + 37, "Frameskip", 0);
+	hex8(64*22 + 26, soft_frameskip - 1);
+
+	consoletext(64*6 + 38, __emuflags&PALSYNC ? "Pltte Sync\r    On" : "Pltte Sync\r    Off", 0x1000);
+
 }
 
 void menu_preset_func(void) {
@@ -504,7 +510,77 @@ void menu_display_adjust(void) {
 	}
 }
 
+// TODO: Refactor everything in this code with cases, 
+// lastbutton_cnt only needs to match a consecutive integer...
 void menu_display_br(void)
+{
+	switch (lastbutton_cnt)
+	{
+	// Gamma Setting	
+	case 0: // button count starts from zero
+			gammavalue++;
+		if (gammavalue > 4) 
+		{
+			gammavalue = 0;
+		}
+		consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
+		brightset();
+		break;
+	// Palette Selector	
+	case 1: // button count starts from zero
+		palette_value++;
+		if (palette_value > 0xd) 
+		{
+			palette_value = 0;
+		}
+		hex8(64*8 + 36, palette_value);
+		consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
+		palset();
+		brightset();
+		break;	
+	case 2: //On top
+		__emuflags &=~SCREENSWAP;
+		break;
+	case 3: //On sub
+		__emuflags |= SCREENSWAP;
+		break;
+	case 4:
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_SWAP);
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);	
+		break;
+	case 5: 
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_NORM);
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+		break;
+	}	
+	menu_stat = 3;
+}
+
+// TODO: ARRANGE ALL FUNCTIONS AND MACROS IN THE SAME ORDER AS THE IN-APP MENU
+void menu_emu_pal(void)
+{
+	menu_stat = 3;
+	__emuflags |= PALTIMING;
+	ntsc_pal_reset();
+	consoletext(64*6 + 12, " PAL ", 0x1000);
+
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAL);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+}
+
+void menu_emu_ntsc(void)
+{
+	menu_stat = 3;
+	__emuflags &= ~PALTIMING;
+	ntsc_pal_reset();
+	consoletext(64*6 + 12, " NTSC", 0x1000);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_NTSC);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+}
+
+// TODO: Refactor everything in this code with cases, 
+// lastbutton_cnt only needs to match a consecutive integer...
+void menu_emu_br(void)
 {
 	if(lastbutton_cnt > 0 && lastbutton_cnt <= 6) {
 		if(lastbutton_cnt <= 3) {
