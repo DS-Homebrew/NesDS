@@ -56,19 +56,28 @@ void menu_file_loadrom(void)
 void menu_file_savestate(void)
 {
 	menu_stat = 3;
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
 	write_savestate(slots_num);
+	fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 }
 
 void menu_file_loadstate(void)
 {
 	menu_stat = 3;
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
 	read_savestate(slots_num);
+	fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 }
 
 void menu_file_savesram(void)
 {
 	menu_stat = 3;
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
 	save_sram();
+	fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 }
 
 void menu_file_slot(void)
@@ -1147,12 +1156,15 @@ char nesdsini[1024];
 
 void menu_saveini(void)
 {
+	//Avoid sound screech during .ini writes
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
 	int pos = 0;
 	int i, j, k;
 
 	menu_stat = 3;
 
-	if (!active_interface) return;
+	if(!active_interface) return;
 
 	inibuf[0] = 0;
 	getcwd(inibuf, 512);
@@ -1170,7 +1182,7 @@ void menu_saveini(void)
 	if(joyflags & B_A_SWAP)	i = 1;
 	else i = 0;
 	ini_putl("nesDSrev2", "BASwap", i, ininame);
-
+	
 	i = __emuflags& 3;
 	ini_putl("nesDSrev2", "Blend", i, ininame);
 
@@ -1213,4 +1225,5 @@ void menu_saveini(void)
 			ini_putl("nesDSrev2", ishortcuts[i], 0, ininame);
 		ini_puts("nesDSrev2", igestures[i], gestures_tbl[i], ininame);
 	}
+	fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 }
