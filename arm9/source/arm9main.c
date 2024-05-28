@@ -266,7 +266,13 @@ void play() {
 					lastsave = maxsaves - 1;
 				loadstate(freemem_start + SAVESTATESIZE * lastsave);
 				EMU_Run();
+			    fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+					//if(is_FF_RW_Muted()) // TODO: Add optional mute for rewind 
+				fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
+					// Rewind Anim
 			}
+			fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+			fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 		}
 	} else {
 		if (__emuflags & SOFTRENDER) {
