@@ -116,3 +116,12 @@ void menu_extra_barcode_start(void);
 void menu_emu_start(void);
 void menu_emu_br(void);
 void show_all_pixel(void);
+//Sound Functions
+void menu_sound_start(void);
+void dummy_sound_function1(void);
+void dummy_sound_function2(void);
+void dummy_sound_function3(void);
+void dummy_sound_function4(void);
+void dummy_sound_function5(void);
+void dummy_sound_function6(void);
+

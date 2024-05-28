@@ -1175,6 +1175,57 @@ void menu_config_start(void)
 	consoletext(64*17 + (use_saves_dir ? 58 : 25), " ", 0x1000);
 }
 
+void menu_sound_start(void)
+{
+	//Pulse Channel 1
+	consoletext(64*7 + 1, "Pulse Channel 1", 0);
+	consoletext(64*7 + ((__emuflags & AUTOSRAM) ? 25 : 58), "*", 0x1000);
+	consoletext(64*7 + ((__emuflags & AUTOSRAM) ? 58 : 25), " ", 0x1000);
+    //Pulse Channel 2
+	consoletext(64*12 + 1, "Pulse Channel 2", 0);
+	consoletext(64*12 + ((__emuflags & SCREENSWAP) ? 58 : 25), "*", 0x1000);
+	consoletext(64*12 + ((__emuflags & SCREENSWAP) ? 25 : 58), " ", 0x1000);
+    //Pulse Channel 2
+	consoletext(64*17 + 1, "Saves dir", 0);
+	consoletext(64*17 + (use_saves_dir ? 25 : 58), "*", 0x1000);
+	consoletext(64*17 + (use_saves_dir ? 58 : 25), " ", 0x1000);
+}
+
+void dummy_sound_function1(void)
+{
+	return printf("Volume Options");
+}
+
+void dummy_sound_function2(void)
+{
+	return printf( "Panning Options");
+}
+
+void dummy_sound_function3(void)
+{
+	return printf("Enable Stereo Sound");
+}
+
+void dummy_sound_function4(void)
+{
+	return printf("Enable Reververation");
+}
+
+void dummy_sound_function5(void)
+{
+	return printf("Swap Duty Cycles");
+}
+
+void dummy_sound_function6(void)
+{
+	return printf("Sound Filters");
+}
+
+// bool is_FF_RW_Muted(void)
+// {
+// 	fread()
+// }
+
 void menu_config_func(void)
 {
 	menu_stat = 3;
