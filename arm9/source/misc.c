@@ -240,7 +240,7 @@ void write_savestate(int num) {
 * argument:		num-> slots number
 * description:		none
 ******************************/
-void read_savestate(int num) {
+u32 read_savestate(u32 num) {
 	FILE *f;
 	int i;
 	u8 *p=(u8*)freemem_start;

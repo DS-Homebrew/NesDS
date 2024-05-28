@@ -164,7 +164,7 @@ int do_touchstrings(touchstring*,int pushstate);
 void load_sram(void);
 void save_sram(void);
 void write_savestate(int num);
-void read_savestate(int num);
+u32 read_savestate(u32 num);
 void ARM9sleep(void);
 void reg4015interrupt(u32 msg, void *none);
 void fdscmdwrite(u8 diskno);
