@@ -114,5 +114,5 @@ void menu_extra_barcode(void);
 void menu_saveini(void);
 void menu_extra_barcode_start(void);
 void menu_emu_start(void);
-
+void menu_emu_br(void);
 void show_all_pixel(void);
