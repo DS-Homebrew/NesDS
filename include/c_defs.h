@@ -1,3 +1,4 @@
+#pragma once
 #ifndef C_DEFS_H
 #define C_DEFS_H
 
@@ -44,12 +45,13 @@
 #define FIFO_WRITEPM 		1
 #define FIFO_APU_PAUSE 		2
 #define FIFO_UNPAUSE 		3
-#define FIFO_APU_RESET 		5
-#define FIFO_SOUND_RESET 	6
-#define FIFO_APU_PAL 	 	7
-#define FIFO_APU_NTSC     	8
-#define FIFO_APU_SWAP 		9
-#define FIFO_APU_NORM 		10
+#define FIFO_APU_RESET 		4
+#define FIFO_SOUND_RESET 	5
+#define FIFO_APU_PAL 	 	6
+#define FIFO_APU_NTSC     	7
+#define FIFO_APU_SWAP 		8
+#define FIFO_APU_NORM 		9
+#define FIFO_SOUND_UPDATE	10
 
 #ifdef ARM9
 
