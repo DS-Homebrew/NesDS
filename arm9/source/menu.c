@@ -65,84 +65,128 @@ struct menu_unit menu_adjust = {
 	.start = menu_adjust_start,
 };
 
-struct menu_item menu_display_items[] = {
-	{
-		.name = "\rAdjust\rScale",
-		.type = 0,
-		.x = 1, .y = 4, .w = 6, .h = 4,
-		.child = &menu_adjust,
-	},
-	{
-		.name = "\r\x7F-lerp",
-		.type = 1,
-		.x = 1, .y = 13, .w = 6, .h = 3,
-		.func = menu_display_br
-	},
-	{
-		.name = "\rFlicker",
-		.type = 1,
-		.x = 10, .y = 13, .w = 7, .h = 3,
-		.func = menu_display_br
-	},
-	{
-		.name = "\rNone",
-		.type = 1,
-		.x = 20, .y = 13, .w = 4, .h = 3,
-		.func = menu_display_br
-	},
-	{
-		.name = "Sprites\rPerframe",
-		.type = 1,
-		.x = 1, .y = 20, .w = 8, .h = 2,
-		.func = menu_display_br
-	},
-	{
-		.name = "Sprites\rPertile",
-		.type = 1,
-		.x = 12, .y = 20, .w = 7, .h = 2,
-		.func = menu_display_br
-	},
-	{
-		.name = "All\rpuresoft",
-		.type = 1,
-		.x = 22, .y = 20, .w = 8, .h = 2,
-		.func = menu_display_br
-	},
-	{
-		.name = "\rDec",
-		.type = 1,
-		.x = 27, .y = 6, .w = 3, .h = 3,
-		.func = menu_display_br
-	},
-	{
-		.name = "\rInc",
-		.type = 1,
-		.x = 21, .y = 6, .w = 3, .h = 3,
-		.func = menu_display_br
-	},
-	{
-		.name = "On\rOr\rOff",
-		.type = 1,
-		.x = 27, .y = 13, .w = 3, .h = 3,
-		.func = menu_display_br
-	},
+struct menu_item menu_display_items[] = 
+{
+	// Gamma
 	{
 		.name = "Gamma:",
 		.type = 1,
-		.x = 9, .y = 4, .w = 5, .h = 1,
+		.x = 1, .y = 4, .w = 5, .h = 1,
 		.func = menu_display_br
 	},
+	// Palette
 	{
 		.name = "Palette:",
 		.type = 1,
-		.x = 9, .y = 7, .w = 7, .h = 1,
+		.x = 1, .y = 7, .w = 7, .h = 1,
 		.func = menu_display_br
+	},
+	// Gfx on Top Screen
+	{
+		.name = "\r Top",
+		.type = 1,
+		.x = 1, .y = 10, .w = 6, .h = 3,
+		.func = menu_display_br
+	},
+	// Gfx on Bottom Screen
+	{
+		.name = "\rBottom",
+		.type = 1,
+		.x = 1, .y = 15, .w = 6, .h = 3,
+		.func = menu_display_br
+	},
+	// Invert Duty Cycle TODO:  Move it to sound settings.
+	{
+		.name = "Invert\r Duty",
+		.type = 1,
+		.x = 20, .y = 15, .w = 7, .h = 3,
+		.func = menu_display_br
+	},
+	{
+		.name = "Normal\r Duty",
+		.type = 1,
+		.x = 20, .y = 10, .w = 7, .h = 3,
+		.func = menu_display_br
+	},
+};
+
+struct menu_item menu_emulation_items[] = {
+	{
+		// Scale Filter Buttons
+		.name = "\x7F-lerp",
+		.type = 1,
+		.x = 1, .y = 11, .w = 6, .h = 1,
+		.func = menu_emu_br
+	},
+	{
+		.name = "Flicker",
+		.type = 1,
+		.x = 9, .y = 11, .w = 7, .h = 1,
+		.func = menu_emu_br
+	},
+	{
+		.name = " Off ",
+		.type = 1,
+		.x = 5, .y = 14, .w = 6, .h = 1,
+		.func = menu_emu_br
+	},
+	{
+		// Render Type Buttons
+		.name = "Frame",
+		.type = 1,
+		.x = 1, .y = 18, .w = 6, .h = 1,
+		.func = menu_emu_br
+	},
+	{
+		.name = " Tile",
+		.type = 1,
+		.x = 9, .y = 18, .w = 7, .h = 1,
+		.func = menu_emu_br
+	},
+	{
+		.name = " Soft ",
+		.type = 1,
+		.x = 1, .y = 21, .w = 6, .h = 1,
+		.func = menu_emu_br
+	},
+	{
+		// Software Render Frameskip Arrows
+		.name = ">",
+		.type = 1,
+		.x = 15, .y = 21, .w = 1, .h = 1,
+		.func = menu_emu_br
+	},
+	{
+		.name = "<",
+		.type = 1,
+		.x = 9, .y = 21, .w = 1, .h = 1,
+		.func = menu_emu_br
+	},
+	{
+		// Palette Sync Enable Button
+		.name = "",
+		.type = 1,
+		.x = 18, .y = 5, .w = 10, .h = 2,
+		.func = menu_emu_br
+	},
+		{
+		// PAL/NTSC Region Timing arrow buttons
+		.name = "< ",
+		.type = 1,
+		.x = 1, .y = 5, .w = 2, .h = 1,
+		.func = menu_emu_ntsc,
+	},
+	{
+		.name = " >",
+		.type = 1,
+		.x = 13, .y = 5, .w = 2, .h = 1,
+		.func = menu_emu_pal,
 	},
 };
 
 struct menu_unit menu_display = {
 	.top = "Display",
-	.subcnt = 12,
+	.subcnt = 6,
 	.start = menu_display_start,
 	.item = menu_display_items,
 };
@@ -158,6 +202,14 @@ struct menu_unit menu_extra = {
 	.subcnt = 0,
 	.start = menu_extra_start,
 };
+
+struct menu_unit menu_emulation = {
+	.top = "Emulation",
+	.subcnt = 11,
+	.start = menu_emu_start,
+	.item = menu_emulation_items,
+};
+
 struct menu_item menu_game_items[] = {
 	{
 		.name = "\r Input",
@@ -165,30 +217,30 @@ struct menu_item menu_game_items[] = {
 		.x = 1, .y = 5, .w = 7, .h = 3,
 		.child = &menu_input,
 	},
-	{
-		.name = "\r Display",
-		.type = 0,
-		.x = 16, .y = 5, .w = 9, .h = 3,
-		.child = &menu_display,
-	},
+	// {
+	// 	.name = "\r Display",
+	// 	.type = 0,
+	// 	.x = 16, .y = 5, .w = 9, .h = 3,
+	// 	.child = &menu_display,
+	// },
 	{
 		.name = "\r  Nifi",
 		.type = 0,
 		.x = 1, .y = 12, .w = 8, .h = 3,
 		.child = &menu_nifi,
 	},
-	{
-		.name = "\rNTSC",
-		.type = 1,
-		.x = 16, .y = 12, .w = 4, .h = 3,
-		.func = menu_game_ntsc,
-	},
-	{
-		.name = "\rPAL",
-		.type = 1,
-		.x = 24, .y = 12, .w = 4, .h = 3,
-		.func = menu_game_pal,
-	},
+	// {
+	// 	.name = "\rNTSC",
+	// 	.type = 1,
+	// 	.x = 16, .y = 12, .w = 4, .h = 3,
+	// 	.func = menu_game_ntsc,
+	// },
+	// {
+	// 	.name = "\rPAL",
+	// 	.type = 1,
+	// 	.x = 24, .y = 12, .w = 4, .h = 3,
+	// 	.func = menu_game_pal,
+	// },
 	{
 		.name = "\r RESET",
 		.type = 1,
@@ -387,19 +439,19 @@ struct menu_item menu_config_items[] = {
 		.x = 21, .y = 5, .w = 6, .h = 3,
 		.func = menu_config_func,
 	},
-	// Gfx Screen
-	{
-		.name = "\r Top",
-		.type = 1,
-		.x = 13, .y = 10, .w = 6, .h = 3,
-		.func = menu_config_func,
-	},
-	{
-		.name = "\r Sub",
-		.type = 1,
-		.x = 21, .y = 10, .w = 6, .h = 3,
-		.func = menu_config_func,
-	},
+	// // Gfx Screen
+	// {
+	// 	.name = "\r Top",
+	// 	.type = 1,
+	// 	.x = 13, .y = 10, .w = 6, .h = 3,
+	// 	.func = menu_config_func,
+	// },
+	// {
+	// 	.name = "\r Sub",
+	// 	.type = 1,
+	// 	.x = 21, .y = 10, .w = 6, .h = 3,
+	// 	.func = menu_config_func,
+	// },
 	// Save dir
 	{
 		.name = "\r Sub",
@@ -420,36 +472,104 @@ struct menu_item menu_config_items[] = {
 		.func = menu_config_func,
 	},
 };
+
 struct menu_unit menu_config = {
 	.top = "Config",
-	.subcnt = 7,
+	.subcnt = 5,
 	.start = menu_config_start,
 	.item = menu_config_items,
 };
 
+struct menu_item menu_sound_items[] = 
+{
+	// Volume Settings
+	{
+		.name = "\r Auto",
+		.type = 1,
+		.x = 13, .y = 5, .w = 6, .h = 3,
+		.func = dummy_sound_function2,
+	},
+	// Panning Settings
+	{
+		.name = "\rManual",
+		.type = 1,
+		.x = 21, .y = 5, .w = 6, .h = 3,
+		.func = dummy_sound_function3,
+	},
+	// Sound Reverb
+	{
+		.name = "\r Top",
+		.type = 1,
+		.x = 13, .y = 10, .w = 6, .h = 3,
+		.func = dummy_sound_function4,
+	},
+	{
+		.name = "\r Sub",
+		.type = 1,
+		.x = 21, .y = 10, .w = 6, .h = 3,
+		.func = dummy_sound_function5,
+	},
+	// Save dir
+	{
+		.name = "\r Sub",
+		.type = 1,
+		.x = 13, .y = 15, .w = 6, .h = 3,
+		.func = dummy_sound_function6,
+	},
+};
+
+// Sound Settings
+struct menu_unit menu_sound = 
+{
+	.top = "Sound",
+	.subcnt = 5,
+	.start = menu_sound_start,
+	.item = menu_sound_items,
+};
+
 struct menu_item menu_setting_items[] = {
 	{
-		.name = "\rConfig",
+		.name = "\r  Display",
 		.type = 0,
-		.x = 1, .y = 5, .w = 6, .h = 3,
+		.x = 2, .y = 5, .w = 12, .h = 3,
+		.child = &menu_display,
+	},
+	{
+		.name = "\r  Sound  ",
+		.type = 0,
+		.x = 16, .y = 5, .w = 10, .h = 3,
+		.child = &menu_sound
+	},
+	{
+		.name = "\r Emulation",
+		.type = 0,
+		.x = 2, .y = 11, .w = 12, .h = 3,
+		.child = &menu_emulation,
+	},
+	{
+		.name = "\r  Misc.",
+		.type = 0,
+		.x = 16, .y = 11, .w = 10, .h = 3,
 		.child = &menu_config
 	},
 	{
-		.name = "\rShort-Cuts",
+		.name = "\r Short-Cuts",
 		.type = 0,
-		.x = 1, .y = 11, .w = 10, .h = 3,
+		.x = 2, .y = 17, .w = 12, .h = 3,
 		.child = &menu_short_cut
 	},
+
 	{
-		.name = "\rSave nesDS.ini",
+		.name = "\rSave .ini",
 		.type = 1,
-		.x = 1, .y = 17, .w = 14, .h = 3,
+		.x = 16, .y = 17, .w = 10, .h = 3,
 		.func = menu_saveini
 	},
 };
+
 struct menu_unit menu_setting = {
 	.top = "Settings",
-	.subcnt = 3,
+	.subcnt = 6,
 	.item = menu_setting_items,
 };
 	
@@ -479,15 +599,21 @@ struct menu_item menu_items[] = {
 		.child = &menu_cheat
 	},
 	{
-		.name = "\r Settings",
+		.name = "\rConfig",
 		.type = 0,
-		.x = 1, .y = 12, .w = 10, .h = 3,
+		.x = 1, .y = 12, .w = 6, .h = 3,
 		.child = &menu_setting,
+	},
+	{
+		.name = "\rScreen\r Scale",
+		.type = 0,
+		.x = 11, .y = 12, .w = 6, .h = 4,
+		.child = &menu_adjust,
 	},
 	{
 		.name = "\r Debug",
 		.type = 0,
-		.x = 16, .y = 12, .w = 7, .h = 3,
+		.x = 21, .y = 12, .w = 7, .h = 3,
 		.child = &menu_debug,
 	},
 	{
@@ -506,7 +632,7 @@ struct menu_item menu_items[] = {
 
 struct menu_unit menu = {
 	.top = "Menu",
-	.subcnt = 7,
+	.subcnt = 8,
 	.item = menu_items
 };
 
