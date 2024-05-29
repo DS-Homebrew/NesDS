@@ -167,6 +167,7 @@ void restartsound(int ch)
 					P1_VL |
 					P1_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 	
 	SCHANNEL_CR(1) = ENBLD |
@@ -174,6 +175,7 @@ void restartsound(int ch)
 					P2_VL |
 					P2_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	SCHANNEL_CR(2) = ENBLD |
@@ -181,6 +183,7 @@ void restartsound(int ch)
 					TR_VL |
 					TR_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	SCHANNEL_CR(3) = ENBLD |
@@ -188,6 +191,7 @@ void restartsound(int ch)
 					NS_VL |
 					NS_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	SCHANNEL_CR(4) = ENBLD |
@@ -195,6 +199,7 @@ void restartsound(int ch)
 					DM_VL |
 					DM_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 	
 	SCHANNEL_CR(5) = ENBLD |
@@ -202,6 +207,7 @@ void restartsound(int ch)
 					F1_VL |
 					F1_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	SCHANNEL_CR(6) = ENBLD |
@@ -209,6 +215,7 @@ void restartsound(int ch)
 					V1_VL |
 					V1_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 	
 	SCHANNEL_CR(7) = ENBLD |
@@ -216,6 +223,7 @@ void restartsound(int ch)
 					V2_VL |
 					V2_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 	
 	SCHANNEL_CR(8) = ENBLD |
@@ -223,6 +231,7 @@ void restartsound(int ch)
 					V3_VL |
 					V3_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 //TODO: Channel 9-11 reserved to mix Konami VCR7 Audio ("Lagrange Point" is the only game that uses this.)
