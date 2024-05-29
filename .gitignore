@@ -48,6 +48,7 @@ Temporary Items
 
 #VSC folder
 .vscode/*
+.vscode/settings.json
 
 #git files
 log.txt
