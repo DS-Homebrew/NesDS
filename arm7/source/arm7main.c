@@ -47,7 +47,6 @@ enum ApuStatus getApuCurrentStatus()
 
 void readAPU(void);
 void resetAPU(void);
-void Raw_PCM_Channel(unsigned char *buffer);
 
 // Resets thge APU emulation to avoid garbage sounds
 void resetAPU() 
@@ -81,6 +80,57 @@ int inline SetTmrFreq(void)
 	int TmrFreq;
 		TmrFreq = (TIMER_FREQ_SHIFT(MIXFREQ,1,1));
 	return TmrFreq;
+}
+
+// Only works well with 24064 sound frequency, needs review
+void Raw_PCM_Channel(u8 *buffer)
+{
+static unsigned char pcm_out = 0x7F;
+int pcm_line = 120;
+int pcmprevol = 0x3F;	
+
+	u8 *in = IPC_PCMDATA;
+	int i;
+	int count = 0;
+	int line = 0;
+	u8 *outp = buffer;
+
+	pcm_line = REG_VCOUNT;
+
+	if(1) 
+	{
+		for(i = 0; i < MIXBUFSIZE; i++) 
+		{
+			if(in[pcm_line] & 0x80)
+			{
+				pcm_out = in[pcm_line] & 0x7F;
+				in[pcm_line] = 0;
+				count++;
+			}
+			*buffer++ = (pcm_out + pcmprevol - 0x80);
+			pcmprevol = pcm_out;
+			line += 100;
+			if(line >= 152)
+			{
+				line -= 152;
+				pcm_line++;
+				if(pcm_line > 262) 
+				{
+					pcm_line = 0;
+				}
+			}
+		}
+	}
+	//not a playable raw pcm.
+	if(count < 10) 
+	{
+		for(i = 0; i < MIXBUFSIZE; i++) 
+		{
+			*outp++ = 0;
+			pcmprevol = 0x3F;
+			pcm_out = 0x3F;
+		}
+	}
 }
 
 //----------------------------------------------//
@@ -505,57 +555,6 @@ void soundinterrupt(void)
 		REG_IF = IRQ_TIMER1;
 	}
 
-}
-
-static unsigned char pcm_out = 0x7F;
-int pcm_line = 120;
-int pcmprevol = 0x3F;
-
-// Only works well with 24064 sound frequency, needs review
-void Raw_PCM_Channel(unsigned char *buffer)
-{
-	unsigned char *in = IPC_PCMDATA;
-	int i;
-	int count = 0;
-	int line = 0;
-	unsigned char *outp = buffer;
-
-	pcm_line = REG_VCOUNT;
-
-	if(1) 
-	{
-		for(i = 0; i < MIXBUFSIZE; i++) 
-		{
-			if(in[pcm_line] & 0x80) 
-			{
-				pcm_out = in[pcm_line] & 0x7F;
-				in[pcm_line] = 0;
-				count++;
-			}
-			*buffer++ = (pcm_out + pcmprevol - 0x80);
-			pcmprevol = pcm_out;
-			line += 100;
-			if(line >= 152) 
-			{
-				line -= 152;
-				pcm_line++;
-				if(pcm_line > 262) 
-				{
-					pcm_line = 0;
-				}
-			}
-		}
-	}
-	//not a playable raw pcm.
-	if(count < 10) 
-	{
-		for(i = 0; i < MIXBUFSIZE; i++) 
-		{
-			*outp++ = 0;
-			pcmprevol = 0x3F;
-			pcm_out = 0x3F;
-		}
-	}
 }
 
 void APUSoundWrite(Uint address, Uint value);	//from s_apu.c (skip using read handlers, just write it directly)
