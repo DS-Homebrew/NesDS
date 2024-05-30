@@ -97,7 +97,6 @@ int FRQ47 = SNDEXTCNT_FREQ_47KHZ;
 int PCM_8 = SOUND_FORMAT_8BIT;
 int PCM16 = SOUND_FORMAT_16BIT;
 int ADPCM = SOUND_FORMAT_ADPCM;
-int sfreq = SOUND_FREQ(44100);
 
 // Ch Volume and Pan Control  // Default Values 0Min ~ 127Max (0x0 ~ 0x7F)
 // Max is 0x7F, min is 0x00, defaults are 0x20 - 0x60 for mid panning, 0x40 for center
@@ -120,7 +119,7 @@ int P2_VL = SOUND_VOL(0x40); // VOL 0x5F
 int P2_PN = SOUND_PAN(0x60); // PAN 0X60
 
 // Triangle
-int TR_VL = SOUND_VOL(0x78); // VOL 0x7F
+int TR_VL = SOUND_VOL(0x7F); // VOL 0x7F
 int TR_PN = SOUND_PAN(0x40); // PAN 0X20
 
 // Noise
@@ -136,16 +135,16 @@ int F1_VL = SOUND_VOL(0x5F); // VOL 0x7F
 int F1_PN = SOUND_PAN(0x40); // PAN 0X40
 
 // VRC6 Square 1
-int V1_VL = SOUND_VOL(0x40); // VOL 0x5F
-int V1_PN = SOUND_PAN(0x2A); // PAN 0x2A
+int V1_VL = SOUND_VOL(0x3C); // VOL 0x3C
+int V1_PN = SOUND_PAN(0x54); // PAN 0x54
 
 // VRC6 Square 2
-int V2_VL = SOUND_VOL(0x40); // VOL 0x5F
-int V2_PN = SOUND_PAN(0x50); // PAN 0x50
+int V2_VL = SOUND_VOL(0x3C); // VOL 0x3C
+int V2_PN = SOUND_PAN(0x2C); // PAN 0x54
 
 // VRC6 Saw
-int V3_VL = SOUND_VOL(0x40); // VOL 0x5F
-int V3_PN = SOUND_PAN(0x60); // PAN 0x60
+int V3_VL = SOUND_VOL(0x3C); // VOL 0x3C
+int V3_PN = SOUND_PAN(0x40); // PAN 0x54
 
 // Delta PCM Channel
 int RP_VL = SOUND_VOL(0x40); // VOL 0x7F
