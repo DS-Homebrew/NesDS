@@ -286,6 +286,7 @@ void restartsound(int ch)
 					RP_VL |
 					RP_PN |
 					FRQ47 |
+					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	TIMER0_CR = TIMER_ENABLE; 
@@ -440,15 +441,15 @@ void mix(int chan)
 				*pcmBuffer++ = output << 1; // Adjust volume for VRC Samples
             	//preval = output;
             }
-        }
-		// Mix raw pcm
-		Raw_PCM_Channel((u8 *)&buffer[chan*(MIXBUFSIZE >> 1) + MIXBUFSIZE * 18]);
+        }	
+		// Mix everything, including RAW PCM channels.	
+		Raw_PCM_Channel((u8 *)&buffer[chan*(MIXBUFSIZE/2) + MIXBUFSIZE*18]);
     }
     readAPU();
     APU4015Reg(); // to refresh reg4015.
 }
 
-void initsound() 
+void initsound()
 { 		
 	int i;
 	powerOn(POWER_SOUND); 

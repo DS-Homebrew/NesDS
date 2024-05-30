@@ -1,6 +1,7 @@
 #ifndef AUDIOSYS_H__
 #define AUDIOSYS_H__
 
+#include <nds.h>
 #include "nestypes.h"
 
 #ifdef __cplusplus
@@ -38,7 +39,7 @@ enum ApuStatus
 
 void APU4015Reg(void);
 void APUSoundInstall(void);
-void NESAudioRender(Int16 *bufp, Uint buflen);
+void NESAudioRender(s16 *bufp, Uint buflen);
 void NESAudioHandlerInstall(NES_AUDIO_HANDLER *ph);
 void NESAudioFrequencySet(Uint freq);
 Uint NESAudioFrequencyGet(void);
@@ -52,6 +53,7 @@ extern void (*FDSSoundWriteHandler)(Uint address, Uint value);
 void FDSSoundInstall(void);
 enum ApuRegion getApuCurrentRegion();
 enum ApuStatus getApuCurrentStatus();
+void Raw_PCM_Channel(unsigned char *buffer);
 
 #ifdef __cplusplus
 }

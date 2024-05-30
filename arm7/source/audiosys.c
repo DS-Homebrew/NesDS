@@ -23,7 +23,7 @@ void NESAudioFilterSet(Uint filter)
 	naf_prev = frequency;
 }
 
-void NESAudioRender(Int16 *bufp, Uint buflen)
+void NESAudioRender(s16 *bufp, Uint buflen)
 {
 	NES_AUDIO_HANDLER *ph;
 	Int32 accum;
