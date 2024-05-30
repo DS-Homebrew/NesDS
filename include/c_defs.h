@@ -32,7 +32,7 @@
 #define IPC_APUW (*(volatile int *)(IPC+40))		//apu write start
 #define IPC_APUR (*(volatile int *)(IPC+44))		//apu write start
 #define IPC_MAPPER (*(volatile int *)(IPC+48))		//nes rom mapper
-#define IPC_PCMDATA		(unsigned char *)(IPC+128)	//used for raw pcm.
+#define IPC_PCMDATA		(unsigned char *)(IPC+512)	//used for raw pcm.
 #define IPC_APUWRITE ((unsigned int *)(IPC+512))		//apu write start
 #define IPC_AUDIODATA ((unsigned int *)(IPC+4096 + 512))	//audio data...
 
