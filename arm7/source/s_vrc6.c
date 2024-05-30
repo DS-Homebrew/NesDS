@@ -7,7 +7,7 @@
 #include "s_vrc6.h"
 
 #define NES_BASECYCLES (21477270)
-#define CPS_SHIFT 18
+#define CPS_SHIFT 16
 
 typedef struct {
 	Uint32 cps;
@@ -116,14 +116,14 @@ static Int32 VRC6SoundSawRender(VRC6_SAW *ch)
 	return (ch->output >> 3) & 0x1f;
 }
 
-//static Int32 __fastcall VRC6SoundRender(void)
-//{
-//	Int32 accum = 0;
-//	accum += VRC6SoundSquareRender(&vrc6s.square[0]);
-//	accum += VRC6SoundSquareRender(&vrc6s.square[1]);
-//	accum += VRC6SoundSawRender(&vrc6s.saw);
-//	return accum;
-//}
+static Int32 __fastcall VRC6SoundRender(void)
+{
+	Int32 accum = 0;
+	accum += VRC6SoundSquareRender(&vrc6s.square[0]);
+	accum += VRC6SoundSquareRender(&vrc6s.square[1]);
+	accum += VRC6SoundSawRender(&vrc6s.saw);
+	return accum;
+}
 
 Int32 VRC6SoundRender1(void)
 {
@@ -138,10 +138,10 @@ Int32 VRC6SoundRender3(void)
 	return VRC6SoundSawRender(&vrc6s.saw);
 }
 
-//static NES_AUDIO_HANDLER s_vrc6_audio_handler[] = {
-//	{ 1, VRC6SoundRender, }, 
-//	{ 0, 0, }, 
-//};
+static NES_AUDIO_HANDLER s_vrc6_audio_handler[] = {
+	{ 1, VRC6SoundRender, }, 
+	{ 0, 0, }, 
+};
 
 static void __fastcall VRC6SoundVolume(Uint volume)
 {
@@ -170,19 +170,20 @@ void VRC6SoundWriteB000(Uint address, Uint value)
 	vrc6s.saw.update |= 1 << (address & 3); 
 }
 
-//static NES_WRITE_HANDLER s_vrc6_write_handler[] =
-//{
-//	{ 0x9000, 0x9002, VRC6SoundWrite9000, },
-//	{ 0xA000, 0xA002, VRC6SoundWriteA000, },
-//	{ 0xB000, 0xB002, VRC6SoundWriteB000, },
-//	{ 0,      0,      0, },
-//};
+static NES_WRITE_HANDLER s_vrc6_write_handler[] =
+{
+	{ 0x9000, 0x9002, VRC6SoundWrite9000, },
+	{ 0xA000, 0xA002, VRC6SoundWriteA000, },
+	{ 0xB000, 0xB002, VRC6SoundWriteB000, },
+	{ 0,      0,      0, 				  },
+};
 
 static Uint32 DivFix(Uint32 p1, Uint32 p2, Uint32 fix)
 {
 	Uint32 ret;
 	ret = p1 / p2;
-	p1  = p1 % p2;/* p1 = p1 - p2 * ret; */
+	//p1  = p1 % p2;
+	p1 = p1 - p2 * ret;
 	while (fix--)
 	{
 		p1 += p1;
@@ -221,7 +222,7 @@ static NES_RESET_HANDLER s_vrc6_reset_handler[] = {
 
 void VRC6SoundInstall(void)
 {
-	//NESAudioHandlerInstall(s_vrc6_audio_handler);
+	NESAudioHandlerInstall(s_vrc6_audio_handler);
 	NESVolumeHandlerInstall(s_vrc6_volume_handler);
 	NESResetHandlerInstall(s_vrc6_reset_handler);
 }

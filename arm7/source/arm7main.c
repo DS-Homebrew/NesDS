@@ -189,7 +189,7 @@ int V1_VL = SOUND_VOL(0x3C); // VOL 0x3C
 int V1_PN = SOUND_PAN(0x54); // PAN 0x54
 
 // VRC6 Square 2
-int V2_VL = SOUND_VOL(0x3C); // VOL 0x3C
+int V2_VL = SOUND_VOL(0x3B); // VOL 0x3C
 int V2_PN = SOUND_PAN(0x2C); // PAN 0x54
 
 // VRC6 Saw
