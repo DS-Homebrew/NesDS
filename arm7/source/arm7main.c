@@ -335,6 +335,53 @@ int32_t VRC6SoundRender3();
 void VRC6SoundInstall();
 void readAPU();
 
+
+static int filter_type = NES_AUDIO_FILTER_CRISP;
+
+//Audio Filters
+static inline short PassFilter(short int output, u32 *coef)
+{
+static short int accum;
+
+	switch (filter_type)
+	{
+		// Default No Filter
+	case NES_AUDIO_FILTER_NONE:
+		break;
+		//Modern TV Filter
+	case NES_AUDIO_FILTER_CRISP:		
+		accum = 0;
+		int cf_1 = 3;
+		int cf_2 = 1;
+		int cf_3 = 2;
+		output = ((85 * (output/cf_1)) + (256 * (output/cf_2)) + (128 * (output/cf_3))) >> 9;
+		break;
+		//Old TV Filter
+	case NES_AUDIO_FILTER_OLDTV:
+		accum = 0;
+		*coef++ = (output * 4) / 5;
+		accum = output;
+		*coef++ = output;
+		break;
+		// Famicom/NES Filter
+	case NES_AUDIO_FILTER_LOWPASS:
+		accum = 0;
+		output = (output + (accum * 7));
+		accum = output;
+		*coef++ = output;
+		break;
+	case NES_AUDIO_FILTER_HIGHPASS:
+		accum = 0;
+		*coef++ = (((*coef++ * 8)) + (accum * 7)) >> 3;
+		*coef++ = output;
+		break;	
+	case NES_AUDIO_FILTER_WEIGHTED:
+		output = (output + output + output + MIXFREQ) >> 2;
+		break;
+	}
+	return output;
+}
+
 // Mixer handler TODO: Implement cases for custom sound filters.
 void mix(int chan)
 {
@@ -345,52 +392,42 @@ void mix(int chan)
         s16 *pcmBuffer = &buffer[chan*MIXBUFSIZE]; // Pointer to PCM buffer
 
         for (i = 0; i < MIXBUFSIZE; i++)
-		{
-            // static int32_t preval = 0;
-            *pcmBuffer++ = adjust_samples(NESAPUSoundSquareRender1(), 6, 4);
-            // output  = (preval + output) >> 1; // Separated into their own filters
-			// *pcmBuffer++  = output;
-            // preval = output;
+		{			
+			short int input = adjust_samples(NESAPUSoundSquareRender1(), 6, 4);
+			short int output = PassFilter(input, pcmBuffer);
+			*pcmBuffer++ = output;
         }
 
 		pcmBuffer+=MIXBUFSIZE;
-  		for (i = 0; i < MIXBUFSIZE; i++) 
+  		for (i = 0; i < MIXBUFSIZE; i++)
  		{
-            // static int32_t preval = 0;
-            *pcmBuffer++ = adjust_samples(NESAPUSoundSquareRender2(), 6, 4);
-			// output  = (preval + output) >> 1; // Separated into their own filters
-			// *pcmBuffer++  = output;
-            // preval = output;
+            short int input = adjust_samples(NESAPUSoundSquareRender2(), 6, 4);
+			short int output = PassFilter(input, pcmBuffer);
+			*pcmBuffer++ = output;
         }
 
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            // static int32_t preval = 0;
-            *pcmBuffer++ = adjust_samples(NESAPUSoundTriangleRender1(), 7, 4);
-            // output  = (preval + output) >> 1;
-			// *pcmBuffer++  = output;
-            // preval = output;
+            short int input = adjust_samples(NESAPUSoundTriangleRender1(), 7, 4);
+			short int output = PassFilter(input, pcmBuffer);
+			*pcmBuffer++ = output;
         }
 
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            // static int32_t preval = 0;
-            *pcmBuffer++ = adjust_samples(NESAPUSoundNoiseRender1(), 6, 4);
-			// output  = (preval + output) >> 1; // Separated into their own filters
-			// *pcmBuffer++  = output;
-            // preval = output;
+            short int input = adjust_samples(NESAPUSoundNoiseRender1(), 6, 4);
+			short int output = PassFilter(input, pcmBuffer);
+			*pcmBuffer++ = output;
         }
 
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            // static int32_t preval = 0;
-            *pcmBuffer++ = adjust_samples(NESAPUSoundDpcmRender1(), 4, 5);
-            // output  = (preval + output) >> 1; // Separated into their own filters
-			// *pcmBuffer++  = output;
-            // preval = output;
+            short int input = adjust_samples(NESAPUSoundDpcmRender1(), 4, 4);
+			short int output = PassFilter(input, pcmBuffer);
+			*pcmBuffer++ = output;
         }
 
 		pcmBuffer+=MIXBUFSIZE;
@@ -398,11 +435,9 @@ void mix(int chan)
 		{
             for (i = 0; i < MIXBUFSIZE; i++) 
 			{
-                // static int32_t preval = 0;
-                *pcmBuffer++ = adjust_samples(FDSSoundRender3(), 0, 4);
-           		// output  = (preval + output) >> 1; // Separated into their own filters
-				// *pcmBuffer++  = output;
-        	    // preval = output;
+                short int input = adjust_samples(FDSSoundRender3(), 0, 4);
+				short int output = PassFilter(input, pcmBuffer);
+				*pcmBuffer++ = output;
             }
 		} 
 		    else
@@ -411,35 +446,29 @@ void mix(int chan)
 			}
 
 		pcmBuffer+=MIXBUFSIZE;	
-        if (mapper == 24 || mapper == 26 || mapper == 256) 
+        if (mapper == 24 || mapper == 26 || mapper == 256 || mapper == 6502) 
 		{
             for (i = 0; i < MIXBUFSIZE; i++)
 			{
-                // static int32_t preval = 0;
-                int32_t output = adjust_vrc(VRC6SoundRender1(), 11);
-            	// output  = (preval + output) >> 1; // Separated into their own filters
-				*pcmBuffer++ = output << 1;
-            	// preval = output;
+				short int input = (adjust_vrc(VRC6SoundRender1(), 11)) << 1;
+				short int output = PassFilter(input, pcmBuffer);
+				*pcmBuffer++ = output;
             }
 
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++) 
 			{
-                // static int32_t preval = 0;
-                int32_t output = adjust_vrc(VRC6SoundRender2(), 11);
-            	// output  = (preval + output) >> 1; // Separated into their own filters
-				*pcmBuffer++ = output << 1; // Adjust volume for VRC Samples
-            	// preval = output;
+				short int input = (adjust_vrc(VRC6SoundRender2(), 11)) << 1;
+				short int output = PassFilter(input, pcmBuffer);
+				*pcmBuffer++ = output;
             }
 
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++)
 			{
-                // static int32_t preval = 0;
-                int32_t output = adjust_vrc(VRC6SoundRender3(), 10);
-              	// output  = (preval + output) >> 1; // Separated into their own filters
-				*pcmBuffer++ = output << 1; // Adjust volume for VRC Samples
-            	//preval = output;
+				short int input = (adjust_vrc(VRC6SoundRender3(), 10)) << 1;
+				short int output = PassFilter(input, pcmBuffer);
+				*pcmBuffer++ = output;
             }
         }	
 		// Mix everything, including RAW PCM channels.	
@@ -452,7 +481,7 @@ void mix(int chan)
 void initsound()
 { 		
 	int i;
-	powerOn(POWER_SOUND); 
+	powerOn(BIT(0));
 	REG_SOUNDCNT = SOUND_ENABLE | SOUND_VOL(0x72);
 	for(i = 0; i < 16; i++) 
 	{
