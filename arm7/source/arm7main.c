@@ -9,9 +9,9 @@
 
 s16 buffer [MIXBUFSIZE * 20]; // Sound Samples Buffer Size, adjust size if necessary
 
+// Set Flag for the APU settings to match PAL Sound Frequency
 enum ApuRegion ApuCurrentRegion = NTSC;
 
-// Set Flag for the APU settings to match PAL Sound Frequency
 void SetApuPAL()
 {
 	ApuCurrentRegion = PAL;
@@ -26,7 +26,6 @@ enum ApuRegion getApuCurrentRegion()
 {
 	return ApuCurrentRegion;
 }
-
 
 // SWAP CYCLES
 enum ApuStatus ApuCurrentStatus = Normal;
@@ -76,16 +75,11 @@ static inline short adjust_vrc(short sample, int freq_shift)
 	return sample << freq_shift;
 }
 
- //From GBATEK: timerval = -(33513982Hz/2)/freq
+// From GBATEK: timerval = -(33513982Hz/2)/freq
 int inline SetTmrFreq(void)
 {
 	int TmrFreq;
-	if(isDSiMode())
-	{
-		TmrFreq = (DSI_TIMER_FREQ_SHIFT(DSI_MIXFREQ,1,1));
-	} else {
 		TmrFreq = (TIMER_FREQ_SHIFT(MIXFREQ,1,1));
-	}
 	return TmrFreq;
 }
 

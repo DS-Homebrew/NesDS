@@ -12,21 +12,16 @@ extern "C" {
 #define MIXBUFSIZE                      128
 
 // DS output Frequency after mixing is 32.768 kHz 10 bits, this should be equal or below.
-#define MIXFREQ                        (32700)
+#define MIXFREQ                        (32768)
 
-// DSi output Frequency after mixing is 47.609 kHz 10 bits, this should be equal or below.
-#define DSI_MIXFREQ                    (32700)  //(47609)
-
+//Matches the NES Base Cycles
 #define NES_MIXFREQ                    (24064)
-#define TEST_MIXFREQ                   (65536)
 
 // FROM GBATEK: Nintendo DS Audio Bus Clock Frequency = 33.513982MHz/2
 #define DS_BUS_CLOCK                   (33513982)  
-#define DSI_BUS_CLOCK                  (33513982) //(47609000)
 
 // Proper rounding formula by "Asiekierka" of BlocksDS team https://github.com/blocksds/libnds/pull/49
 #define TIMER_FREQ_SHIFT(n, divisor, shift) ((-((DS_BUS_CLOCK >> (shift)) * (divisor)) - ((((n) + 1)) >> 1)) / (n))
-#define DSI_TIMER_FREQ_SHIFT(n, divisor, shift) ((-((DSI_BUS_CLOCK >> (shift)) * (divisor)) - ((((n) + 1)) >> 1)) / (n))
 
 enum
 {
