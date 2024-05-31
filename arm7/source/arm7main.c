@@ -336,39 +336,73 @@ int32_t VRC6SoundRender3();
 void VRC6SoundInstall();
 void readAPU();
 
+//Set Default Filter Type
+enum AudioFilterType CurrentFilterType = NES_AUDIO_FILTER_NONE;
 
-static int filter_type = NES_AUDIO_FILTER_CRISP;
+
+//Get New Filter Type from ARM9
+void setAudioFilter()
+{
+	switch (FIFO_AUDIO_FILTER)
+	{
+	case FIFO_AUDIO_FILTER << 0:
+		CurrentFilterType = NES_AUDIO_FILTER_NONE;
+		break;
+	case FIFO_AUDIO_FILTER << 2:
+		CurrentFilterType = NES_AUDIO_FILTER_CRISP;
+		break;
+	case FIFO_AUDIO_FILTER << 3:
+	 	CurrentFilterType = NES_AUDIO_FILTER_OLDTV;
+		break;
+	case FIFO_AUDIO_FILTER << 4:
+		CurrentFilterType = NES_AUDIO_FILTER_LOWPASS;
+		break;
+	case FIFO_AUDIO_FILTER << 5:
+		CurrentFilterType = NES_AUDIO_FILTER_HIGHPASS;
+		break;
+	case FIFO_AUDIO_FILTER << 6:
+		CurrentFilterType = NES_AUDIO_FILTER_WEIGHTED;
+		break;
+
+	}
+}
+// Filter Type Get from Settings
+enum AudioFilterType getAudioFilterType()
+{
+	return CurrentFilterType;
+}
 
 //Audio Filters
 static inline short PassFilter(short int output, u32 *coef)
 {
 static short int accum;
-
-	switch (filter_type)
+	accum = 0;
+	switch (CurrentFilterType)
 	{
 		// Default No Filter
 	case NES_AUDIO_FILTER_NONE:
 		break;
-		//Modern TV Filter
-	case NES_AUDIO_FILTER_CRISP:		
+		//Modern RF TV Filter
+	case NES_AUDIO_FILTER_CRISP:
 		accum = 0;
-		int cf_1 = 3;
-		int cf_2 = 1;
-		int cf_3 = 2;
-		output = ((85 * (output/cf_1)) + (256 * (output/cf_2)) + (128 * (output/cf_3))) >> 9;
+		output = (output + (accum << 1));
+		accum = output;
+		output = accum;
+		*coef++ = accum;
 		break;
 		//Old TV Filter
 	case NES_AUDIO_FILTER_OLDTV:
 		accum = 0;
-		*coef++ = (output * 4) / 5;
-		accum = output;
-		*coef++ = output;
+		accum = output >> 1;
+		*coef++ = accum;
+		output = accum << 1;
+		*coef++ = output << 1;
 		break;
 		// Famicom/NES Filter
 	case NES_AUDIO_FILTER_LOWPASS:
 		accum = 0;
-		output = (output + (accum * 7));
-		accum = output;
+		output = ((output + (accum * 7)) >> 3) << 3;
+		accum = *coef++;
 		*coef++ = output;
 		break;
 	case NES_AUDIO_FILTER_HIGHPASS:
@@ -377,6 +411,7 @@ static short int accum;
 		*coef++ = output;
 		break;	
 	case NES_AUDIO_FILTER_WEIGHTED:
+		accum = 0;
 		output = (output + output + output + MIXFREQ) >> 2;
 		break;
 	}

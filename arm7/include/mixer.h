@@ -23,7 +23,7 @@ extern "C" {
 // Proper rounding formula by "Asiekierka" of BlocksDS team https://github.com/blocksds/libnds/pull/49
 #define TIMER_FREQ_SHIFT(n, divisor, shift) ((-((DS_BUS_CLOCK >> (shift)) * (divisor)) - ((((n) + 1)) >> 1)) / (n))
 
-enum
+enum AudioFilterType
 {
    NES_AUDIO_FILTER_NONE,
    NES_AUDIO_FILTER_CRISP,
