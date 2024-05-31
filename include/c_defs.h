@@ -11,30 +11,31 @@
 #define NES_RAM nes_region
 #define NES_SRAM NES_RAM + 0x800
 //nes_region
-#define MAX_IPS_SIZE 0x80000		//actually, the ips file won't be larger than 512kB.
-#define ROM_MAX_SIZE 0x2b0000		//2,7MB free rom space
-#define MAXFILES 1024
+#define MAX_IPS_SIZE 		0x80000		//actually, the ips file won't be larger than 512kB.
+#define ROM_MAX_SIZE 		0x2b0000		//2,7MB free rom space
+#define MAXFILES 			1024
 
-#define VRAM_ABCD (*(vu32*)0x4000240)
-#define VRAM_EFG (*(vu32*)0x4000244)
-#define VRAM_HI (*(vu16*)0x4000248)
+#define VRAM_ABCD 			(*(vu32*)0x4000240)
+#define VRAM_EFG 			(*(vu32*)0x4000244)
+#define VRAM_HI 			(*(vu16*)0x4000248)
 
-#undef IPC		//IPC_* also in equates.h, keep both updated
-#define IPC ((u8 *)ipc_region)
-#define IPC_TOUCH_X	(*(vu32*)(IPC+0))
-#define IPC_TOUCH_Y	(*(vu32*)(IPC+4))
-#define IPC_KEYS	(*(vu32*)(IPC+8))
-#define IPC_ALIVE	(*(vu32*)(IPC+12))			//unused anymore
-#define IPC_MEMTBL  ((char **)(IPC+16))
-#define IPC_REG4015 (*(char *)(IPC+32))			//arm7 should not write this value but to use fifo. channel 5
-#define IPC_APUIRQ  (*(char *)(IPC+33))			//not supported.
-#define IPC_RAWPCMEN (*(char *)(IPC+34))			//not supported.
-#define IPC_APUW (*(volatile int *)(IPC+40))		//apu write start
-#define IPC_APUR (*(volatile int *)(IPC+44))		//apu write start
-#define IPC_MAPPER (*(volatile int *)(IPC+48))		//nes rom mapper
-#define IPC_PCMDATA		(u8 *)(IPC+512)	//used for raw pcm.
-#define IPC_APUWRITE ((unsigned int *)(IPC+512))		//apu write start
-#define IPC_AUDIODATA ((unsigned int *)(IPC+4096 + 512))	//audio data...
+//IPC_* also in equates.h, KEEP BOTH UPDATED
+#undef IPC
+#define IPC 				((u8 *)ipc_region)
+#define IPC_TOUCH_X			(*(vu32*)(IPC+0))
+#define IPC_TOUCH_Y			(*(vu32*)(IPC+4))
+#define IPC_KEYS			(*(vu32*)(IPC+8))
+#define IPC_ALIVE			(*(vu32*)(IPC+12))					//unused anymore
+#define IPC_MEMTBL  		((char **)(IPC+16))
+#define IPC_REG4015 		(*(char *)(IPC+32))					//arm7 should not write this value but to use fifo. channel 5
+#define IPC_APUIRQ  		(*(char *)(IPC+33))					//not supported.
+#define IPC_RAWPCMEN 		(*(char *)(IPC+34))					//not supported.
+#define IPC_APUW 			(*(volatile int *)(IPC+40))			//apu write start
+#define IPC_APUR 			(*(volatile int *)(IPC+44))			//apu write start
+#define IPC_MAPPER 			(*(volatile int *)(IPC+48))			//nes rom mapper
+#define IPC_PCMDATA			(u8 *)(IPC+512)						//used for raw pcm.
+#define IPC_APUWRITE 		((unsigned int *)(IPC+512))			//apu write start
+#define IPC_AUDIODATA 		((unsigned int *)(IPC+4096 + 512))	//audio data...
 
 //not implemented yet.
 

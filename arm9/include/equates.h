@@ -9,13 +9,21 @@ wram = NES_DRAM	//64k ram is reserved here.
 ROM_MAX_SIZE = 0x2b0000		//2,7MB free rom space
 MAXFILES	 = 1024
 
-IPC			= ipc_region
+//IPC_* also in c_defs.h, KEEP BOTH UPDATED
+IPC 			= ipc_region
 IPC_TOUCH_X		= IPC+0
 IPC_TOUCH_Y		= IPC+4
-IPC_KEYS		= IPC+8
-IPC_MEMTBL		= IPC+16
-IPC_REG4015		= IPC+32
-IPC_APUIRQ		= IPC+33	//not implemented yet.
+IPC_KEYS 		= IPC+8
+IPC_MEMTBL 		= IPC+16
+IPC_REG4015 	= IPC+32			//arm7 should not write this value but to use fifo. channel 5
+IPC_APUIRQ  	= IPC+33			//not supported.
+IPC_RAWPCMEN 	= IPC+34			//not supported.
+IPC_APUW 		= IPC+40			//apu write start
+IPC_APUR 		= IPC+44			//apu write start
+IPC_MAPPER 		= IPC+48			//nes rom mapper
+IPC_PCMDATA		= IPC+512			//used for raw pcm.
+IPC_APUWRITE 	= IPC+512			//apu write start
+IPC_AUDIODATA 	= IPC+4096 + 512	//audio data...
 
 KEY_A			= 1
 KEY_B			= 2
