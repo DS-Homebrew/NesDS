@@ -174,12 +174,12 @@ int TR_VL = SOUND_VOL(0x7F); // VOL 0x7F
 int TR_PN = SOUND_PAN(0x40); // PAN 0X20
 
 // Noise
-int NS_VL = SOUND_VOL(0x35); // VOL 0x5F
+int NS_VL = SOUND_VOL(0x7A); // VOL 0x7A
 int NS_PN = SOUND_PAN(0x45); // PAN 0X45
 
 // DMC
-int DM_VL = SOUND_VOL(0x7F); // VOL 0x7F
-int DM_PN = SOUND_PAN(0x3A); // PAN 0X3A
+int DM_VL = SOUND_VOL(0x6F); // VOL 0x6F
+int DM_PN = SOUND_PAN(0x40); // PAN 0x40
 
 // FDS
 int F1_VL = SOUND_VOL(0x5F); // VOL 0x7F
@@ -198,7 +198,7 @@ int V3_VL = SOUND_VOL(0x3C); // VOL 0x3C
 int V3_PN = SOUND_PAN(0x40); // PAN 0x54
 
 // Delta PCM Channel
-int RP_VL = SOUND_VOL(0x40); // VOL 0x7F
+int RP_VL = SOUND_VOL(0x6F); // VOL 0x7F
 int RP_PN = SOUND_PAN(0x40); // PAN 0x40
 
 void restartsound(int ch)
@@ -454,7 +454,7 @@ void mix(int chan)
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            short int input = adjust_samples(NESAPUSoundNoiseRender1(), 6, 4);
+            short int input = adjust_samples(NESAPUSoundNoiseRender1(), 6, 3);
 			short int output = PassFilter(input, pcmBuffer);
 			*pcmBuffer++ = output;
         }
@@ -462,7 +462,7 @@ void mix(int chan)
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            short int input = adjust_samples(NESAPUSoundDpcmRender1(), 4, 4);
+            short int input = adjust_samples(NESAPUSoundDpcmRender1(), 4, 5);
 			short int output = PassFilter(input, pcmBuffer);
 			*pcmBuffer++ = output;
         }
