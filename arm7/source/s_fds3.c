@@ -10,7 +10,7 @@
 #define FDS_DYNAMIC_BIAS 1
 
 
-#define FM_DEPTH 0 /* 0,1,2 */
+#define FM_DEPTH 1 /* 0,1,2 */
 #define NES_BASECYCLES (21477270)
 #define PGCPS_BITS (32-16-6)
 #define EGCPS_BITS (12)
@@ -323,7 +323,7 @@ static NES_RESET_HANDLER s_fds_reset_handler[] =
 void FDSSoundInstall3(void)
 {
 	//LogTableInitialize();
-	NESAudioHandlerInstall(s_fds_audio_handler);
+	//NESAudioHandlerInstall(s_fds_audio_handler);
 	NESVolumeHandlerInstall(s_fds_volume_handler);
 	//NESReadHandlerInstall(s_fds_read_handler);
 	//NESWriteHandlerInstall(s_fds_write_handler);

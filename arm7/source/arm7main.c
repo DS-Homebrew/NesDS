@@ -334,6 +334,7 @@ int32_t VRC6SoundRender3();
 
 // VRC must be inited to get raw pcm data from ARM9
 void VRC6SoundInstall();
+void FDSSoundInstall();
 void readAPU();
 
 //Set Default Filter Type
@@ -681,7 +682,7 @@ void readAPU()
 	if(1) 
 	{
 		while((msg = fifoGetValue32(FIFO_USER_07)) != 0)
-			APUSoundWrite(msg >> 8, msg&0xFF);
+			APUSoundWrite(msg >> 8, msg & 0xFF);
 		IPC_APUR = IPC_APUW;
 	}
 	else 
@@ -709,9 +710,11 @@ void interrupthandler()
 void nesmain() 
 {
 	NESAudioFrequencySet(MIXFREQ);
-	NESTerminate();
-	NESHandlerInitialize();
-	NESAudioHandlerInitialize();
+	//NESTerminate();
+	//NESHandlerInitialize();
+	//NESAudioHandlerInitialize();
+	
+	// Change func name to "DPCMSoundInstall();"
 	APUSoundInstall();
 	FDSSoundInstall();
 	VRC6SoundInstall();
