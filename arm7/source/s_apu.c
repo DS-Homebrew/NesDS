@@ -508,7 +508,7 @@ static Int32 __fastcall APUSoundRender(void)
 	Int32 accum = 0;
 	//accum += NESAPUSoundSquareRender(&apu.square[0]);
 	//accum += NESAPUSoundSquareRender(&apu.square[1]);
-	accum += NESAPUSoundTriangleRender(&apu.triangle);
+	//accum += NESAPUSoundTriangleRender(&apu.triangle);
 	//accum += NESAPUSoundNoiseRender(&apu.noise);
 	//accum += NESAPUSoundDpcmRender();
 	return accum;
@@ -530,10 +530,11 @@ static void __fastcall APUSoundVolume(Uint volume)
 	apu.square[1].mastervolume = volume;
 
 	/* SND2 */
-	apu.triangle.mastervolume = volume + ((192 << (LOG_BITS - 8)) << 1);
-	apu.noise.mastervolume = volume + ((192 << (LOG_BITS - 8)) << 1);
+	apu.triangle.mastervolume = volume;
+	apu.noise.mastervolume = volume;
+
 	volume += (NSF_dpcm_volume << (LOG_BITS - 8)) << 1;
-	apu.dpcm.mastervolume = (volume << 4) + ((192 << (LOG_BITS - 8)) << 1);
+	apu.dpcm.mastervolume = volume + ((192 << (LOG_BITS - 8)) << 1);
 }
 
 static NES_VOLUME_HANDLER s_apu_volume_handler[] = {
@@ -858,11 +859,17 @@ void __fastcall APU4015Reg()
 {
 	static int oldkey = 0;
 	int key = 0;
-	if (apu.square[0].key && apu.square[0].lc.counter) key |= 1;
-	if (apu.square[1].key && apu.square[1].lc.counter) key |= 2;
-	if (apu.triangle.key && apu.triangle.lc.counter && apu.triangle.li.counter) key |= 4;
-	if (apu.noise.key && apu.noise.lc.counter) key |= 8;
-	if (apu.dpcm.length) key |= 16;
+	if (apu.square[0].key && apu.square[0].lc.counter)
+		key |= 1;
+	if (apu.square[1].key && apu.square[1].lc.counter) 
+		key |= 2;
+	if (apu.triangle.key && apu.triangle.lc.counter && apu.triangle.li.counter) 
+		key |= 4;
+	if (apu.noise.key && apu.noise.lc.counter) 
+		key |= 8;
+	if (apu.dpcm.length) 
+		key |= 16;
+	
 	key = key | 0x40 | apu.dpcm.irq_report;
 	if(oldkey != key || apuirq) 
 	{
