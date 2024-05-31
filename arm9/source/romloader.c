@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "c_defs.h"
+#include "SoundIPC.h"
 #include "minIni.h"
 #include "menu.h"
 //#include "extlink_filestruct.h"

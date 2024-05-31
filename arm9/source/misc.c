@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <string.h>
 #include "c_defs.h"
+#include "SoundIPC.h"
 #include "menu.h"
 
 int save_slots = 0;

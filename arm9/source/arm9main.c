@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "c_defs.h"
+#include "SoundIPC.h"
 //frameskip min = 1, max = xxxxxx....
 int palette_value = 0;
 int soft_frameskip = 3;

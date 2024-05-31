@@ -20,6 +20,7 @@
 #include "nesclassic_pal.h"
 #include "3dsvc_pal.h"
 #include "nespvm_pal.h"
+#include "SoundIPC.h"
 
 extern u32 agb_bg_map[];
 
