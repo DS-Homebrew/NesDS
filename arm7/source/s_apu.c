@@ -919,7 +919,7 @@ static void NESAPUSoundNoiseReset(NESAPU_NOISE *ch)
 {
 	XMEMSET(ch, 0, sizeof(NESAPU_NOISE));
 	ch->cps = DivFix(NES_BASECYCLES, 12 * NESAudioFrequencyGet(), CPS_BITS);
-	ch->rng = 0x8000;
+	ch->rng = 0x80;
 }
 
 
