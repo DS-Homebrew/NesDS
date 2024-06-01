@@ -31,12 +31,15 @@ void reg4015interrupt(u32 msg, void *none)
 void writeAPU(u32 val,u32 addr) 
 {
 	if(IPC_APUW - IPC_APUR < 256 && addr != 0x4011 && 
-			((addr > 0x8000 && (debuginfo[MAPPER] == 24 || debuginfo[MAPPER] == 26)) ||
-			(addr < 0x4018 || debuginfo[MAPPER] == 20))) {
+			((addr > 0x8000 && (debuginfo[MAPPER] == 24 || debuginfo[MAPPER] == 26 || IPC_MAPPER == 256)) ||
+			(addr < 0x4018 || debuginfo[MAPPER] == 20 || debuginfo[MAPPER] == 256))) {		
 		fifoSendValue32(FIFO_USER_07,(addr << 8) | val);
 		IPC_APUW++;
+		IPC_APUWRITE;
 	}
-	if(addr == 0x4011) {
+
+	if(addr == 0x4011 || debuginfo[MAPPER] == 256)
+	{
 		unsigned char *out = IPC_PCMDATA;
 		out[__scanline] = val | 0x80;
 		*(IPC_APUWRITE + (addr & 0xFF)) = 0x100 | val;
