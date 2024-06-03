@@ -35,7 +35,7 @@ void writeAPU(u32 val,u32 addr)
 			(addr < 0x4018 || debuginfo[MAPPER] == 20 || debuginfo[MAPPER] == 256))) {		
 		fifoSendValue32(FIFO_USER_07,(addr << 8) | val);
 		IPC_APUW++;
-		IPC_APUWRITE;
+		//IPC_APUWRITE;
 	}
 
 	if(addr == 0x4011 || debuginfo[MAPPER] == 256)
