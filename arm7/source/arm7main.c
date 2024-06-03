@@ -349,22 +349,21 @@ void setAudioFilter()
 	case FIFO_AUDIO_FILTER << 0:
 		CurrentFilterType = NES_AUDIO_FILTER_NONE;
 		break;
-	case FIFO_AUDIO_FILTER << 2:
+	case FIFO_AUDIO_FILTER << 1:
 		CurrentFilterType = NES_AUDIO_FILTER_CRISP;
 		break;
-	case FIFO_AUDIO_FILTER << 3:
+	case FIFO_AUDIO_FILTER << 2:
 	 	CurrentFilterType = NES_AUDIO_FILTER_OLDTV;
 		break;
-	case FIFO_AUDIO_FILTER << 4:
+	case FIFO_AUDIO_FILTER << 3:
 		CurrentFilterType = NES_AUDIO_FILTER_LOWPASS;
 		break;
-	case FIFO_AUDIO_FILTER << 5:
+	case FIFO_AUDIO_FILTER << 4:
 		CurrentFilterType = NES_AUDIO_FILTER_HIGHPASS;
 		break;
-	case FIFO_AUDIO_FILTER << 6:
+	case FIFO_AUDIO_FILTER << 5:
 		CurrentFilterType = NES_AUDIO_FILTER_WEIGHTED;
 		break;
-
 	}
 }
 // Filter Type Get from Settings
