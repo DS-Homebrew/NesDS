@@ -15,10 +15,10 @@ extern "C" {
 #define MIXFREQ                        (32768)
 
 //Matches the NES Base Cycles
-#define NES_MIXFREQ                    (24064)
+#define NES_SAMPLE_RATE                (96000) //24064
 
 // FROM GBATEK: Nintendo DS Audio Bus Clock Frequency = 33.513982MHz/2
-#define DS_BUS_CLOCK                   (33513982)  
+#define DS_BUS_CLOCK                   (33513982)
 
 // Proper rounding formula by "Asiekierka" of BlocksDS team https://github.com/blocksds/libnds/pull/49
 #define TIMER_FREQ_SHIFT(n, divisor, shift) ((-((DS_BUS_CLOCK >> (shift)) * (divisor)) - ((((n) + 1)) >> 1)) / (n))

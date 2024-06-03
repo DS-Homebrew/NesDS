@@ -7,7 +7,7 @@
 
 #define SHIFT_BITS 8
 
-Uint frequency = MIXFREQ;
+Uint frequency = NES_SAMPLE_RATE;
 static Uint channel = 1;
 
 static NES_AUDIO_HANDLER *nah = 0;
