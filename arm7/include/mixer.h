@@ -12,7 +12,7 @@ extern "C" {
 #define MIXBUFSIZE                      128
 
 // DS output Frequency after mixing is 32.768 kHz 10 bits, this should be equal or below.
-#define MIXFREQ                        (32768)
+#define MIXFREQ                        (26000) //32768 // 32000
 
 //Matches the NES Base Cycles
 #define NES_SAMPLE_RATE                (96000) //24064
