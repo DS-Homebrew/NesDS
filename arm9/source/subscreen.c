@@ -64,7 +64,7 @@ int debugdump() {
 	debuginfo[EMUFLAG] = __emuflags;
 	if(1 && (__emuflags & NSFFILE)) {
 		u32 *ip=(u32*)&mapperstate;
-		consoletext	(64 * 4 + 0 * 32, "version", 0);
+		consoletext	(64 * 4 + 0 * 32, "Version:", 0);
 		hex8		(64 * 4 + 0 * 32 + 18, nsfHeader.Version);
 		consoletext	(64 * 4 + 1 * 32, "startson", 0);
 		hex8		(64 * 4 + 1 * 32 + 18, nsfHeader.StartSong);
@@ -76,23 +76,38 @@ int debugdump() {
 		hex16		(64 * 4 + 4 * 32 + 18, nsfHeader.InitAddress);
 		consoletext	(64 * 4 + 5 * 32, "PlayAddr", 0);
 		hex16		(64 * 4 + 5 * 32 + 18, nsfHeader.PlayAddress);
-		for(i=0;i<10;i++) {
-			hex32(64*7+i*32,ip[i]);
-		}
-		
-		consoletext	(64 * 16 + 0 * 32, "songno", 0);
-		hex16		(64 * 16 + 0 * 32 + 18, __nsfSongNo);
-		consoletext	(64 * 16 + 1 * 32, "songmode", 0);
-		hex16		(64 * 16 + 1 * 32 + 18, __nsfSongMode);
-		consoletext	(64 * 16 + 2 * 32, "play", 0);
-		hex16		(64 * 16 + 2 * 32 + 18, __nsfPlay);
-		consoletext	(64 * 16 + 3 * 32, "init", 0);
-		hex16		(64 * 16 + 3 * 32 + 18, __nsfInit);
 
+		// NSF Info
+		consoletext	(64 * 4 + 8 * 32, "Album:", 0);
+		consoletext	(63 * 4 + 8 * 32 + 18, nsfHeader.SongName, 0);
+		consoletext	(64 * 4 + 10 * 32, "Artist:", 0);
+		consoletext	(63 * 4 + 10 * 32 + 18, nsfHeader.ArtistName, 0);
+		consoletext	(64 * 4 + 12 * 32, "CR:", 0);
+		consoletext	(63 * 4 + 12 * 32 + 18, nsfHeader.CopyrightName, 0);
+
+		// consoletext	(64 * 4 + 14 * 32, "Expansion:", 0);
+		// consoletext	(63 * 4 + 14 * 32 + 18, nsfHeader.Expansion, 0);
+
+		// consoletext	(64 * 4 + 16 * 32, "Chip:", 0);
+		// consoletext	(63 * 4 + 16 * 32 + 18, nsfHeader.ExtraChipSelect, 0);
 		
-		for(i = 0; i < 4; i++) {
-			hex32(64 * 20 + i * 32, (u32)__memmap_tbl[i + 4] + 0x2000 * i + 0x8000);
-		}
+		// //for debugging
+		// for(i=0;i<15;i++) {
+		// 	hex32(64*7+i*32,ip[i]);
+		// }
+		consoletext	(64 * 16 + 0 * 32, "Song No:", 0);
+		hex8		(64 * 16 + 0 * 32 + 18, (__nsfSongNo + 1));
+		consoletext	(64 * 16 + 1 * 32, "Mode:", 0);
+		hex8		(64 * 16 + 1 * 32 + 18, __nsfSongMode);
+		consoletext	(64 * 16 + 2 * 32, "Playing:", 0);
+		hex8		(64 * 16 + 2 * 32 + 18, __nsfPlay);
+		consoletext	(64 * 16 + 3 * 32, "Mapper:", 0);
+		hex8		(64 * 16 + 3 * 32 + 18, mapperstate);
+
+		//for debugging
+		// for(i = 0; i < 4; i++) {
+		// 	hex32(64 * 20 + i * 32, (u32)__memmap_tbl[i + 4] + 0x2000 * i + 0x8000);
+		// }
 	} else if(debuginfo[MAPPER] == 20) {
 		u8 *p=(u8*)&mapperstate;//0x7000000;
 		u32 *ip=(u32*)&mapperstate;//0x7000000;

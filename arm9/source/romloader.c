@@ -58,6 +58,7 @@ int is_nsf_file(char *name, char *rom)
 		__nsfPlay = 0;
 		__nsfInit = 0;
 		IPC_MAPPER = 256;
+		fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
 		return 1;
 	}
 	__emuflags &= ~NSFFILE;
