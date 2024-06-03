@@ -17,7 +17,7 @@
 /* 32-12(max spd) > CPS_BITS */
 #define CPS_BITS 16
 
-#define VOL_SHIFT 8 //0
+#define VOL_SHIFT 9 //0
 
 static int apuirq = 0;
 
@@ -522,8 +522,8 @@ static NES_AUDIO_HANDLER s_apu_audio_handler[] =
 
 static void __fastcall APUSoundVolume(Uint volume)
 {
-	volume  = (volume << (LOG_BITS - 8)) << 1;
-	volume += (NSF_apu_volume << (LOG_BITS - 8)) << 1;
+	volume  = 127;
+	//volume += (NSF_apu_volume << (LOG_BITS - 8)) << 1;
 	
 	/* SND1 */
 	apu.square[0].mastervolume = volume;
@@ -533,8 +533,8 @@ static void __fastcall APUSoundVolume(Uint volume)
 	apu.triangle.mastervolume = volume;
 	apu.noise.mastervolume = volume;
 
-	volume += (NSF_dpcm_volume << (LOG_BITS - 8)) << 1;
-	apu.dpcm.mastervolume = volume + ((192 << (LOG_BITS - 8)) << 1);
+	volume += 127;
+	apu.dpcm.mastervolume = volume;
 }
 
 static NES_VOLUME_HANDLER s_apu_volume_handler[] = {
@@ -855,6 +855,7 @@ static NES_READ_HANDLER s_apu_read_handler[] =
 };
 */
 
+// Needs review
 void __fastcall APU4015Reg()
 {
 	static int oldkey = 0;
@@ -871,7 +872,7 @@ void __fastcall APU4015Reg()
 		key |= 16;
 	
 	key = key | 0x40 | apu.dpcm.irq_report;
-	if(oldkey != key || apuirq) 
+	if (oldkey != key || apuirq) 
 	{
 		IPC_REG4015 = key;
 		IPC_APUIRQ = apuirq;

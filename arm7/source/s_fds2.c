@@ -111,7 +111,7 @@ static NES_AUDIO_HANDLER s_fds_audio_handler[] =
 
 static void __fastcall FDSSoundVolume(Uint volume)
 {
-	fdssound.mastervolume = (volume << (LOG_BITS - 8)) << 1;
+	fdssound.mastervolume = volume;
 }
 
 static NES_VOLUME_HANDLER s_fds_volume_handler[] = {

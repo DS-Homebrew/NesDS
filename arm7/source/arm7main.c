@@ -178,7 +178,7 @@ int NS_VL = SOUND_VOL(0x7A); // VOL 0x7A
 int NS_PN = SOUND_PAN(0x45); // PAN 0X45
 
 // DMC
-int DM_VL = SOUND_VOL(0x6F); // VOL 0x6F
+int DM_VL = SOUND_VOL(0x75); // VOL 0x6F
 int DM_PN = SOUND_PAN(0x40); // PAN 0x40
 
 // FDS
@@ -483,7 +483,7 @@ void mix(int chan)
 			}
 
 		pcmBuffer+=MIXBUFSIZE;	
-        if (mapper == 24 || mapper == 26 || mapper == 256 || mapper == 6502) 
+        if (mapper == 24 || mapper == 26 || mapper == 256)
 		{
             for (i = 0; i < MIXBUFSIZE; i++)
 			{
