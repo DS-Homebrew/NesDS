@@ -71,7 +71,7 @@ _00:@   BRK
 	bl debugstep
 
 	ldr_ r0,m6502LastBank
-	sub r1,m6502_pc,r0
+	sub r1,m6502pc,r0
 	add r0,r1,#1
 	push16			@save PC
 
@@ -137,8 +137,8 @@ _0E:@   ASL $nnnn
 _10:@   BPL *
 @---------------------------------------------------------------------------------
 	tst m6502_nz,#0x80000000
-	ldrsb r0,[m6502_pc],#1
-	addeq m6502_pc,m6502_pc,r0
+	ldrsb r0,[m6502pc],#1
+	addeq m6502pc,m6502pc,r0
 	subeq cycles,cycles,#3*CYCLE
 	fetch 2
 @---------------------------------------------------------------------------------
@@ -187,11 +187,11 @@ _1E:@   ASL $nnnn,X
 @---------------------------------------------------------------------------------
 _20:@   JSR $nnnn
 @---------------------------------------------------------------------------------
-	ldrb r2,[m6502_pc],#1
+	ldrb r2,[m6502pc],#1
 	ldr_ r1,m6502LastBank
-	sub r0,m6502_pc,r1
-	ldrb r1,[m6502_pc]
-	orr m6502_pc,r2,r1,lsl#8
+	sub r0,m6502pc,r1
+	ldrb r1,[m6502pc]
+	orr m6502pc,r2,r1,lsl#8
 	push16
 	encodePC
 	fetch 6
@@ -262,8 +262,8 @@ _2E:@   ROL $nnnn
 _30:@   BMI *
 @---------------------------------------------------------------------------------
 	tst m6502_nz,#0x80000000
-	ldrsb r0,[m6502_pc],#1
-	addne m6502_pc,m6502_pc,r0
+	ldrsb r0,[m6502pc],#1
+	addne m6502pc,m6502pc,r0
 	subne cycles,cycles,#3*CYCLE
 	fetch 2
 @---------------------------------------------------------------------------------
@@ -357,9 +357,9 @@ _4A:@   LSR
 @---------------------------------------------------------------------------------
 _4C:@   JMP $nnnn
 @---------------------------------------------------------------------------------
-	ldrb r0,[m6502_pc],#1
-	ldrb r1,[m6502_pc]
-	orr m6502_pc,r0,r1,lsl#8
+	ldrb r0,[m6502pc],#1
+	ldrb r1,[m6502pc]
+	orr m6502pc,r0,r1,lsl#8
 	encodePC
 	fetch 3
 @---------------------------------------------------------------------------------
@@ -378,8 +378,8 @@ _4E:@   LSR $nnnn
 _50:@   BVC *
 @---------------------------------------------------------------------------------
 	tst cycles,#CYC_V
-	ldrsb r0,[m6502_pc],#1
-	addeq m6502_pc,m6502_pc,r0
+	ldrsb r0,[m6502pc],#1
+	addeq m6502pc,m6502pc,r0
 	subeq cycles,cycles,#3*CYCLE
 	fetch 2
 @---------------------------------------------------------------------------------
@@ -429,7 +429,7 @@ _5E:@   LSR $nnnn,X
 _60:@   RTS
 @---------------------------------------------------------------------------------
 	pop16
-	add m6502_pc,m6502_pc,#1
+	add m6502pc,m6502pc,#1
 	encodePC
 	fetch 6
 @---------------------------------------------------------------------------------
@@ -478,9 +478,9 @@ _6C:@   JMP ($nnnn)
 	adr_ r1,m6502MemTbl
 	and r2,addy,#0xE000
 	ldr r1,[r1,r2,lsr#11]
-	ldrb m6502_pc,[r1,addy]!
+	ldrb m6502pc,[r1,addy]!
 	ldrb r0,[r1,#1]
-	orr m6502_pc,m6502_pc,r0,lsl#8
+	orr m6502pc,m6502pc,r0,lsl#8
 	encodePC
 	fetch 5
 @---------------------------------------------------------------------------------
@@ -499,8 +499,8 @@ _6E:@   ROR $nnnn
 _70:@   BVS *
 @---------------------------------------------------------------------------------
 	tst cycles,#CYC_V
-	ldrsb r0,[m6502_pc],#1
-	addne m6502_pc,m6502_pc,r0
+	ldrsb r0,[m6502pc],#1
+	addne m6502pc,m6502pc,r0
 	subne cycles,cycles,#3*CYCLE
 	fetch 2
 @---------------------------------------------------------------------------------
@@ -603,8 +603,8 @@ _8E:@   STX $nnnn
 _90:@   BCC *
 @---------------------------------------------------------------------------------
 	tst cycles,#CYC_C			@Test Carry
-	ldrsb r0,[m6502_pc],#1
-	addeq m6502_pc,m6502_pc,r0
+	ldrsb r0,[m6502pc],#1
+	addeq m6502pc,m6502pc,r0
 	subeq cycles,cycles,#3*CYCLE
 	fetch 2
 @---------------------------------------------------------------------------------
@@ -731,8 +731,8 @@ _AE:@   LDX $nnnn
 _B0:@   BCS *
 @---------------------------------------------------------------------------------
 	tst cycles,#CYC_C			@Test Carry
-	ldrsb r0,[m6502_pc],#1
-	addne m6502_pc,m6502_pc,r0
+	ldrsb r0,[m6502pc],#1
+	addne m6502pc,m6502pc,r0
 	subne cycles,cycles,#3*CYCLE
 	fetch 2
 @---------------------------------------------------------------------------------
@@ -865,8 +865,8 @@ _CE:@   DEC $nnnn
 _D0:@   BNE *
 @---------------------------------------------------------------------------------
 	tst m6502_nz,#0xff
-	ldrsb r0,[m6502_pc],#1
-	addne m6502_pc,m6502_pc,r0
+	ldrsb r0,[m6502pc],#1
+	addne m6502pc,m6502pc,r0
 	subne cycles,cycles,#3*CYCLE
 	fetch 2
 @---------------------------------------------------------------------------------
@@ -978,8 +978,8 @@ _EE:@   INC $nnnn
 _F0:@   BEQ *
 @---------------------------------------------------------------------------------
 	tst m6502_nz,#0xff
-	ldrsb r0,[m6502_pc],#1
-	addeq m6502_pc,m6502_pc,r0
+	ldrsb r0,[m6502pc],#1
+	addeq m6502pc,m6502pc,r0
 	subeq cycles,cycles,#3*CYCLE
 	fetch 2
 @---------------------------------------------------------------------------------
@@ -1117,7 +1117,7 @@ line241NMI:
 
 	@--- end of EMU_Run
 	adr_ r2,cpuregs
-	stmia r2,{m6502_nz-m6502_pc}	@save 6502 state
+	stmia r2,{m6502_nz-m6502pc}	@save 6502 state
 
 	bl refreshNESjoypads
 
@@ -1126,7 +1126,7 @@ line241NMI:
 	adr lr, 2f
 	ldr_ pc, endFrameHook
 2:
-	ldmfd sp!,{m6502_nz-m6502_pc,globalptr,cpu_zpage,pc}
+	ldmfd sp!,{m6502_nz-m6502pc,globalptr,m6502zpage,pc}
 
 @---------------------------------------------------------------------------------
 NSF_Run:
@@ -1143,7 +1143,7 @@ NSF_Run:
 	beq noinit
 
 	mov r0, #0
-	mov r1, cpu_zpage
+	mov r1, m6502zpage
 	ldr r2, =0x2000/4
 	bl filler
 
@@ -1171,7 +1171,7 @@ NSF_Run:
 		mov r0, #0xe8
 		bl soundwrite
 
-	ldr m6502_pc, =0x4710
+	ldr m6502pc, =0x4710
 	encodePC
 	ldr_ m6502_a, nsfsongno
 	orr m6502_a, m6502_a, m6502_a, lsl#24
@@ -1190,11 +1190,11 @@ noinit:
 	add cycles,cycles,r0, lsl#8
 
 	ldr_ r1,m6502LastBank
-	sub m6502_pc,m6502_pc,r1
-	cmp m6502_pc, #0x4700
+	sub m6502pc,m6502pc,r1
+	cmp m6502pc, #0x4700
 	ldrne_ pc,scanlineHook
 
-	ldr m6502_pc, =0x4720
+	ldr m6502pc, =0x4720
 	encodePC
 	ldr r0,=NES_RAM+0x100
 	str_ r0, m6502_s
@@ -1205,7 +1205,7 @@ noplay:
 	ldr_ r0,cyclesPerScanline
 	add cycles,cycles,r0, lsl#8
 
-	ldr m6502_pc, =0x4700
+	ldr m6502pc, =0x4700
 	encodePC
 	ldr r0,=NES_RAM+0x100
 	str_ r0, m6502_s
@@ -1213,19 +1213,19 @@ noplay:
 
 nsf_out:
 	adr_ r2,cpuregs
-	stmia r2,{m6502_nz-m6502_pc}	@save 6502 state
+	stmia r2,{m6502_nz-m6502pc}	@save 6502 state
 	bl updatesound
-	ldmfd sp!,{m6502_nz-m6502_pc,globalptr,cpu_zpage,pc}
+	ldmfd sp!,{m6502_nz-m6502pc,globalptr,m6502zpage,pc}
 @---------------------------------------------------------------------------------
 EMU_Run:
 @---------------------------------------------------------------------------------
-	stmfd sp!,{m6502_nz-m6502_pc,globalptr,cpu_zpage,lr}
+	stmfd sp!,{m6502_nz-m6502pc,globalptr,m6502zpage,lr}
 
 	ldr globalptr,=globals
-	ldr cpu_zpage,=NES_RAM
+	ldr m6502zpage,=NES_RAM
 
 	adr_ r0,cpuregs
-	ldmia r0,{m6502_nz-m6502_pc}	@restore 6502 state
+	ldmia r0,{m6502_nz-m6502pc}	@restore 6502 state
 
 
 	ldr_ r0,cyclesPerScanline
@@ -1302,7 +1302,7 @@ irq6502:
 Vec6502:
 @---------------------------------------------------------------------------------
 	ldr_ r0,m6502LastBank
-	sub r0,m6502_pc,r0
+	sub r0,m6502pc,r0
 	push16					@save PC
 
 	encodeP (R)				@save P
@@ -1313,9 +1313,9 @@ VecCont:
 @	bic cycles,cycles,#CYC_D	@and decimal mode
 
 	ldr_ r0,m6502MemTbl+7*4
-	ldrb m6502_pc,[r0,r12]!
+	ldrb m6502pc,[r0,r12]!
 	ldrb r2,[r0,#1]
-	orr m6502_pc,m6502_pc,r2,lsl#8
+	orr m6502pc,m6502pc,r2,lsl#8
 	encodePC				@get IRQ vector
 
 	bx lr
@@ -1369,7 +1369,7 @@ CPU_reset:	@called by loadcart (r0-r9 are free to use)
 	bl Vec6502
 
 	adr_ r0,cpuregs
-	stmia r0,{m6502_nz-m6502_pc}
+	stmia r0,{m6502_nz-m6502pc}
 	ldr pc,[sp],#4
 @---------------------------------------------------------------------------------
 debugwrite:
@@ -1382,7 +1382,7 @@ debugwrite:
 debugstep:
 	stmfd sp!, {r0-r3, lr}
 	adr_ r2,cpuregs
-	stmia r2,{m6502_nz-m6502_pc}		@refresh 6502 state
+	stmia r2,{m6502_nz-m6502pc}		@refresh 6502 state
 	bl stepdebug
 
 	ldmfd sp!, {r0-r3, pc}
@@ -1475,12 +1475,12 @@ ppustate:
 	.word 0 @vramAddr2 (temp)
 	.word 0 @scrollX
 	.word 0 @scrollY
-	.word 0 @scrollYtemp
-	.word 0 @sprite0y
+	.word 0 @scrollYTemp
+	.word 0 @sprite0Y
 	.word 0 @readTemp
 	.word 0 @bg0Cnt (mirroring control)
 
-	.byte 0 @sprite0x
+	.byte 0 @sprite0X
 	.byte 1 @vramAddrInc
 	.byte 0 @ppuStat
 	.byte 0 @toggle
@@ -1568,7 +1568,7 @@ __af_state:
 	.word 0		@af_state
 __af_start:
 	.word 0x101	@af_start 30 fps
-__palsyncline:
+__palSyncLine:
 	.word 0
 __cartflags:
 	.byte 0 	@cartFlags

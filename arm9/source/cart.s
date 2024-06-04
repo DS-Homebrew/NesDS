@@ -121,7 +121,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	stmfd sp!,{r4-r11,lr}
 
 	ldr globalptr,=globals		@init ptr regs
-	ldr cpu_zpage,=NES_RAM
+	ldr m6502zpage,=NES_RAM
 
 	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
@@ -164,6 +164,12 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	ldrmi r0,=NES_VRAM
 	strmi_ r0,vromBase		@vromBase=NES VRAM if vromSize=0
 
+	ldr r0,=void
+	ldrmi r0,=VRAM_chr		@ enable/disable chr write
+	ldr r1,=vram_write_tbl	@ set the first 8 function pointers to 'void'?
+	mov r2,#8
+	bl filler
+
 	stmfd sp!, {r3, r12}
 	mov r0, #0			@init val, cal crc for prgrom
 	ldr_ r1, romBase		@src
@@ -174,14 +180,8 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	DEBUGINFO PRGCRC, r0
 	ldmfd sp!, {r3, r12}
 
-	ldr r0,=void
-	ldrmi r0,=VRAM_chr		@enable/disable chr write
-	ldr r1,=vram_write_tbl		@ set the first 8 function pointers to 'void'?
-	mov r2,#8
-	bl filler
-
-	mov m6502_pc,#0			@(eliminates any encodePC errors during mapper*init)
-	str_ m6502_pc,m6502LastBank
+	mov m6502pc,#0			@ (eliminates any encodePC errors during mapper*init)
+	str_ m6502pc,m6502LastBank
 
 	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
@@ -204,11 +204,11 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	str_ r0,scanlineHook		@no mapper irq
 
 	mov r0,#0x0			@clear nes ram		reset value changed from 0xFFFFFFFF to 0x0
-	mov r1,cpu_zpage		@cpu_zpage,=NES_RAM
-	mov r2,#0x800/4			
+	mov r1,m6502zpage		@m6502zpage,=NES_RAM
+	mov r2,#0x800/4
 	bl filler			@reset NES RAM
 	mov r0,#0				@clear nes sram
-	add r1,cpu_zpage,#0x800		@save ram = SRAM
+	add r1,m6502zpage,#0x800		@save ram = SRAM
 	mov r2,#0x2000/4
 	bl filler
 	ldr r1,=mapperstate		@clear mapperData so we dont have to do that in every MapperInit.
@@ -216,7 +216,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	bl filler
 
 	mov r0,#0x7c			@I didnt like the way below to change the init mem for fixing some games.
-	mov r1,cpu_zpage
+	mov r1,m6502zpage
 	ldr r2,=0x247d			@0x7c7d
 	strb r0,[r1,r2]			@for "Low G Man".
 	add r2,r2,#0x100
@@ -416,7 +416,7 @@ NES_reset:
 	stmfd sp!,{r4-r11,lr}
 
 	ldr globalptr,=globals		@need this?
-	ldr cpu_zpage,=NES_RAM
+	ldr m6502zpage,=NES_RAM
 
 	bl PPU_reset
 	bl IO_reset
@@ -519,9 +519,9 @@ map89AB_:
 	add r0,r1,r0,lsl#14
 	str_ r0,m6502MemTbl+16
 	str_ r0,m6502MemTbl+20
-flush:		@update m6502_pc & m6502LastBank
+flush:		@update m6502pc & m6502LastBank
 	ldr_ r1,m6502LastBank
-	sub m6502_pc,m6502_pc,r1
+	sub m6502pc,m6502pc,r1
 	encodePC
 	bx lr
 @---------------------------------------------------------------------------------
