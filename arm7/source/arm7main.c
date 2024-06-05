@@ -184,7 +184,7 @@ int DM_VL = SOUND_VOL(0x78); // VOL 0x6F
 int DM_PN = SOUND_PAN(0x40); // PAN 0x40
 
 // FDS
-int F1_VL = SOUND_VOL(0x7F); // VOL 0x7F
+int F1_VL = SOUND_VOL(0x5F); // VOL 0x7F
 int F1_PN = SOUND_PAN(0x40); // PAN 0X40
 
 // VRC6 Square 1
@@ -337,7 +337,7 @@ int32_t VRC6SoundRender3();
 // VRC must be inited to get raw pcm data from ARM9
 void VRC6SoundInstall_24();
 void VRC6SoundInstall_26();
-void FDSSoundInstall();
+// void FDSSoundInstall();
 void readAPU();
 
 //Set Default Filter Type
