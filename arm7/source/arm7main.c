@@ -481,9 +481,10 @@ void mix(int chan)
 		    pcmBuffer+=MIXBUFSIZE;
 			}
 
-		pcmBuffer+=MIXBUFSIZE;	
+		//pcmBuffer+=MIXBUFSIZE;	
         if (mapper == 24 || mapper == 26 || mapper == 256)
 		{
+			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++)
 			{
 				short int input = (adjust_vrc(VRC6SoundRender1(), 5)) << 6;
