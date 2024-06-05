@@ -7,6 +7,8 @@
 #include "calc_lut.h"
 #include "mixer.h"
 #include "audio_capture.h"
+#include "s_vrc6.h"
+
 
 s16 buffer [MIXBUFSIZE * 20]; // Sound Samples Buffer Size, adjust size if necessary
 
@@ -333,7 +335,8 @@ int32_t VRC6SoundRender2();
 int32_t VRC6SoundRender3();
 
 // VRC must be inited to get raw pcm data from ARM9
-void VRC6SoundInstall();
+void VRC6SoundInstall_24();
+void VRC6SoundInstall_26();
 void FDSSoundInstall();
 void readAPU();
 
@@ -422,6 +425,25 @@ static short int accum;
 void mix(int chan)
 {
     int mapper = IPC_MAPPER;
+
+	int32_t (*VRC6SoundRender1)();
+    int32_t (*VRC6SoundRender2)();
+    int32_t (*VRC6SoundRender3)();
+
+    if (mapper == 24) {
+        VRC6SoundRender1 = VRC6SoundRender1_24;
+        VRC6SoundRender2 = VRC6SoundRender2_24;
+        VRC6SoundRender3 = VRC6SoundRender3_24;
+    } else if (mapper == 26) {
+        VRC6SoundRender1 = VRC6SoundRender1_26;
+        VRC6SoundRender2 = VRC6SoundRender2_26;
+        VRC6SoundRender3 = VRC6SoundRender3_26;
+    } else {
+        VRC6SoundRender1 = NULL;
+        VRC6SoundRender2 = NULL;
+        VRC6SoundRender3 = NULL;
+    }
+
     if (!APU_paused) 
 	{
         int i;
@@ -482,7 +504,7 @@ void mix(int chan)
 			}
 
 		//pcmBuffer+=MIXBUFSIZE;	
-        if (mapper == 24 || mapper == 26 || mapper == 256)
+        if (VRC6SoundRender1 && VRC6SoundRender2 && VRC6SoundRender3)
 		{
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++)
@@ -717,7 +739,8 @@ void nesmain()
 	// Change func name to "DPCMSoundInstall();"
 	APUSoundInstall();
 	FDSSoundInstall();
-	VRC6SoundInstall();
+	VRC6SoundInstall_24();
+	VRC6SoundInstall_26();
 	
 	resetAPU();
 	NESVolume(0);
