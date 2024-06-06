@@ -129,13 +129,13 @@ void VRC6SoundWriteB000_24(Uint address, Uint value)
 	vrc6s.saw.update |= 1 << (address & 3); 
 }
 
-static NES_WRITE_HANDLER s_vrc6_write_handler_24[] =
-{
-	{ 0x9000, 0x9002, VRC6SoundWrite9000_24, },
-	{ 0xA000, 0xA002, VRC6SoundWriteA000_24, },
-	{ 0xB000, 0xB002, VRC6SoundWriteB000_24, },
-	{ 0,      0,      0, 				  },
-};
+// static NES_WRITE_HANDLER s_vrc6_write_handler_24[] =
+// {
+// 	{ 0x9000, 0x9002, VRC6SoundWrite9000_24, },
+// 	{ 0xA000, 0xA002, VRC6SoundWriteA000_24, },
+// 	{ 0xB000, 0xB002, VRC6SoundWriteB000_24, },
+// 	{ 0,      0,      0, 				  },
+// };
 
 static NES_RESET_HANDLER s_vrc6_reset_handler_24[] = {
 	{ NES_RESET_SYS_NOMAL, VRC6SoundReset, }, 
