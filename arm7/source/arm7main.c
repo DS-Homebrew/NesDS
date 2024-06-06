@@ -1,4 +1,5 @@
 #include <nds.h>
+#include <nds/arm7/audio.h>
 #include <string.h>
 #include "c_defs.h"
 #include "SoundIPC.h"
@@ -6,9 +7,7 @@
 #include "handler.h"
 #include "calc_lut.h"
 #include "mixer.h"
-#include "audio_capture.h"
 #include "s_vrc6.h"
-
 
 s16 buffer [MIXBUFSIZE * 20]; // Sound Samples Buffer Size, adjust size if necessary
 
