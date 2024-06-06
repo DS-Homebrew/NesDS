@@ -111,7 +111,7 @@ int pcmprevol = 0x3F;
 
 			// This needs to be changed along with the Frequency
 			// 152 for freq 24064Hz (697 timer freq) 
-			// and 200 for DS frequency (32768Hz, 511 timer freq).
+			// and 207 for DS frequency (32768Hz, 511 timer freq).
 			// TODO: Add autoajust ratio formula, line/freq ratio yet unknown.
 			if(line >= 207)
 			{
@@ -145,8 +145,6 @@ int pcmprevol = 0x3F;
 static int chan = 0;
 int ENBLD = SCHANNEL_ENABLE;
 int RPEAT = SOUND_REPEAT;
-int FRQ32 = SNDEXTCNT_FREQ_32KHZ;
-int FRQ47 = SNDEXTCNT_FREQ_47KHZ;
 int PCM_8 = SOUND_FORMAT_8BIT;
 int PCM16 = SOUND_FORMAT_16BIT;
 int ADPCM = SOUND_FORMAT_ADPCM;
@@ -212,72 +210,54 @@ void restartsound(int ch)
 					//Pulse1_volume()|
 					P1_VL |
 					P1_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 	
 	SCHANNEL_CR(1) = ENBLD |
 					RPEAT |
 					P2_VL |
 					P2_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	SCHANNEL_CR(2) = ENBLD |
 					RPEAT |
 					TR_VL |
 					TR_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	SCHANNEL_CR(3) = ENBLD |
 					RPEAT |
 					NS_VL |
 					NS_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	SCHANNEL_CR(4) = ENBLD |
 					RPEAT |
 					DM_VL |
 					DM_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 	
 	SCHANNEL_CR(5) = ENBLD |
 					RPEAT |
 					F1_VL |
 					F1_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	SCHANNEL_CR(6) = ENBLD |
 					RPEAT |
 					V1_VL |
 					V1_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 	
 	SCHANNEL_CR(7) = ENBLD |
 					RPEAT |
 					V2_VL |
 					V2_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 	
 	SCHANNEL_CR(8) = ENBLD |
 					RPEAT |
 					V3_VL |
 					V3_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 //TODO: Channel 9-11 reserved to mix Konami VCR7 Audio ("Lagrange Point" is the only game that uses this.)
@@ -288,8 +268,6 @@ void restartsound(int ch)
 					RPEAT |
 					RP_VL |
 					RP_PN |
-					FRQ47 |
-					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
 	TIMER_CR(0) = TIMER_ENABLE; 
