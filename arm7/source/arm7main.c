@@ -76,11 +76,15 @@ static inline short adjust_vrc(short sample, int freq_shift)
 }
 
 
-// Only works well with 24064 sound frequency, needs review
+// NES APU Reg $4011, RAW PCM
 void Raw_PCM_Channel(u8 *buffer)
 {
 static unsigned char pcm_out = 0x7F;
-int pcm_line = 120;
+// This needs to be changed along with the Frequency
+// 120 for freq 24064Hz (697 timer freq) 
+// and 163 for DS frequency (32768Hz, 511 timer freq).
+// TODO: Add autoajust ratio formula, line/freq ratio yet unknown.
+int pcm_line = 163;
 int pcmprevol = 0x3F;	
 
 	u8 *in = IPC_PCMDATA;
@@ -104,11 +108,16 @@ int pcmprevol = 0x3F;
 			*buffer++ = (pcm_out + pcmprevol - 0x80);
 			pcmprevol = pcm_out;
 			line += 100;
-			if(line >= 152)
+
+			// This needs to be changed along with the Frequency
+			// 152 for freq 24064Hz (697 timer freq) 
+			// and 200 for DS frequency (32768Hz, 511 timer freq).
+			// TODO: Add autoajust ratio formula, line/freq ratio yet unknown.
+			if(line >= 207)
 			{
-				line -= 152;
+				line -= 207;
 				pcm_line++;
-				if(pcm_line > 262) 
+				if(pcm_line > 262)
 				{
 					pcm_line = 0;
 				}
@@ -281,7 +290,7 @@ void restartsound(int ch)
 					RP_PN |
 					FRQ47 |
 					SNDEXTCNT_ENABLE|
-					PCM_8 ;
+					PCM16 ;
 
 	TIMER_CR(0) = TIMER_ENABLE; 
 	TIMER_CR(1) = TIMER_CASCADE | TIMER_IRQ_REQ | TIMER_ENABLE;
@@ -533,7 +542,7 @@ void initsound()
 	SCHANNEL_TIMER(6) = TIMER_NFREQ;
 	SCHANNEL_TIMER(7) = TIMER_NFREQ;
 	SCHANNEL_TIMER(8) = TIMER_NFREQ;
-	SCHANNEL_TIMER(10) = TIMER_NFREQ;
+	SCHANNEL_TIMER(10) = TIMER_NFREQ << 1;
 
 	SCHANNEL_LENGTH(0) = MIXBUFSIZE;
 	SCHANNEL_LENGTH(1) = MIXBUFSIZE;
