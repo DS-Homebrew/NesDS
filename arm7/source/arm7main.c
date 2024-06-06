@@ -77,13 +77,6 @@ static inline short adjust_vrc(short sample, int freq_shift)
 	return sample << freq_shift;
 }
 
-// From GBATEK: timerval = -(33513982Hz/2)/freq
-int inline SetTmrFreq(void)
-{
-	int TmrFreq;
-		TmrFreq = (TIMER_FREQ_SHIFT(MIXFREQ,1,1));
-	return TmrFreq;
-}
 
 // Only works well with 24064 sound frequency, needs review
 void Raw_PCM_Channel(u8 *buffer)
@@ -292,8 +285,8 @@ void restartsound(int ch)
 					SNDEXTCNT_ENABLE|
 					PCM16 ;
 
-	TIMER0_CR = TIMER_ENABLE; 
-	TIMER1_CR = TIMER_CASCADE | TIMER_IRQ_REQ | TIMER_ENABLE;
+	TIMER_CR(0) = TIMER_ENABLE; 
+	TIMER_CR(1) = TIMER_CASCADE | TIMER_IRQ_REQ | TIMER_ENABLE;
 }
 
 void stopsound() 
@@ -308,8 +301,8 @@ void stopsound()
 	SCHANNEL_CR(7) = 0;
 	SCHANNEL_CR(8) = 0;
 	SCHANNEL_CR(10) = 0;
-	TIMER0_CR = 0;
-	TIMER1_CR = 0;
+	TIMER_CR(1) = 0;
+	TIMER_CR(0) = 0;
 }
 
 int pcmpos = 0;
@@ -558,16 +551,16 @@ void initsound()
 	SCHANNEL_SOURCE(8) = (u32)&buffer[16*MIXBUFSIZE];
 	SCHANNEL_SOURCE(10) = (u32)&buffer[18*MIXBUFSIZE];
 
-	SCHANNEL_TIMER(0) = SetTmrFreq();
-	SCHANNEL_TIMER(1) = SetTmrFreq();
-	SCHANNEL_TIMER(2) = SetTmrFreq();
-	SCHANNEL_TIMER(3) = SetTmrFreq();
-	SCHANNEL_TIMER(4) = SetTmrFreq();
-	SCHANNEL_TIMER(5) = SetTmrFreq();
-	SCHANNEL_TIMER(6) = SetTmrFreq();
-	SCHANNEL_TIMER(7) = SetTmrFreq();
-	SCHANNEL_TIMER(8) = SetTmrFreq();
-	SCHANNEL_TIMER(10) = SetTmrFreq() << 1;
+	SCHANNEL_TIMER(0) = TIMER_NFREQ;
+	SCHANNEL_TIMER(1) = TIMER_NFREQ;
+	SCHANNEL_TIMER(2) = TIMER_NFREQ;
+	SCHANNEL_TIMER(3) = TIMER_NFREQ;
+	SCHANNEL_TIMER(4) = TIMER_NFREQ;
+	SCHANNEL_TIMER(5) = TIMER_NFREQ;
+	SCHANNEL_TIMER(6) = TIMER_NFREQ;
+	SCHANNEL_TIMER(7) = TIMER_NFREQ;
+	SCHANNEL_TIMER(8) = TIMER_NFREQ;
+	SCHANNEL_TIMER(10) = TIMER_NFREQ;
 
 	SCHANNEL_LENGTH(0) = MIXBUFSIZE;
 	SCHANNEL_LENGTH(1) = MIXBUFSIZE;
@@ -591,8 +584,8 @@ void initsound()
 	SCHANNEL_REPEAT_POINT(8) = 0;
 	SCHANNEL_REPEAT_POINT(10) = 0;
 
-	TIMER0_DATA = SetTmrFreq() << 1;
-	TIMER1_DATA = 0x10000 - MIXBUFSIZE;
+	TIMER_DATA(0) = TIMER_NFREQ << 1;
+	TIMER_DATA(1) = 0x10000 - MIXBUFSIZE;
 	memset(buffer, 0, sizeof(buffer));
 
 	memset(IPC_PCMDATA, 0, 512);
@@ -731,7 +724,7 @@ void interrupthandler()
 
 void nesmain() 
 {
-	NESAudioFrequencySet(MIXFREQ);
+	//NESAudioFrequencySet(MIXFREQ);
 	//NESTerminate();
 	//NESHandlerInitialize();
 	//NESAudioHandlerInitialize();

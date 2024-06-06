@@ -7,7 +7,7 @@
 
 #define SHIFT_BITS 8
 
-Uint frequency = NES_SAMPLE_RATE;
+Uint frequency = MIXFREQ;
 static Uint channel = 1;
 
 static NES_AUDIO_HANDLER *nah = 0;
@@ -126,10 +126,10 @@ void NESAudioHandlerInitialize(void)
 	nvh = 0;
 }
 
-void NESAudioFrequencySet(Uint freq)
-{
-	frequency = freq;
-}
+// void NESAudioFrequencySet(Uint freq)
+// {
+// 	frequency = freq;
+// }
 
 Uint NESAudioFrequencyGet(void)
 {
