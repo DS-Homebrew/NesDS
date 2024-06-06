@@ -26,11 +26,11 @@ N = 0x80
 .endm
 
 .macro encodePC		@translate from 6502 PC to rom offset
-	and r1,m6502_pc,#0xE000
+	and r1,m6502pc,#0xE000
 	adr_ r2,m6502MemTbl
 	ldr r0,[r2,r1,lsr#11]
 	str_ r0,m6502LastBank
-	add m6502_pc,m6502_pc,r0
+	add m6502pc,m6502pc,r0
 .endm
 
 .macro encodeP extra	@pack 6502 flags into r0
@@ -52,7 +52,7 @@ N = 0x80
 
 .macro fetch count
 	subs cycles,cycles,#\count*3*CYCLE
-	ldrplb r0,[m6502_pc],#1
+	ldrplb r0,[m6502pc],#1
 	ldrpl pc,[m6502_optbl,r0,lsl#2]
 	ldr_ pc,nexttimeout
 .endm
@@ -60,7 +60,7 @@ N = 0x80
 .macro fetch_c count	@same as fetch except it adds the Carry (bit 0) also.
 						@This is unsafe By huiminghao.
 	sbcs cycles,cycles,#\count*3*CYCLE
-	ldrplb r0,[m6502_pc],#1
+	ldrplb r0,[m6502pc],#1
 	ldrpl pc,[m6502_optbl,r0,lsl#2]
 	ldr_ pc,nexttimeout
 .endm
@@ -77,23 +77,23 @@ N = 0x80
 .endm
 
 .macro readmemzp
-	ldrb r0,[cpu_zpage,addy]
+	ldrb r0,[m6502zpage,addy]
 .endm
 
 .macro readmemzpi
-	ldrb r0,[cpu_zpage,addy,lsr#24]
+	ldrb r0,[m6502zpage,addy,lsr#24]
 .endm
 
 .macro readmemzps
-	ldrsb m6502_nz,[cpu_zpage,addy]
+	ldrsb m6502_nz,[m6502zpage,addy]
 .endm
 
 .macro readmemimm
-	ldrb r0,[m6502_pc],#1
+	ldrb r0,[m6502pc],#1
 .endm
 
 .macro readmemimms
-	ldrsb m6502_nz,[m6502_pc],#1
+	ldrsb m6502_nz,[m6502pc],#1
 .endm
 
 .macro readmem
@@ -134,11 +134,11 @@ N = 0x80
 .endm
 
 .macro writememzp
-	strb r0,[cpu_zpage,addy]
+	strb r0,[m6502zpage,addy]
 .endm
 
 .macro writememzpi
-	strb r0,[cpu_zpage,addy,lsr#24]
+	strb r0,[m6502zpage,addy,lsr#24]
 .endm
 
 .macro writemem
@@ -169,15 +169,15 @@ N = 0x80
 	strb_ r2,m6502_s
 .endm		@r2=?
 
-.macro pop16		@pop m6502_pc
+.macro pop16		@pop m6502pc
 	ldrb_ r2,m6502_s
 	add r2,r2,#2
 	strb_ r2,m6502_s
 	ldr_ r2,m6502_s
 	ldrb r0,[r2],#-1
 	orr r2,r2,#0x100
-	ldrb m6502_pc,[r2]
-	orr m6502_pc,m6502_pc,r0,lsl#8
+	ldrb m6502pc,[r2]
+	orr m6502pc,m6502pc,r0,lsl#8
 .endm		@r0,r1=?
 
 .macro pop8 x
@@ -185,11 +185,11 @@ N = 0x80
 	add r2,r2,#1
 	strb_ r2,m6502_s
 	orr r2,r2,#0x100
-	ldrsb \x,[r2,cpu_zpage]		@signed for PLA & PLP
+	ldrsb \x,[r2,m6502zpage]	@signed for PLA & PLP
 .endm	@r2=?
 
 @----------------------------------------------------------------------------
-@doXXX: load addy, increment m6502_pc
+@doXXX: load addy, increment m6502pc
 
 	@GBLA _type
 
@@ -200,15 +200,15 @@ _ABS	= 4						@absolute
 
 .macro doABS                           @absolute               $nnnn
 	_type	=      _ABS
-	ldrb addy,[m6502_pc],#1
-	ldrb r0,[m6502_pc],#1
+	ldrb addy,[m6502pc],#1
+	ldrb r0,[m6502pc],#1
 	orr addy,addy,r0,lsl#8
 .endm
 
 .macro doAIX                           @absolute indexed X     $nnnn,X
 	_type	=      _ABS
-	ldrb addy,[m6502_pc],#1
-	ldrb r0,[m6502_pc],#1
+	ldrb addy,[m6502pc],#1
+	ldrb r0,[m6502pc],#1
 	orr addy,addy,r0,lsl#8
 	add addy,addy,m6502_x,lsr#24
 @	bic addy,addy,#0xff0000 @Base Wars needs this
@@ -216,8 +216,8 @@ _ABS	= 4						@absolute
 
 .macro doAIY                           @absolute indexed Y     $nnnn,Y
 	_type	=      _ABS
-	ldrb addy,[m6502_pc],#1
-	ldrb r0,[m6502_pc],#1
+	ldrb addy,[m6502pc],#1
+	ldrb r0,[m6502pc],#1
 	orr addy,addy,r0,lsl#8
 	add addy,addy,m6502_y,lsr#24
 @	bic addy,addy,#0xff0000 @Tecmo Bowl needs this
@@ -229,18 +229,18 @@ _ABS	= 4						@absolute
 
 .macro doIIX                           @indexed indirect X     ($nn,X)
 	_type	=      _ABS
-	ldrb r0,[m6502_pc],#1
+	ldrb r0,[m6502pc],#1
 	add r0,m6502_x,r0,lsl#24
-	ldrb addy,[cpu_zpage,r0,lsr#24]
+	ldrb addy,[m6502zpage,r0,lsr#24]
 	add r0,r0,#0x01000000
-	ldrb r1,[cpu_zpage,r0,lsr#24]
+	ldrb r1,[m6502zpage,r0,lsr#24]
 	orr addy,addy,r1,lsl#8
 .endm
 
 .macro doIIY                           @indirect indexed Y     ($nn),Y
 	_type	=      _ABS
-	ldrb r0,[m6502_pc],#1
-	ldrb addy,[r0,cpu_zpage]!
+	ldrb r0,[m6502pc],#1
+	ldrb addy,[r0,m6502zpage]!
 	ldrb r1,[r0,#1]
 	orr addy,addy,r1,lsl#8
 	add addy,addy,m6502_y,lsr#24
@@ -249,45 +249,45 @@ _ABS	= 4						@absolute
 
 .macro doZPI							@Zeropage indirect     ($nn)
 _type	=      _ABS
-	ldrb r0,[m6502_pc],#1
-	ldrb addy,[r0,cpu_zpage]!
+	ldrb r0,[m6502pc],#1
+	ldrb addy,[r0,m6502zpage]!
 	ldrb r1,[r0,#1]
 	orr addy,addy,r1,lsl#8
 .endm
 
 .macro doZ                             @zero page              $nn
 	_type	=      _ZP
-	ldrb addy,[m6502_pc],#1
+	ldrb addy,[m6502pc],#1
 .endm
 
 .macro doZ2							@zero page              $nn
 	_type	=      _ZP
-	ldrb addy,[m6502_pc],#2			@ugly thing for bbr/bbs
+	ldrb addy,[m6502pc],#2			@ugly thing for bbr/bbs
 .endm
 
 .macro doZIX                           @zero page indexed X    $nn,X
 	_type	=      _ZP
-	ldrb addy,[m6502_pc],#1
+	ldrb addy,[m6502pc],#1
 	add addy,addy,m6502_x,lsr#24
 	and addy,addy,#0xff @Rygar needs this
 .endm
 
 .macro doZIXf							@zero page indexed X    $nn,X
 	_type	=      _ZPI
-	ldrb addy,[m6502_pc],#1
+	ldrb addy,[m6502pc],#1
 	add addy,m6502_x,addy,lsl#24
 .endm
 
 .macro doZIY                           @zero page indexed Y    $nn,Y
 	_type	=      _ZP
-	ldrb addy,[m6502_pc],#1
+	ldrb addy,[m6502pc],#1
 	add addy,addy,m6502_y,lsr#24
 	and addy,addy,#0xff
 .endm
 
 .macro doZIYf							@zero page indexed Y    $nn,Y
 	_type	=      _ZPI
-	ldrb addy,[m6502_pc],#1
+	ldrb addy,[m6502pc],#1
 	add addy,m6502_y,addy,lsl#24
 .endm
 
@@ -369,18 +369,18 @@ _type	=      _ABS
 		writememabs
 	.endif
 	.if _type == _ZP
-		ldrb m6502_nz,[cpu_zpage,addy]
+		ldrb m6502_nz,[m6502zpage,addy]
 		movs m6502_nz,m6502_nz,lsr#1	@Z, (N=0)
 		orrcs cycles,cycles,#CYC_C		@Prepare C
 		biccc cycles,cycles,#CYC_C
-		strb m6502_nz,[cpu_zpage,addy]
+		strb m6502_nz,[m6502zpage,addy]
 	.endif
 	.if _type == _ZPI
-		ldrb m6502_nz,[cpu_zpage,addy,lsr#24]
+		ldrb m6502_nz,[m6502zpage,addy,lsr#24]
 		movs m6502_nz,m6502_nz,lsr#1	@Z, (N=0)
 		orrcs cycles,cycles,#CYC_C		@Prepare C
 		biccc cycles,cycles,#CYC_C
-		strb m6502_nz,[cpu_zpage,addy,lsr#24]
+		strb m6502_nz,[m6502zpage,addy,lsr#24]
 	.endif
 .endm
 

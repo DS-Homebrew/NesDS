@@ -53,13 +53,13 @@ empty_W:		@write bad address (error)
 ram_R:	@ram read ($0000-$1FFF)
 @---------------------------------------------------------------------------------
 	bic addy,addy,#0x1f800		@only 0x07FF is RAM
-	ldrb r0,[cpu_zpage,addy]
+	ldrb r0,[m6502zpage,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 ram_W:	@ram write ($0000-$1FFF)
 @---------------------------------------------------------------------------------
 	bic addy,addy,#0x1f800		@only 0x07FF is RAM
-	strb r0,[cpu_zpage,addy]
+	strb r0,[m6502zpage,addy]
 	bx lr
 @---------------------------------------------------------------------------------
 sram_W:	@sram write ($6000-$7FFF)

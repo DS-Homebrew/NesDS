@@ -227,7 +227,7 @@ dummy_nt:
 sp_render:
 @r0 = linenumber
 @--------------------------------------------
-	stmfd sp!,{r2-r9, cpu_zpage, addy, lr}
+	stmfd sp!,{r2-r9, m6502zpage, addy, lr}
 	ldr r1, =renderData
 	add r1, r1, r0, lsl#8		@r1 = renderData
 	str_ r1, pScn		@store pScn
@@ -455,7 +455,7 @@ sp_next:
 	bne sp_lp
 	
 sp_end:
-	ldmfd sp!,{r2-r9, cpu_zpage, addy, pc}
+	ldmfd sp!,{r2-r9, m6502zpage, addy, pc}
 
 @--------------------------------------------
 bg_render:
