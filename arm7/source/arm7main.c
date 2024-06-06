@@ -460,7 +460,7 @@ void mix(int chan)
 		{
             for (i = 0; i < MIXBUFSIZE; i++) 
 			{
-                short int input = adjust_samples(FDSSoundRender3(), 0, 4);
+                short int input = adjust_samples(FDSSoundRender(), 0, 4);
 				short int output = PassFilter(input, pcmBuffer);
 				*pcmBuffer++ = output;
             }
