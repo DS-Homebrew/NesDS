@@ -85,7 +85,7 @@ static void FDSSoundEGStep(FDS_EG *peg)
 		peg->volume -= (peg->volume > 0);
 }
 
-static Int32 __fastcall FDSSoundRender(void)
+Int32 __fastcall FDSSoundRender(void)
 {
 	Int32 output;
 	
@@ -133,10 +133,10 @@ static Int32 __fastcall FDSSoundRender(void)
 	return (fdssound.op[0].pg.freq != 0) ? output : 0;
 }
 
-Int32 FDSSoundRender3(void)
-{
-	return FDSSoundRender();
-}
+// Int32 FDSSoundRender3(void)
+// {
+// 	return FDSSoundRender();
+// }
 
 
 static NES_AUDIO_HANDLER s_fds_audio_handler[] =
@@ -285,8 +285,8 @@ static Uint32 DivFix(Uint32 p1, Uint32 p2, Uint32 fix)
 {
 	Uint32 ret;
 	ret = p1 / p2;
-	p1  = p1 % p2;
-	//p1 = p1 - p2 * ret;
+	//p1  = p1 % p2;
+	p1 = p1 - p2 * ret;
 	while (fix--)
 	{
 		p1 += p1;
@@ -337,10 +337,10 @@ static NES_RESET_HANDLER s_fds_reset_handler[] =
 	{ 0,                   0, }, 
 };
 
-void FDSSoundInstall3(void)
+extern void FDSSoundInstall(void)
 {
 	//LogTableInitialize();
-	//NESAudioHandlerInstall(s_fds_audio_handler);
+	NESAudioHandlerInstall(s_fds_audio_handler);
 	NESVolumeHandlerInstall(s_fds_volume_handler);
 	//NESReadHandlerInstall(s_fds_read_handler);
 	//NESWriteHandlerInstall(s_fds_write_handler);

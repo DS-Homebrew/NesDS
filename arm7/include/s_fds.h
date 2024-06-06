@@ -4,9 +4,8 @@
 extern "C" {
 #endif
 
-void FDSSoundInstall(void);
-void FDSSelect(unsigned type);
-extern void __fastcall (*FDSSoundWriteHandler)(Uint address, Uint value);
+extern void FDSSoundInstall(void);
+void __fastcall (*FDSSoundWriteHandler)(Uint address, Uint value);
 
 #ifdef __cplusplus
 }
