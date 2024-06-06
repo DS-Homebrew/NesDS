@@ -544,6 +544,7 @@ static NES_VOLUME_HANDLER s_apu_volume_handler[] = {
 
 void APUSoundWrite(Uint address, Uint value)
 {
+	int mapper = IPC_MAPPER;
 	// NES APU REGISTERS ($4000 ~ $4017)
 	if (0x4000 <= address && address <= 0x4017)
 	{
@@ -797,15 +798,15 @@ void APUSoundWrite(Uint address, Uint value)
 				break;
 		}
 	}
-
+	
 	// FDS (FAMICOM DISK SYSTEM ADDITIONAL CHANNEL) TODO: REFACTOR WITH CASES
-	else if(0x4040 <= address && address < 0x4090) 
+	else if(0x4040 <= address && address < 0x4090 && (mapper == 20 || mapper == 256)) 
 	{
 		FDSSoundWriteHandler(address, value);
 	}
-
+	
 	// VRC6 (KONAMI SOUND CHIP) TODO: REFACTOR WITH CASES
-	else if(0x8000 <= address && address < 0xffff) 
+	else if(0x8000 <= address && address < 0xffff && (mapper == 24 || mapper == 256))
 	{
 		if(0x9000 <= address && address <= 0x9002) 
 		{
@@ -821,7 +822,7 @@ void APUSoundWrite(Uint address, Uint value)
 		}
 	}
 
-	else if(0x8000 <= address && address < 0xffff) 
+	else if(0x8000 <= address && address < 0xffff && (mapper == 26 || mapper == 256))
 	{
 		if(0x9000 <= address && address <= 0x9002) 
 		{
