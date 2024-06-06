@@ -281,7 +281,7 @@ void restartsound(int ch)
 					RP_PN |
 					FRQ47 |
 					SNDEXTCNT_ENABLE|
-					PCM16 ;
+					PCM_8 ;
 
 	TIMER_CR(0) = TIMER_ENABLE; 
 	TIMER_CR(1) = TIMER_CASCADE | TIMER_IRQ_REQ | TIMER_ENABLE;
