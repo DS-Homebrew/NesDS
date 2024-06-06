@@ -84,15 +84,15 @@ static Int32 __fastcall VRC6SoundRender_24(void)
 	return accum;
 }
 
-Int32 VRC6SoundRender1_24(void)
+int32_t VRC6SoundRender1_24(void)
 {
 	return VRC6SoundSquareRender_24(&vrc6s.square[0]);
 }
-Int32 VRC6SoundRender2_24(void)
+int32_t VRC6SoundRender2_24(void)
 {
 	return VRC6SoundSquareRender_24(&vrc6s.square[1]);
 }
-Int32 VRC6SoundRender3_24(void)
+int32_t VRC6SoundRender3_24(void)
 {
 	return VRC6SoundSawRender_24(&vrc6s.saw);
 }

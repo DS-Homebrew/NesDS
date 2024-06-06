@@ -41,7 +41,29 @@ enum AudioFilterType
    NES_AUDIO_FILTER_OLDTV
 };
 
-int SetTmrFreq(void);
+
+//Pulse Channels 1 and 2
+int32_t NESAPUSoundSquareRender1();
+int32_t NESAPUSoundSquareRender2();
+
+//Triangle/Noise/DMC Channels
+int32_t NESAPUSoundTriangleRender1();
+int32_t NESAPUSoundNoiseRender1();
+int32_t NESAPUSoundDpcmRender1();
+
+//FDS Channels
+int32_t FDSSoundRender();
+
+//VRC Channels
+int32_t VRC6SoundRender1();
+int32_t VRC6SoundRender2();
+int32_t VRC6SoundRender3();
+
+//VRC must be inited to get raw pcm data from ARM9
+void VRC6SoundInstall_24();
+void VRC6SoundInstall_26();
+void FDSSoundInstall();
+void readAPU();
 
 #ifdef __cplusplus
 }

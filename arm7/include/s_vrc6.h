@@ -56,15 +56,15 @@ void VRC6SoundReset(void);
 
 // VRC6 Mapper 24 Install and Render
 void VRC6SoundInstall_24(void);
-Int32 VRC6SoundRender1_24(void);
-Int32 VRC6SoundRender2_24(void);
-Int32 VRC6SoundRender3_24(void);
+int32_t VRC6SoundRender1_24(void);
+int32_t VRC6SoundRender2_24(void);
+int32_t VRC6SoundRender3_24(void);
 
 // VRC6 Mapper 26 Install and Render
 void VRC6SoundInstall_26(void);
-Int32 VRC6SoundRender1_26(void);
-Int32 VRC6SoundRender2_26(void);
-Int32 VRC6SoundRender3_26(void);
+int32_t VRC6SoundRender1_26(void);
+int32_t VRC6SoundRender2_26(void);
+int32_t VRC6SoundRender3_26(void);
 
 // VRC6 Mapper 24 Write functions
 void VRC6SoundWrite9000_24(Uint address, Uint value);
