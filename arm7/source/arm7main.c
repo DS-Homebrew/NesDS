@@ -61,13 +61,12 @@ void resetAPU()
 // Adjust Volume and frequency using a precalculated logarithmic table
 static inline short adjust_samples(short sample, int freq_shift, int volume)
 {
-	if(sample >= 0)
-	{
-		sample = calc_table[sample << freq_shift];
-	} else {
-		sample = -calc_table[(-sample) << freq_shift];
-	}
-	return sample << volume;
+
+   	int index = sample >= 0 ? sample << freq_shift : (-sample) << freq_shift;
+    if (index >= 1024) index = 1023; // Limit max input size
+    
+    sample = sample >= 0 ? calc_table[index] : -calc_table[index];
+    return sample << volume;
 }
 
 // Adjust alignment for proper volume and frequency
