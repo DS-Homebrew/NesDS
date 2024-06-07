@@ -7,6 +7,8 @@
 	.global PPU_reset
 	.global PPU_R
 	.global PPU_W
+	.global ppuOamDataW
+	.global ntsc_pal_reset
 	.global agb_nt_map
 	.global vram_map
 	.global vram_write_tbl
@@ -100,8 +102,8 @@ gloop0:
 
 	ldr r6,=MAPPED_RGB
 	mov r7,r6
-	ldr r1,=gammavalue ;@ ldrb r1,gammavalue	;gamma value = 0 -> 4
-	ldrb r1,[r1]	;@ Gamma value = 0 -> 4
+	ldr r1,=gammavalue	;@ ldrb r1,gammavalue	;gamma value = 0 -> 4
+	ldrb r1,[r1]		;@ Gamma value = 0 -> 4
 	mov r4,#64			;@ pce rgb, r1=R, r2=G, r3=B
 gloop:					;@ Map 0bbbbbgggggrrrrr  ->  0bbbbbgggggrrrrr
 	ldrb r0,[r6],#1
@@ -148,20 +150,20 @@ PaletteTxAll:
 	mov r2,#0x1F
 pxall:
 	adr_ r1,nes_palette
-	ldrb r0,[r1,r2]	;@ Load from nes palette
+	ldrb r0,[r1,r2]			;@ Load from nes palette
 	;@ Monochrome test
 	tst r4,#1
 	andne r0,r0,#0x30
 
 	ldr r1,=MAPPED_RGB
 	add r0,r0,r0
-	ldrh r0,[r1,r0]	;@ Lookup RGB
+	ldrh r0,[r1,r0]			;@ Lookup RGB
 	adr_ r1,agb_pal
 	mov r3,r2,lsl#1
-	strh r0,[r1,r3]	;@ Store in agb palette
+	strh r0,[r1,r3]			;@ Store in agb palette
 	subs r2,r2,#1
 	bpl pxall
-	
+
 	ldmfd sp!,{r0-r4}
 	bx lr
 
@@ -188,7 +190,7 @@ up8:
 PPU_init:	@only need to call once
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{lr}
-	
+
 	ldr r0,=CHR_DECODE
 	mov r1,#0xffffff00		;@ Build chr decode table
 ppi0:
@@ -248,7 +250,7 @@ ppi1:
 	mov r0,#192
 	strh r0,[r1,#REG_WIN0V]	
 	strh r0,[r1,#REG_WIN1V]
-		
+
 	ldmfd sp!,{pc}
 ;@-----------------------------------------------------------------------------
 rescale_nr:		@r0=scale, r1=starting Y<<16
@@ -258,24 +260,24 @@ rescale_nr:		@r0=scale, r1=starting Y<<16
 	bic r0,r0,#1
 	orr r0,r0,r2
 	str r0,scale
-	str r1,DMAlinestart			;@ scaleTable2 never used...
+	str r1,DMAlinestart		;@ scaleTable2 never used...
 
 	stmfd sp!,{r4-r9,globalptr,lr}
 	ldr globalptr,=globals
 	ldr r3, =0x4000
-	
+
 		add r8,r1,r3
-	mov r2,#0		;@ Line counter
+	mov r2,#0				;@ Line counter
 	adr r3,scaleTable
 		ldr r7,=scaleTable2
-		ldr r9,=spriteY_lookup2		;@ Sprite need flicker too..
+		ldr r9,=spriteY_lookup2	;@ Sprite need flicker too..
 	ldr r5,=spriteY_lookup
-	mov r6,#0		;@ Zero
+	mov r6,#0				;@ Zero
 
 rs1:	movs r4,r1,asr#16
 	strplb r4,[r3,r2]
 	strmib r6,[r3,r2]
-	@add r4, r4, #1				;@ I dont like this...
+	@add r4, r4, #1			;@ I dont like this...
 	strb r4,[r9,r2]
 		movs r4,r8,asr#16
 		strplb r4,[r7,r2]
@@ -287,8 +289,8 @@ rs1:	movs r4,r1,asr#16
 	add r2,r2,#1
 	cmp r2,#256
 	bcc rs1
-		
-	mov r1,#REG_BASE	;@ Change blend control for scaling type
+
+	mov r1,#REG_BASE		;@ Change blend control for scaling type
 	@ldr r0,=emuFlags
 	@ldr r0,[r0]
 	ldr_ r0,emuFlags
@@ -302,6 +304,8 @@ rs1:	movs r4,r1,asr#16
 PPU_reset:
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{lr}
+
+	bl ntsc_pal_reset
 
 	mov r0,#1
 	strb_ r0,vramAddrInc
@@ -330,6 +334,25 @@ PPU_reset:
 	bl paletteinit		;@ Do palette mapping (for VS) & gamma
 
 	ldmfd sp!,{pc}
+;@-----------------------------------------------------------------------------
+ntsc_pal_reset:
+;@-----------------------------------------------------------------------------
+;@---NTSC/PAL
+	mov r1, globalptr
+	ldr globalptr,=globals
+
+	ldr_ r0,emuFlags
+	tst r0,#PALTIMING
+	
+	ldreq r0,=341*CYCLE		;@ NTSC		(113+2/3)*3
+	ldrne r0,=320*CYCLE		;@ PAL		(106+9/16)*3
+	str_ r0,cyclesPerScanline
+	ldreq r0,=261			;@ NTSC
+	ldrne r0,=311			;@ PAL
+	str_ r0,lastScanline
+	mov globalptr, r1
+
+	bx lr
 ;@-----------------------------------------------------------------------------
 EMU_VBlank:	;@ Call every vblank
 ;@-----------------------------------------------------------------------------
@@ -392,15 +415,15 @@ nopal60:
 	stmia r1,{r3-r6}			;@ Set 1st values manually, HBL is AFTER 1st line
 	str r0,[r2,#REG_DM0SAD]
 	ldr r0,=0x96600004			;@ noIRQ hblank 32bit repeat incsrc inc_reloaddst, 4 word transfer
-	str r0,[r2,#REG_DM0CNT_L]		;@ DMA0 start
+	str r0,[r2,#REG_DM0CNT_L]	;@ DMA0 start
 
 	str r2,[r2,#REG_DM1DAD]		;@ DMA1 -> DISPCNT (BG/OBJ enable)
 	ldr r1,=DISPCNTBUFF
 	ldr r0,[r1],#4
-	str r0,[r2,#REG_DISPCNT]		;@ Set 1st value manually, HBL is AFTER 1st line
+	str r0,[r2,#REG_DISPCNT]	;@ Set 1st value manually, HBL is AFTER 1st line
 	str r1,[r2,#REG_DM1SAD]
 	ldr r0,=0x96400001			;@ noIRQ hblank 16bit repeat incsrc fixeddst, 1 word transfer
-	str r0,[r2,#REG_DM1CNT_L]		;@ DMA1 start
+	str r0,[r2,#REG_DM1CNT_L]	;@ DMA1 start
 	ldmfd sp!,{r4-r7,globalptr,pc}
 
 svbEnd:
@@ -408,7 +431,7 @@ svbEnd:
 	tst r0,#NOFLICKER
 	bne 0f
 
-	ldr r1,scale			;@ For flicker scaling
+	ldr r1,scale				;@ For flicker scaling
 	eor r1,r1,#1
 	str r1,scale
 	ldr r2, =0x400003C
@@ -423,6 +446,9 @@ svbEnd:
 scaleTable: .skip 256
 scaleTable2: .skip 256
 
+;@-----------------------------------------------------------------------------
+PAL60: 			.byte 0
+				.align
 ;@-----------------------------------------------------------------------------
 ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 ;@-----------------------------------------------------------------------------
@@ -608,7 +634,7 @@ soft_sync:
 
 	bl soft_render
 	bl scanlinenext
-	ldmfd sp!, {r4-r12}
+	ldmfd sp!,{r4-r12}
 	ldmfd sp!,{r3,pc}
 
 scale: .word 0			;@ bit0=even/odd
@@ -750,7 +776,7 @@ ppuOamDataR:	;@ (2004)
 	ldrb_ r1,ppuOamAdr
 	ldr r2, =NES_SPRAM
 	ldrb r0,[r2,r1]
-//	bic r0,r0,#0x1C				;@ Actualy only when reading attribute (2).
+//	bic r0,r0,#0x1C			;@ Actualy only when reading attribute (2).
 	strb_ r0,ppuBusLatch
 	bx lr
 ;@-----------------------------------------------------------------------------
@@ -786,22 +812,19 @@ bgScrollX:
 bgScrollY:
 	strb_ r0,scrollYTemp
 
+	mov r0, r0, ror#3
+	orr r0, r0, r0, lsr#22
+
 	ldr_ r1,loopy_t
-	bic r1, r1, #0x3E0
+	bic r1, r1, #0x03E0
 	bic r1, r1, #0x7000
-	and r2, r0, #7
-	orr r1, r1, r2, lsl#12
-	and r2, r0, #0xF8
-	orr r1, r1, r2, lsl#2
+	orr r1, r1, r0, lsl#5
 	str_ r1, loopy_t
 
-	ldr_ r1,vramAddr2	;@ yscroll modifies vramAddr2
-	bic r1,r1,#0x7300
-	bic r1,r1,#0x00e0
-	and r2,r0,#0xf8
-	and r0,r0,#7
-	orr r1,r1,r2,lsl#2
-	orr r1,r1,r0,lsl#12
+	ldr_ r1,vramAddr2	;@ yscroll modifies vramAddrTmp
+	bic r1,r1,#0x03E0
+	bic r1,r1,#0x7000
+	orr r1,r1,r0,lsl#5
 	str_ r1,vramAddr2
 
 	bx lr
@@ -855,20 +878,21 @@ vmdata_R:	;@ (2007)
 	add r2,r0,r1
 	str_ r2,vramAddr
 
-	cmp r0,#0x3f00
-	bhs palRead
-
 	and r1,r0,#0x3c00
 	adr r2,vram_map
 	ldr r1,[r2,r1,lsr#8]
-	bic r0,r0,#0xfc00
 
-	ldrb r1,[r1,r0]
+	bic r2,r0,#0xfc00
+	ldrb r1,[r1,r2]
+	cmp r0,#0x3f00
+	bhs palRead
+
 	ldrb_ r0,readTemp
 	strb_ r1,readTemp
 	strb_ r0,ppuBusLatch
 	bx lr
 palRead:
+	strb_ r1,readTemp
 	and r0,r0,#0x1f
 	adr r1,nes_palette
 	ldrb r0,[r1,r0]
@@ -878,7 +902,7 @@ palRead:
 	strb_ r0,ppuBusLatch
 	bx lr
 ;@-----------------------------------------------------------------------------
-vmdata_W:	;@ (2007)				@Do not change addy...
+vmdata_W:	;@ (2007)			@Do not change addy...
 ;@-----------------------------------------------------------------------------
 	ldr_ addy,vramAddr
 	ldrb_ r1,vramAddrInc
@@ -996,15 +1020,15 @@ VRAM_pal:	;@ ($3F00-$3F1F)
 		tst addy,#0x03
 		biceq addy,#0x10	;@ $10,$14,$18,$1C mirror to $00,$04,$08,$0C
 	adr r1,nes_palette
-	strb r0,[r1,addy]!	;@ Store in nes palette
+	strb r0,[r1,addy]!		;@ Store in nes palette
 	streqb r0,[r1, #16]
 
 	add r0,r0,r0
 	ldr r1,=MAPPED_RGB
 	ldrh r0,[r1,r0]			;@ Lookup RGB
 	adr r1,agb_pal
-	add addy,addy,addy	;@ lsl#1
-	strh r0,[r1,addy]	;@ Store in agb palette
+	add addy,addy,addy		;@ lsl#1
+	strh r0,[r1,addy]		;@ Store in agb palette
 
 	ldr_ r1, scanline
 	add r1, r1, #2
@@ -1014,6 +1038,10 @@ VRAM_pal:	;@ ($3F00-$3F1F)
 newframe:	;@ Called at NES scanline 0
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{r3-r9,lr}
+
+	ldr_ r1,frame
+	tst r1,#1
+	subeq cycles,cycles,#CYCLE	;@ Every other frame has 1 less PPU cycle.
 
 	mov r0,#0
 	strb_ r0,ppuStat			;@ Vbl, sprite0 & sprite ovr clear
@@ -1041,7 +1069,7 @@ newframe:	;@ Called at NES scanline 0
 	ldr r1, =NES_VRAM
 	cmp r0, r1		;@ Means that the game does NOT have any vrom.
 	bne 0f
-				;@ Make the guarantee that NDS freshes the 'chr's per frame.
+					;@ Make the guarantee that NDS freshes the 'chr's per frame.
 	mov r0,#-1		;@ Code from resetCHR
 	adr r1,agb_bg_map
 	mov r2,#SLOTS * 2
@@ -1128,10 +1156,10 @@ nes_nt0: .word NES_VRAM+0x2000	;@ 2000
 nes_nt1: .word NES_VRAM+0x2000	;@ 2400
 nes_nt2: .word NES_VRAM+0x2400	;@ 2800
 nes_nt3: .word NES_VRAM+0x2400	;@ 2c00
-	.word NES_VRAM+0x2C00	;@ 3000
-	.word NES_VRAM+0x2C00	;@ 3400
-	.word NES_VRAM+0x2C00	;@ 3800
-	.word NES_VRAM+0x2C00	;@ 3c00
+	.word NES_VRAM+0x2000	;@ 3000
+	.word NES_VRAM+0x2000	;@ 3400
+	.word NES_VRAM+0x2400	;@ 3800
+	.word NES_VRAM+0x2400	;@ 3c00
 
 agb_nt_map:
 	.word 0,0,0,0
@@ -1189,6 +1217,7 @@ mirrorchange:
 
 		ldr r1,=nes_nt0
 		ldmia r0!,{r2-r5}
+		stmia r1!,{r2-r5}
 		stmia r1,{r2-r5}
 
 		ldr r1,=agb_nt_map
@@ -1456,24 +1485,24 @@ bcr0:	ldr r1,[r2],#4
 
 	DEBUGCOUNT BGMISS
 
-	ldr r7,nextBG			;@ r7=group to replace
-	ldr r1,[r6,r7]!			;@ r1=old group
+	ldr r7,nextBG		;@ r7=group to replace
+	ldr r1,[r6,r7]!		;@ r1=old group
 	ldr r9,[r6, #4]
 	str r0,[r6]			;@ Save new group, r6=new chr map ptr
 	str r8,[r6, #4]
 	add r2,r7,#8
 	cmp r2,#SLOTS*8
 	movcs r2, #0
-	str r2,nextBG			;@ Increment nextBG
+	str r2,nextBG		;@ Increment nextBG
 	eor r1,r1,r0
 	eor r9,r9,r8
 
 
 decodeptr	.req r2 ;@ mem_chr_decode
-tilecount  .req r3
+tilecount	.req r3
 nesptr		.req r4 ;@ chr src
 agbptr		.req r5 ;@ chr dst
-bankptr	.req r6 ;@ vrom bank lookup ptr
+bankptr		.req r6 ;@ vrom bank lookup ptr
 
 	mov agbptr,#NDS_VRAM
 	add agbptr,agbptr,r7,lsl#11	@0000/4000/8000/...
@@ -1546,18 +1575,18 @@ renderSprites:
 PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 
 	ldr_ r0, emuFlags
-	tst r0, #0x40 + SOFTRENDER		;@ Sprite render type or pure software
+	tst r0, #0x40 + SOFTRENDER	;@ Sprite render type or pure software
 	bxne lr
 	stmfd sp!,{r3-r9,lr}
 
 	ldr addy, =NES_SPRAM
-	ldr_ r0,emuFlags  				;@ r7,8=priority flags for scaling type
+	ldr_ r0,emuFlags			;@ r7,8=priority flags for scaling type
 	tst r0,#ALPHALERP
 	moveq r7,#0x00200000
 	movne r7,#0
 	eor r8,r7,#0x00200000
 
-	mov r9,#64						;@ Sprite count.
+	mov r9,#64					;@ Sprite count.
 	ldr r2,=NDS_OAM
 	adr r5,spriteY_lookup
 
@@ -1568,7 +1597,7 @@ PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 	addcc r5, r5, #1
 	add r5, r5, #1
 
-	ldrb_ r0,ppuCtrl0Frame		;@ 8x16?
+	ldrb_ r0,ppuCtrl0Frame	;@ 8x16?
 	tst r0,#0x20
 	bne dm4
 ;@- - - - - - - - - - - - - 8x8 size
@@ -2152,7 +2181,7 @@ vromnt1k:	;@ r1=nt0...3
 	strh r0, [r2]
 
 	ldr_ r3, vromBase
-	ldr r2, =NDS_BG + 0x2000		;@ Point to a free Map area.
+	ldr r2, =NDS_BG + 0x2000	;@ Point to a free Map area.
 	add r2, r2, r1, lsl#11
 	add r4, r3, r0, lsl#10
 

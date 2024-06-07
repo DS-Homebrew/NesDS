@@ -44,7 +44,6 @@
 	.global __prgsize16k
 	.global all_pix_start
 	.global all_pix_end
-	.global ntsc_pal_reset
 	.global debugwrite
 	.global debugwrite_c
 	.global nsfHeader
@@ -1039,9 +1038,6 @@ line0:
 	bl ppusync
 
 	ldr_ r0,cyclesPerScanline
-	ldr_ r1,frame
-	tst r1,#1
-	subeq r0,r0,#CYCLE			@Every other frame has 1/3 less CPU cycle.
 	add cycles,cycles,r0
 	adr r0,line1_to_119
 	str_ r0,nexttimeout
@@ -1323,34 +1319,11 @@ VecCont:
 fiveminutes:	.word 5*60*60
 sleeptime: 		.word 5*60*60
 dontstop: 		.word 0
-PAL60: 			.byte 0
-				.align
-@---------------------------------------------------------------------------------
-ntsc_pal_reset:
-@---------------------------------------------------------------------------------
-@---NTSC/PAL
-	mov r2, globalptr
-	ldr globalptr,=globals
-
-	ldr_ r0,emuFlags
-	tst r0,#PALTIMING
-	
-	ldreq r1,=341*CYCLE		@NTSC		(113+2/3)*3
-	ldrne r1,=320*CYCLE		@PAL		(106+9/16)*3
-	str_ r1,cyclesPerScanline
-	ldreq r1,=261			@NTSC
-	ldrne r1,=311			@PAL
-	str_ r1,lastScanline
-	mov globalptr, r2
-
-	bx lr
 @---------------------------------------------------------------------------------
 CPU_reset:	@called by loadcart (r0-r9 are free to use)
 @---------------------------------------------------------------------------------
 	str lr,[sp,#-4]!
 
-@---NTSC/PAL
-	bl ntsc_pal_reset
 @---cpu reset
 	mov m6502_a,#0
 	mov m6502_x,#0
@@ -1360,8 +1333,6 @@ CPU_reset:	@called by loadcart (r0-r9 are free to use)
 	ldr r0,=NES_RAM+0x100
 	str_ r0,m6502_s		@S=0xFD (0x100-3)
 	mov cycles,#0		@D=0, C=0, V=0, I=1 disable IRQ.
-
-	str_ m6502_a,frame		@frame count reset
 
 	@(clear irq/nmi/res source)...
 
