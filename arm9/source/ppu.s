@@ -56,7 +56,6 @@
 	.global agb_obj_map
 	.global nes_palette
 	.global vromnt1k
-	.global gfx_scale
 
 ;@-----------------------------------------------------------------------------
 .section .text,"ax"
@@ -85,7 +84,6 @@ nomap:
 	subs r7,r7,#4
 	bne nomap
 	bx lr
-.ltorg
 ;@-----------------------------------------------------------------------------
 paletteinit:@	r0-r3 modified.
 ;@-----------------------------------------------------------------------------
@@ -125,7 +123,6 @@ gloop:					;@ Map 0bbbbbgggggrrrrr  ->  0bbbbbgggggrrrrr
 
 	ldmfd sp!,{r4-r8,lr}
 	bx lr
-.ltorg
 ;@-----------------------------------------------------------------------------
 gammaconvert:	;@ Takes value in r0(0-0xFF), gamma in r1(0-4),returns new value in r0=0x1F
 ;@-----------------------------------------------------------------------------
@@ -192,52 +189,42 @@ PPU_init:	@only need to call once
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{lr}
 	
+	ldr r0,=CHR_DECODE
 	mov r1,#0xffffff00		;@ Build chr decode table
-	ldr r2,=CHR_DECODE
 ppi0:
-	mov r0,#0
-	tst r1,#0x01
-	orrne r0,r0,#0x10000000
-	tst r1,#0x02
-	orrne r0,r0,#0x01000000
-	tst r1,#0x04
-	orrne r0,r0,#0x00100000
-	tst r1,#0x08
-	orrne r0,r0,#0x00010000
-	tst r1,#0x10
-	orrne r0,r0,#0x00001000
-	tst r1,#0x20
-	orrne r0,r0,#0x00000100
-	tst r1,#0x40
-	orrne r0,r0,#0x00000010
-	tst r1,#0x80
-	orrne r0,r0,#0x00000001
-	str r0,[r2],#4
+	movs r2,r1,lsl#31
+	movne r2,#0x10000000
+	orrcs r2,r2,#0x01000000
+	tst r1,r1,lsl#29
+	orrmi r2,r2,#0x00100000
+	orrcs r2,r2,#0x00010000
+	tst r1,r1,lsl#27
+	orrmi r2,r2,#0x00001000
+	orrcs r2,r2,#0x00000100
+	tst r1,r1,lsl#25
+	orrmi r2,r2,#0x00000010
+	orrcs r2,r2,#0x00000001
+	str r2,[r0],#4
 	adds r1,r1,#1
 	bne ppi0
 
 
+	ldr r0,=rev_data
 	mov r1,#0xffffff00		;@ Build chr decode table
-	ldr r2,=rev_data
 ppi1:
-	mov r0,#0
-	tst r1,#0x01
-	orrne r0,r0,#0x80
-	tst r1,#0x02
-	orrne r0,r0,#0x40
-	tst r1,#0x04
-	orrne r0,r0,#0x20
-	tst r1,#0x08
-	orrne r0,r0,#0x10
-	tst r1,#0x10
-	orrne r0,r0,#0x08
-	tst r1,#0x20
-	orrne r0,r0,#0x04
-	tst r1,#0x40
-	orrne r0,r0,#0x02
-	tst r1,#0x80
-	orrne r0,r0,#0x01
-	strb r0,[r2],#1
+	movs r2,r1,lsl#31
+	movne r2,#0x80
+	orrcs r2,r2,#0x40
+	tst r1,r1,lsl#29
+	orrmi r2,r2,#0x20
+	orrcs r2,r2,#0x10
+	tst r1,r1,lsl#27
+	orrmi r2,r2,#0x08
+	orrcs r2,r2,#0x04
+	tst r1,r1,lsl#25
+	orrmi r2,r2,#0x02
+	orrcs r2,r2,#0x01
+	strb r2,[r0],#1
 	adds r1,r1,#1
 	bne ppi1
 
@@ -263,7 +250,6 @@ ppi1:
 	strh r0,[r1,#REG_WIN1V]
 		
 	ldmfd sp!,{pc}
-.ltorg
 ;@-----------------------------------------------------------------------------
 rescale_nr:		@r0=scale, r1=starting Y<<16
 ;@-----------------------------------------------------------------------------
@@ -312,16 +298,19 @@ rs1:	movs r4,r1,asr#16
 	str r2,[r1,#REG_BLDCNT]
 
 	ldmfd sp!,{r4-r9,globalptr,pc}
-.ltorg
 ;@-----------------------------------------------------------------------------
 PPU_reset:
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{lr}
-	
+
+	mov r0,#1
+	strb_ r0,vramAddrInc
+
 	mov r0,#0
 	strb_ r0,ppuCtrl0	;@ NMI off
 	strb_ r0,ppuCtrl1	;@ Screen off
 	strb_ r0,ppuStat	;@ Flags off
+	str_ r0,frame		;@ Frame count reset
 
 	mov r0,#0
 	ldr r1,=NES_VRAM
@@ -339,9 +328,8 @@ PPU_reset:
 	bl filler
 
 	bl paletteinit		;@ Do palette mapping (for VS) & gamma
-	
+
 	ldmfd sp!,{pc}
-.ltorg
 ;@-----------------------------------------------------------------------------
 EMU_VBlank:	;@ Call every vblank
 ;@-----------------------------------------------------------------------------
@@ -419,7 +407,7 @@ svbEnd:
 	ldr_ r0,emuFlags
 	tst r0,#NOFLICKER
 	bne 0f
-	
+
 	ldr r1,scale			;@ For flicker scaling
 	eor r1,r1,#1
 	str r1,scale
@@ -431,7 +419,6 @@ svbEnd:
 	strb r3, [r2]
 0:
 	ldmfd sp!,{r4-r7,globalptr,pc}
-	.ltorg
 
 scaleTable: .skip 256
 scaleTable2: .skip 256
@@ -483,21 +470,21 @@ ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 	str r1,[r3]
 
 	bl updateBGCHR		;@ Check for bankswitching
-		
+
 	ldr r1,scale
 	ldr r2,DMAline
 	add r2,r2,r1
 	str r2,DMAline
-	
+
 	movs r0,r2,asr#16
 	movmi r0,#0
 	ldr r1, =0x3334
 	add r2,r2,r1
 	movs r1,r2,asr#16
 	movmi r1,#0			;@ r0,r1=scaled line
-	
+
 	@- - - 
-	
+
 	ldr r12,=DISPCNTBUFF
 	add r12,r12,r0,lsl#2
 	ldr r2,dispcnt
@@ -512,7 +499,7 @@ ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 		add lr,r12,r1,lsl#4
 		add lr, lr, #256*16
 	add r12,r12,r0,lsl#4
-		
+
 	ldr r2,currentBG
 	and r2, r2, #0x7F
 	ldr_ r3,bg0Cnt
@@ -521,15 +508,15 @@ ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 		strh r2,[r12, #2] ;@ Nothing happens
 		strh r2,[lr]
 		strh r2,[lr, #2]
-	
+
 	@- - -
-	
+
 	ldr_ r2,scrollX
 	strh r2,[r12,#8]
 		strh r2,[lr,#8]
 		strh r2,[r12,#12]
 		strh r2,[lr,#12]
-	
+
 	ldr_ r2,scrollY
 	sub r3,r2,r0
 	strh r3,[r12,#10]
@@ -537,14 +524,14 @@ ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 		sub r3,r2,r1
 		strh r3,[lr,#10]
 		strh r3,[r12,#14]
-	
+
 	add r2,r2,#1
 	tst r2,#0xff
 	eoreq r2,r2,#0x100	;@ Page wraps with negative scroll
 	cmp r2,#0xf0
 	cmpne r2,#0x1f0
 	addeq r2,r2,#16
-	
+
 	str_ r2,scrollY
 
 	@- - -
@@ -624,9 +611,6 @@ soft_sync:
 	ldmfd sp!, {r4-r12}
 	ldmfd sp!,{r3,pc}
 
-.ltorg
-
-gfx_scale:
 scale: .word 0			;@ bit0=even/odd
 DMAline: .word 0
 DMAlinestart: .word 0
@@ -642,13 +626,14 @@ PPU_read_tbl:
 	.word empty_PPU_R	;@ $2001
 	.word stat_R		;@ $2002
 	.word empty_PPU_R	;@ $2003
-	.word empty_PPU_R	;@ $2004
+	.word ppuOamDataR	;@ $2004
 	.word empty_PPU_R	;@ $2005
 	.word empty_PPU_R	;@ $2006
 	.word vmdata_R		;@ $2007
 ;@-----------------------------------------------------------------------------
 PPU_W:	;@
 ;@-----------------------------------------------------------------------------
+	strb_ r0,ppuBusLatch
 	and r2,addy,#7
 	ldr pc,[pc,r2,lsl#2]
 	.word 0
@@ -656,15 +641,15 @@ PPU_write_tbl:
 	.word ctrl0_W		;@ $2000
 	.word ctrl1_W		;@ $2001
 	.word void			;@ $2002
-	.word void			;@ $2003
-	.word void			;@ $2004
+	.word oamAddrW		;@ $2003
+	.word ppuOamDataW	;@ $2004
 	.word bgscroll_W	;@ $2005
 	.word vmaddr_W		;@ $2006
 	.word vmdata_W		;@ $2007
 ;@-----------------------------------------------------------------------------
 empty_PPU_R:
 ;@-----------------------------------------------------------------------------
-	mov r0,#0
+	ldrb_ r0,ppuBusLatch
 	bx lr
 ;@-----------------------------------------------------------------------------
 ctrl0_W:		;@ (2000)
@@ -687,7 +672,10 @@ ctrl0_W:		;@ (2000)
 	and r1,r0,#1			;@ X scroll
 	strb_ r1,scrollX+1
 
+	ldrb_ r1,ppuCtrl0
 	strb_ r0,ppuCtrl0
+	eor r0,r0,r1
+	ands r0,r0,#0x80
 	bx lr
 ;@-----------------------------------------------------------------------------
 ctrl1_W:		;@ (2001)
@@ -711,47 +699,71 @@ cr10:
 	orreq r1,r1,#0x2000
 	tst r0,#0x04		;@ obj clip
 	orreq r1,r1,#0x4000
-		
+
 	str r1,dispcnt
 	bx lr
 .ltorg
 
 dispcnt: .word DISPCNT_INIT
 ;@-----------------------------------------------------------------------------
-stat_R:		@(2002)
+stat_R:		;@ (2002)
 ;@-----------------------------------------------------------------------------
 	mov r0,#0
 	strb_ r0,toggle
 	ldrb_ r2,ppuStat
-	
+
 	ldr_ r0, emuFlags
 	tst r0, #SOFTRENDER
 	bne 0f
+
+	ldrb_ r1,ppuCtrl1
+	tst r1, #0x10				;@ Sprites on?
+	beq 0f
 
 	ldr_ r0,sprite0Y			;@ Sprite0 hit?
 	ldr_ r1,scanline
 	cmp r1,r0
 @	ble noSprH
 @	ldrb r0,sprite0X			;@ For extra high resolution sprite0 hit
-@	ldr r1,cyclesPerScanline	;@ The store is in IO.s
+@	ldr_ r1,cyclesPerScanline	;@ The store is in IO.s
 @	sub r1,r1,cycles
 @	cmp r1,r0
-	bic r2, #0x40
 	orrhi r2,r2,#0x40
 @noSprH
 0:
 	bic r1,r2,#0x80				;@ Vbl flag clear
 	strb_ r1,ppuStat
 
-	mov r0, r2
-
-	ldrb_ r1, ppuCtrl1
-	tst r1, #0x10
-	biceq r0, #0x60
+	ldrb_ r1,ppuBusLatch
+	and r1,r1,#0x1F
+	orr r0,r2,r1
 
 	bx lr
 ;@-----------------------------------------------------------------------------
-bgscroll_W:	@(2005)
+oamAddrW:		;@ (2003)
+;@-----------------------------------------------------------------------------
+	strb_ r0,ppuOamAdr
+	bx lr
+;@-----------------------------------------------------------------------------
+ppuOamDataR:	;@ (2004)
+;@-----------------------------------------------------------------------------
+	ldrb_ r1,ppuOamAdr
+	ldr r2, =NES_SPRAM
+	ldrb r0,[r2,r1]
+//	bic r0,r0,#0x1C				;@ Actualy only when reading attribute (2).
+	strb_ r0,ppuBusLatch
+	bx lr
+;@-----------------------------------------------------------------------------
+ppuOamDataW:	;@ (2004)
+;@-----------------------------------------------------------------------------
+	ldrb_ r1,ppuOamAdr
+	ldr r2, =NES_SPRAM
+	strb r0,[r2,r1]
+	add r1,r1,#1
+	strb_ r1,ppuOamAdr
+	bx lr
+;@-----------------------------------------------------------------------------
+bgscroll_W:		;@ (2005)
 ;@-----------------------------------------------------------------------------
 	ldrb_ r1,toggle
 	eors r1,r1,#1
@@ -760,7 +772,7 @@ bgscroll_W:	@(2005)
 
 bgScrollX:
 	strb_ r0,scrollX
-	
+
 	and r1, r0, #7
 	str_ r1, loopy_x	;@ loopy_x = data & 0x07
 	str_ r1, loopy_shift
@@ -794,7 +806,7 @@ bgScrollY:
 
 	bx lr
 ;@-----------------------------------------------------------------------------
-vmaddr_W:	@(2006)
+vmaddr_W:	;@ (2006)
 ;@-----------------------------------------------------------------------------
 	ldrb_ r1,toggle
 	eors r1,r1,#1
@@ -853,12 +865,17 @@ vmdata_R:	;@ (2007)
 
 	ldrb r1,[r1,r0]
 	ldrb_ r0,readTemp
-	str_ r1,readTemp
+	strb_ r1,readTemp
+	strb_ r0,ppuBusLatch
 	bx lr
 palRead:
 	and r0,r0,#0x1f
 	adr r1,nes_palette
 	ldrb r0,[r1,r0]
+	ldrb_ r1,ppuBusLatch
+	and r1,r1,#0xC0
+	orr r0,r0,r1
+	strb_ r0,ppuBusLatch
 	bx lr
 ;@-----------------------------------------------------------------------------
 vmdata_W:	;@ (2007)				@Do not change addy...
@@ -976,28 +993,14 @@ VRAM_pal:	;@ ($3F00-$3F1F)
 
 	and r0,r0,#0x3f		;@ (only colors 0-63 are valid)
 	and addy,addy,#0x1f
-		tst addy,#0x0f
-		moveq addy,#0	;@ $10 mirror to $00
+		tst addy,#0x03
+		biceq addy,#0x10	;@ $10,$14,$18,$1C mirror to $00,$04,$08,$0C
 	adr r1,nes_palette
-	orr r2, r0, #128 + 64	@something wrong...
-	strb r2,[r1,addy]	;@ Store in nes palette
+	strb r0,[r1,addy]!	;@ Store in nes palette
+	streqb r0,[r1, #16]
 
-	tst addy, #3
-	bne 0f
-
-	ldrb r2, [r1]
-	strb r2, [r1, #4]
-	strb r2, [r1, #8]
-	strb r2, [r1, #12]
-	strb r2, [r1, #16]
-	strb r2, [r1, #20]
-	strb r2, [r1, #24]
-	strb r2, [r1, #28]
-0:
-	
 	add r0,r0,r0
 	ldr r1,=MAPPED_RGB
-@	ldr r0,[r1,r0,lsl#1]	@ lookup RGB, unaligned read.
 	ldrh r0,[r1,r0]			;@ Lookup RGB
 	adr r1,agb_pal
 	add addy,addy,addy	;@ lsl#1
@@ -1007,12 +1010,13 @@ VRAM_pal:	;@ ($3F00-$3F1F)
 	add r1, r1, #2
 	str_ r1, palSyncLine
 	bx lr
-@------------
-.ltorg
 ;@-----------------------------------------------------------------------------
 newframe:	;@ Called at NES scanline 0
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{r3-r9,lr}
+
+	mov r0,#0
+	strb_ r0,ppuStat			;@ Vbl, sprite0 & sprite ovr clear
 
 	bl renderSprites
 
@@ -1262,7 +1266,7 @@ chr1k:
 	adr_ r2,nesChrMap
 	add r2, r2, r1, lsl#1
 	strh r0,[r2]
-	
+
 	ldr_ r2,vromBase
 	add r0,r2,r0,lsl#10
 	ldr r2,=vram_map
@@ -1292,7 +1296,7 @@ chr2k:
 	orr r0,r0,#1
 	strh r0,[r2,#2]
 	bic r0, r0, #1
-	
+
 	ldr_ r2,vromBase
 	add r0,r2,r0,lsl#10
 	ldr r2,=vram_map
@@ -1449,7 +1453,7 @@ bcr0:	ldr r1,[r2],#4
 	beq cached
 	cmp r2,r3
 	bne bcr0
-	
+
 	DEBUGCOUNT BGMISS
 
 	ldr r7,nextBG			;@ r7=group to replace
@@ -1464,7 +1468,7 @@ bcr0:	ldr r1,[r2],#4
 	eor r1,r1,r0
 	eor r9,r9,r8
 
-	
+
 decodeptr	.req r2 ;@ mem_chr_decode
 tilecount  .req r3
 nesptr		.req r4 ;@ chr src
@@ -1544,17 +1548,19 @@ PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 	ldr_ r0, emuFlags
 	tst r0, #0x40 + SOFTRENDER		;@ Sprite render type or pure software
 	bxne lr
-	stmfd sp!,{r3-r8,lr}
+	stmfd sp!,{r3-r9,lr}
 
+	ldr addy, =NES_SPRAM
 	ldr_ r0,emuFlags  				;@ r7,8=priority flags for scaling type
 	tst r0,#ALPHALERP
 	moveq r7,#0x00200000
 	movne r7,#0
 	eor r8,r7,#0x00200000
-	
+
+	mov r9,#64						;@ Sprite count.
 	ldr r2,=NDS_OAM
 	adr r5,spriteY_lookup
-	
+
 	ldr r0, =ad_scale
 	ldr r0, [r0]
 	and r0, r0, #0x1F000
@@ -1610,7 +1616,7 @@ dm11:
 
 	mov r1,r3,lsr#24
 	orr r0,r0,r1,lsl#16		;@ Sprite x
-	
+
 	and r1,r3,#0x00c00000	;@ Flip
 	orr r0,r0,r1,lsl#6
 
@@ -1629,11 +1635,11 @@ dm11:
 
 	strh r0,[r2],#4			;@ Store OBJ Atr 2
 dm9:
-	tst addy,#0xff
+	subs r9,r9,#1
 	bne dm11
 	mov r0, #0x200
 	str r0, [r2]			;@ Hide the sprite 65 of NDS, which was used by per-line type
-	ldmfd sp!,{r3-r8,pc}
+	ldmfd sp!,{r3-r9,pc}
 dm10:
 	mov r0,#0x2a0			;@ double, y=160
 	str r0,[r2],#8
@@ -1696,7 +1702,7 @@ dm12:
 	cmp r0,#239
 	bhi dm13				;@ Skip if sprite Y>239
 	ldrb r0,[r5,r0]			;@ r0=scaled y
-		
+
 	mov r1,r3,lsr#24
 	orr r0,r0,r1,lsl#16		;@ Sprite x
 
@@ -1721,11 +1727,11 @@ dm12:
 
 	strh r0,[r2],#4			;@ Store OBJ Atr 2
 dm14:
-	tst addy,#0xff
+	subs r9,r9,#1
 	bne dm12
 	mov r0, #0x200
 	str r0, [r2]			;@ Hide the sprite 65 of NDS, which was used by per-line type
-	ldmfd sp!,{r3-r8,pc}
+	ldmfd sp!,{r3-r9,pc}
 dm13:
 	mov r0,#0x2a0			;@ double, y=160
 	str r0,[r2],#8
@@ -1979,7 +1985,7 @@ sp0end:
 	bne sp16
 sp8:
 	ldrb r0, [r9, #1]
-	
+
 	adr lr, 0f
 	adr r12, 1f
 	ldr_ pc, ppuChrLatch		;@ r4 returns the new ptr, r1 = ppuCtrl0, r0 = tile#
@@ -2173,7 +2179,7 @@ ntLoop:
 	addne r7, r7, #2
 	addeq r7, r7, #18
 	b ntLoop
-	
+
 0:
 	mov r6, #0
 	adr r7, ntData
