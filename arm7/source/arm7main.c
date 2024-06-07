@@ -293,89 +293,79 @@ void stopsound()
 int pcmpos = 0;
 int APU_paused = 0;
 
-//Set Default Filter Type
-enum AudioFilterType CurrentFilterType = NES_AUDIO_FILTER_NONE;
+//  //Set Default Filter Type
+// enum AudioFilterType CurrentFilterType = NES_AUDIO_FILTER_NONE;
 
 
-//Get New Filter Type from ARM9
-void setAudioFilter()
-{
-	switch (FIFO_AUDIO_FILTER)
-	{
-	case FIFO_AUDIO_FILTER << 0:
-		CurrentFilterType = NES_AUDIO_FILTER_NONE;
-		break;
-	case FIFO_AUDIO_FILTER << 1:
-		CurrentFilterType = NES_AUDIO_FILTER_CRISP;
-		break;
-	case FIFO_AUDIO_FILTER << 2:
-	 	CurrentFilterType = NES_AUDIO_FILTER_OLDTV;
-		break;
-	case FIFO_AUDIO_FILTER << 3:
-		CurrentFilterType = NES_AUDIO_FILTER_LOWPASS;
-		break;
-	case FIFO_AUDIO_FILTER << 4:
-		CurrentFilterType = NES_AUDIO_FILTER_HIGHPASS;
-		break;
-	case FIFO_AUDIO_FILTER << 5:
-		CurrentFilterType = NES_AUDIO_FILTER_WEIGHTED;
-		break;
-	}
-}
-// Filter Type Get from Settings
-enum AudioFilterType getAudioFilterType()
-{
-	return CurrentFilterType;
-}
+// //Get New Filter Type from ARM9
+// void setAudioFilter()
+// {
+// 	switch (FIFO_AUDIO_FILTER)
+// 	{
+// 	case FIFO_AUDIO_FILTER << 0:
+// 		CurrentFilterType = NES_AUDIO_FILTER_NONE;
+// 		break;
+// 	case FIFO_AUDIO_FILTER << 1:
+// 		CurrentFilterType = NES_AUDIO_FILTER_CRISP;
+// 		break;
+// 	case FIFO_AUDIO_FILTER << 2:
+// 	 	CurrentFilterType = NES_AUDIO_FILTER_OLDTV;
+// 		break;
+// 	case FIFO_AUDIO_FILTER << 3:
+// 		CurrentFilterType = NES_AUDIO_FILTER_LOWPASS;
+// 		break;
+// 	case FIFO_AUDIO_FILTER << 4:
+// 		CurrentFilterType = NES_AUDIO_FILTER_HIGHPASS;
+// 		break;
+// 	case FIFO_AUDIO_FILTER << 5:
+// 		CurrentFilterType = NES_AUDIO_FILTER_WEIGHTED;
+// 		break;
+// 	}
+// }
+// // Filter Type Get from Settings
+// enum AudioFilterType getAudioFilterType()
+// {
+// 	return CurrentFilterType;
+// }
 
-//Audio Filters
-static inline short PassFilter(short int output, u32 *coef)
-{
-static short int accum;
-	accum = 0;
-	switch (CurrentFilterType)
-	{
-		// Default No Filter
-	case NES_AUDIO_FILTER_NONE:
-		break;
-		//Modern RF TV Filter
-	case NES_AUDIO_FILTER_CRISP:
-		accum = 0;
-		output = (output + (accum << 1));
-		accum = output;
-		output = accum;
-		*coef++ = accum;
-		break;
-		//Old TV Filter
-	case NES_AUDIO_FILTER_OLDTV:
-		accum = 0;
-		accum = output >> 1;
-		*coef++ = accum;
-		output = accum << 1;
-		*coef++ = output << 1;
-		break;
-		// Famicom/NES Filter
-	case NES_AUDIO_FILTER_LOWPASS:
-		accum = 0;
-		output = ((output + (accum * 7)) >> 3) << 3;
-		accum = *coef++;
-		*coef++ = output;
-		break;
-	case NES_AUDIO_FILTER_HIGHPASS:
-		accum = 0;
-		*coef++ = (((*coef++ * 8)) + (accum * 7)) >> 3;
-		*coef++ = output;
-		break;	
-	case NES_AUDIO_FILTER_WEIGHTED:
-		accum = 0;
-		output = (output + output + output + MIXFREQ) >> 2;
-		break;
-	}
-	return output;
-}
+// // //Audio Filters
+// short int lowpass(signed short input)
+// {
+// short int output = 0;
+// static short int accum = 0;
+// 	switch (CurrentFilterType)
+// 	{
+// 	// Default No Filter
+// 	case NES_AUDIO_FILTER_NONE:
+// 		return;
+// 		break;
+// 	//Modern RF TV Filter
+// 	case NES_AUDIO_FILTER_CRISP:
+// 		return;
+// 		break;
+// 	//Old TV Filter
+// 	case NES_AUDIO_FILTER_OLDTV:
+// 		output = ((input >> 1) + (accum * 6)) >> 3;
+// 		accum = output;
+// 		return output;	
+// 		break;
+// 	// Famicom/NES Filter
+// 	case NES_AUDIO_FILTER_LOWPASS:
+// 		output = (input + (accum * 7)) >> 3;
+// 		accum = output;
+// 		return output;
+// 		break;
+// 	case NES_AUDIO_FILTER_HIGHPASS:
+// 		return;
+// 		break;
+// 	case NES_AUDIO_FILTER_WEIGHTED:
+// 		return;
+// 		break;
+// 	}
+// }
 
 // Mixer handler TODO: Implement cases for custom sound filters.
-void mix(int chan)
+void __fastcall mix(int chan)
 {
     int mapper = IPC_MAPPER;
 
@@ -404,40 +394,40 @@ void mix(int chan)
 
         for (i = 0; i < MIXBUFSIZE; i++)
 		{			
-			short int input = adjust_samples(NESAPUSoundSquareRender1(), 6, 4);
-			short int output = PassFilter(input, pcmBuffer);
+			int32_t output = adjust_samples(NESAPUSoundSquareRender1(), 6, 4);
+			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
 
 		pcmBuffer+=MIXBUFSIZE;
   		for (i = 0; i < MIXBUFSIZE; i++)
  		{
-            short int input = adjust_samples(NESAPUSoundSquareRender2(), 6, 4);
-			short int output = PassFilter(input, pcmBuffer);
+            int32_t output = adjust_samples(NESAPUSoundSquareRender2(), 6, 4);
+			//short int output = lowpass(input);
+			*pcmBuffer++ = output;
+        }
+
+		pcmBuffer+=MIXBUFSIZE;
+        for (i = 0; i < MIXBUFSIZE; i++)
+		{
+            int32_t output = adjust_samples(NESAPUSoundTriangleRender1(), 7, 4);
+			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
 
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            short int input = adjust_samples(NESAPUSoundTriangleRender1(), 7, 4);
-			short int output = PassFilter(input, pcmBuffer);
+            int32_t output = adjust_samples(NESAPUSoundNoiseRender1(), 0, 7);
+			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
 
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            short int input = adjust_samples(NESAPUSoundNoiseRender1(), 0, 7);
-			short int output = PassFilter(input, pcmBuffer);
-			*pcmBuffer++ = output;
-        }
-
-		pcmBuffer+=MIXBUFSIZE;
-        for (i = 0; i < MIXBUFSIZE; i++) 
-		{
-            short int input = adjust_samples(NESAPUSoundDpcmRender1(), 4, 5);
-			short int output = PassFilter(input, pcmBuffer);
+            int32_t output = adjust_samples(NESAPUSoundDpcmRender1(), 4, 5);
+			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
 
@@ -446,8 +436,8 @@ void mix(int chan)
 		{
             for (i = 0; i < MIXBUFSIZE; i++) 
 			{
-                short int input = adjust_samples(FDSSoundRender(), 0, 4);
-				short int output = PassFilter(input, pcmBuffer);
+                int32_t output = adjust_samples(FDSSoundRender(), 0, 4);
+				//short int output = lowpass(input);
 				*pcmBuffer++ = output;
             }
 		} 
@@ -462,24 +452,24 @@ void mix(int chan)
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++)
 			{
-				short int input = (adjust_vrc(VRC6SoundRender1(), 5)) << 6;
-				short int output = PassFilter(input, pcmBuffer);
+				int32_t output = (adjust_vrc(VRC6SoundRender1(), 5)) << 6;
+				//short int output = lowpass(input);
 				*pcmBuffer++ = output;
             }
 
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++) 
 			{
-				short int input = (adjust_vrc(VRC6SoundRender2(), 5)) << 6;
-				short int output = PassFilter(input, pcmBuffer);
+				int32_t output = (adjust_vrc(VRC6SoundRender2(), 5)) << 6;
+				//short int output = lowpass(input);
 				*pcmBuffer++ = output;
             }
 
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++)
 			{
-				short int input = (adjust_vrc(VRC6SoundRender3(), 5)) << 6;
-				short int output = PassFilter(input, pcmBuffer);
+				int32_t output = (adjust_vrc(VRC6SoundRender3(), 5)) << 6;
+				//short int output = lowpass(input);
 				*pcmBuffer++ = output;
             }
         }	
