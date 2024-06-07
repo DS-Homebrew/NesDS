@@ -106,17 +106,17 @@ m6502_a		.req r5 @bits 0-23=0, also used to clear bytes in memory
 m6502_x		.req r6 @bits 0-23=0
 m6502_y		.req r7 @bits 0-23=0
 cycles		.req r8 @also VDIC flags
-m6502_pc	.req r9
+m6502pc		.req r9
 globalptr	.req r10 @=wram_globals* ptr
 m6502_optbl	.req r10
-cpu_zpage	.req r11 @=CPU_RAM
+m6502zpage	.req r11 @=CPU_RAM
 addy		.req r12 @keep this at r12 (scratch for APCS)
 		@r13=SP
 		@r14=LR
 		@r15=PC
 @----------------------------------------------------------------------------
 
-@start_map 0,cpu_zpage
+@start_map 0,m6502zpage
 @_m_ nes_ram,0x800
 @_m_ nes_sram,0x2000
 @_m_ chr_decode,0x400
@@ -146,11 +146,11 @@ _m_ vramAddr,4
 _m_ vramAddr2,4
 _m_ scrollX,4
 _m_ scrollY,4
-_m_ scrollYtemp,4
-_m_ sprite0y,4
+_m_ scrollYTemp,4
+_m_ sprite0Y,4
 _m_ readTemp,4
 _m_ bg0Cnt,4
-_m_ sprite0x,1
+_m_ sprite0X,1
 _m_ vramAddrInc,1
 _m_ ppuStat,1
 _m_ toggle,1
@@ -215,7 +215,7 @@ _m_ pixEnd, 4
 
 _m_ af_state, 4	@auto fire state
 _m_ af_start, 4 @auto fire start
-_m_ palsyncline, 4
+_m_ palSyncLine, 4
 
 _m_ cartFlags,1
 _m_ barcode, 1
