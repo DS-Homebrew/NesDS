@@ -186,15 +186,15 @@ int F1_VL = SOUND_VOL(0x5F); // VOL 0x7F
 int F1_PN = SOUND_PAN(0x40); // PAN 0X40
 
 // VRC6 Square 1
-int V1_VL = SOUND_VOL(0x7F); // VOL 0x3C
+int V1_VL = SOUND_VOL(0x7A); // VOL 0x3C
 int V1_PN = SOUND_PAN(0x54); // PAN 0x54
 
 // VRC6 Square 2
-int V2_VL = SOUND_VOL(0x7F); // VOL 0x3C
+int V2_VL = SOUND_VOL(0x7A); // VOL 0x3C
 int V2_PN = SOUND_PAN(0x2C); // PAN 0x54
 
 // VRC6 Saw
-int V3_VL = SOUND_VOL(0x59); // VOL 0x3C
+int V3_VL = SOUND_VOL(0x54); // VOL 0x3C
 int V3_PN = SOUND_PAN(0x40); // PAN 0x54
 
 // Delta PCM Channel
@@ -494,7 +494,7 @@ void initsound()
 { 		
 	int i;
 	powerOn(BIT(0));
-	REG_SOUNDCNT = SOUND_ENABLE | SOUND_VOL(0x72);
+	REG_SOUNDCNT = SOUND_ENABLE | SOUND_VOL(0x70);
 	for(i = 0; i < 16; i++) 
 	{
 		SCHANNEL_CR(i) = 0;
