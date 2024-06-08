@@ -40,6 +40,12 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ Waixing MMC3 clone on 43-393/43-406/860908C PCB
+@ Used in:
+@ 機甲戰士 (Jījiǎ Zhànshì, Chinese translation of Data East's Metal Max)
+@ 甲A - China Soccer League for Division A
+@ 第四次: 机器人大战 - Robot War IV
+@ 風雲 - Traitor Legend (original 1997 version)
 mapper74init:
 @---------------------------------------------------------------------------------
 	.word write0, write1, write2, write3
@@ -126,7 +132,6 @@ sbc1:
 	ldmfd sp!, {lr}
 	ldrb_ r0, prg3
 	b mapEF_
-
 
 @-------------------------------------------------------------------
 setbank_ppu:
@@ -258,7 +263,7 @@ w8001:
 	cmp r1, #0xa
 	bcs setbank_ppu
 	b setbank_cpu
-	
+
 @------------------------------------
 write1:
 @------------------------------------

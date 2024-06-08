@@ -17,7 +17,7 @@ counter = mapperData+3
 .section .text,"ax"
 @---------------------------------------------------------------------------------
 Konami_Init:
-	ldr r0,=Konami_IRQ_Hook
+	adr r0,Konami_IRQ_Hook
 	str_ r0,scanlineHook
 	bx lr
 @---------------------------------------------------------------------------------
@@ -52,13 +52,13 @@ KoIRQen: @- - - - - - - - - - - - - - -
 Konami_IRQ_Hook:
 @---------------------------------------------------------------------------------
 	ldr_ r0,latch
-	tst r0,#0x200	@timer active?
+	tst r0,#0x200		;@ Timer active?
 	beq h1
 
-	adds r0,r0,#0x01000000	@counter++
+	adds r0,r0,#0x01000000	;@ Counter++
 	bcc h0
 
-	strb_ r0,counter	@copy latch to counter
+	strb_ r0,counter	;@ Copy latch to counter
 @	b irq6502
 	b CheckI
 h0:

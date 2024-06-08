@@ -3,8 +3,6 @@
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper19init
-	.global framehook
-	.global hbhook
 	counter = mapperData+0
 	enable = mapperData+4
 	reg0	= mapperData+8
@@ -12,6 +10,12 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ Namco 129 & Namco 163
+@ Used in:
+@ Digital Devil Story: Megami Tensei II
+@ Final Lap
+@ Hydlide 3
+@ Star Wars
 mapper19init:
 @---------------------------------------------------------------------------------
 	.word map19_8,map19_A,map19_C,map19_E

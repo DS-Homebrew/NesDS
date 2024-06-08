@@ -8,6 +8,7 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ Front Fareast Super Magic Card
 mapper17init:
 @---------------------------------------------------------------------------------
 	.word void,void,void,void
@@ -35,9 +36,8 @@ write0:
 	tst r2,#0x10
 	subne r2,r2,#8
 
-	adr r1,jmptbl
-	ldr pc,[r1,r2,lsl#2]
-
+	ldr pc,[pc,r2,lsl#2]
+	nop
 jmptbl: .word void,_1,_2,_3,map89_,mapAB_,mapCD_,mapEF_
 	.word chr0_,chr1_,chr2_,chr3_,chr4_,chr5_,chr6_,chr7_
 

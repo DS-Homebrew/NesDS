@@ -10,7 +10,14 @@
 @----------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
-mapper159init:@		Bandai
+@ Bandai FCG boards with an LZ93D50 and a 128-byte serial EEPROM (X24C01).
+@ Used in:
+@ Dragon Ball Z: Kyoushuu! Saiya-jin
+@ Magical Taruruuto-kun: Fantastic World!!
+@ Magical Taruruuto-kun 2: Mahou Daibouken
+@ SD Gundam Gaiden - Knight Gundam Monogatari
+@ See also mapper 16
+mapper159init:
 @----------------------------------------------------------------------------
 	.word write0,write0,write0,write0
 

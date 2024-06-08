@@ -30,6 +30,11 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ MMC3 on TKSROM & TLSROM boards
+@ Used in:
+@ Armadillo
+@ Pro Sport Hockey
+@ Also see mapper 95, 158 & 207
 mapper118init:
 @---------------------------------------------------------------------------------
 	.word write0, empty_W, write2, write3
@@ -71,30 +76,26 @@ mapper118init:
 setbank_cpu:
 @-------------------------------------------------------------------
 	stmfd sp!, {lr}
+	ldrb_ r0, prg1
+	bl mapAB_
 	ldrb_ r0, reg0
 	tst r0, #0x40
 	beq sbc1
 
 	mov r0, #-2
 	bl map89_
-	ldrb_ r0, prg1
-	bl mapAB_
 	ldrb_ r0, prg0
 	bl mapCD_
+	ldmfd sp!, {lr}
 	mov r0, #-1
-	bl mapEF_
-	b cend
+	b mapEF_
 
 sbc1:
 	ldrb_ r0, prg0
 	bl map89_
-	ldrb_ r0, prg1
-	bl mapAB_
+	ldmfd sp!, {lr}
 	mov r0, #-1
-	bl mapCDEF_
-
-cend:
-	ldmfd sp!, {pc}
+	b mapCDEF_
 
 @-------------------------------------------------------------------
 setbank_ppu:

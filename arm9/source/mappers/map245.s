@@ -27,11 +27,14 @@
 	irq_latch	= mapperData+18
 	irq_request	= mapperData+19
 	we_sram		= mapperData+20
-	irq_type	= mapperData+21
+	unused		= mapperData+21
 
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ Waixing F003 board with MMC3 clone
+@ Used in:
+@ 勇者斗恶龙 VII - Dragon Quest (Yǒngzhě dòu è lóng VII - Dragon Quest),
 mapper245init:
 @---------------------------------------------------------------------------------
 	.word write0, write1, void, void

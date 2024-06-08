@@ -10,7 +10,14 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
-mapper69init:			@ Sunsoft FME-7, Batman ROTJ, Gimmick...
+@ Sunsoft FME-7, 5A & 5B
+@ Used in:
+@ Barcode World
+@ Batman ROTJ
+@ Gimmick
+@ Gremlins (J)
+@ Hebereke
+mapper69init:
 @---------------------------------------------------------------------------------
 	.word write0,write1,void,void			@There is a music channel also
 
@@ -18,8 +25,6 @@ mapper69init:			@ Sunsoft FME-7, Batman ROTJ, Gimmick...
 	mov r1,r1,lsr#16
 	str_ r1,countdown
 
-	ldr r0,=emuFlags
-	ldrb r1,[r0]
 	ldr_ r1,emuFlags
 	tst r1,#PALTIMING
 	movne r1,#107				@PAL

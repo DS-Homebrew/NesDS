@@ -5,7 +5,14 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
-mapper72init:	@Jaleco - Pinball Quest, Moero!! Pro Tennis, Moero!! Juudou Warroirs...
+@ Jaleco JF-17 board.
+@ Used in:
+@ Moero!! Juudou Warroirs...
+@ Moero!! Pro Tennis
+@ Pinball Quest
+@ Also see mapper 92
+@---------------------------------------------------------------------------------
+mapper72init:
 @---------------------------------------------------------------------------------
 	.word write72,write72,write72,write72
 
