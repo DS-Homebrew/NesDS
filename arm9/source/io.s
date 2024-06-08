@@ -66,7 +66,7 @@ io_write_tbl:
 	.word soundwrite	@pAPU Delta Modulation D/A Register 0x4011
 	.word soundwrite	@pAPU Delta Modulation Address Register 0x4012
 	.word soundwrite	@pAPU Delta Modulation Data Length Register 0x4013
-	.word dma_W		@$4014: Sprite DMA transfer
+	.word _4014W		@$4014: Sprite DMA transfer
 	.word soundwrite
 joypad_write_ptr:
 	.word joy0_W	@$4016: Joypad 0 write
@@ -78,34 +78,28 @@ FDS_W:
 	cmp r2, #0x90
 	bcs empty_W
 	b soundwrite
-@---------------------------------------------------------------------------------
-dma_W:	@(4014)		sprite DMA transfer
-@shell we edit?
-@---------------------------------------------------------------------------------
-PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
-
-	ldr r1,=3*513*CYCLE		@ was 512...	513/514 is the right number...
+;@----------------------------------------------------------------------------
+_4014W:						;@ Transfer 256 bytes from written page to $2004
+;@----------------------------------------------------------------------------
+	ldr r1,=513*3*CYCLE		@ 513/514 is the right number...
 	sub cycles,cycles,r1
-	stmfd sp!,{r3-r8,lr}
+	stmfd sp!,{r3-r4,lr}
 
 	and r1,r0,#0xe0
-	adr_ addy,m6502MemTbl
-	ldr addy,[addy,r1,lsr#3]
+	adr_ r2,m6502MemTbl
+	ldr r2,[r2,r1,lsr#3]
 	and r0,r0,#0xff
-	add addy,addy,r0,lsl#8	@addy=DMA source
+	add r3,r2,r0,lsl#8	@ r3=DMA source
+	mov r4,#0x100
+dmaLoop:
+	ldrb r0,[r3],#1
+	bl ppuOamDataW
+	subs r4,r4,#1
+	bne dmaLoop
 
-	mov r0, addy
-	ldr r1, =NES_SPRAM
-	mov r7, #240/5/4
-cpsp:
-	ldmia r0!, {r2-r6}
-	stmia r1!, {r2-r6}
-	subs r7, r7, #1
-	bne cpsp
-	ldmia r0!, {r2-r5}
-	stmia r1!, {r2-r5}
+	ldmfd sp!,{r3-r4,lr}
+	bx lr
 
-	ldmfd sp!,{r3-r8,pc}
 @---------------------------------------------------------------------------------
 refreshNESjoypads:	@call every frame
 @used to refresh joypad button status
