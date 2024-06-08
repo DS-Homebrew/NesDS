@@ -324,9 +324,6 @@ extern u8 nes_rgb[];
 //subscreen.c
 extern u32 debuginfo[];
 
-//ppu.s
-extern u32 gfx_scale;
-
 //others...
 extern u32 all_pix_start;
 extern u32 all_pix_end;
