@@ -28,17 +28,52 @@ void reg4015interrupt(u32 msg, void *none)
 			addr: no known
 * description:		none
 ******************************/
-void writeAPU(u32 val,u32 addr) 
+void writeAPU(u32 val, u32 addr) 
 {
-	if(IPC_APUW - IPC_APUR < 256 && addr != 0x4011 && 
-			((addr > 0x8000 && (debuginfo[MAPPER] == 24 || debuginfo[MAPPER] == 26 || IPC_MAPPER == 256)) ||
-			(addr < 0x4018 || debuginfo[MAPPER] == 20 || debuginfo[MAPPER] == 256))) {		
-		fifoSendValue32(FIFO_USER_07,(addr << 8) | val);
-		IPC_APUW++;
-		//IPC_APUWRITE;
-	}
+    if (IPC_APUW - IPC_APUR < 256 && addr != 0x4011) 
+    {
+        bool send = false;
 
-	if(addr == 0x4011 || debuginfo[MAPPER] == 256)
+        // VRC6 sound addresses data check (mapper 24 and 26).
+        if ((0x9000 <= addr && addr <= 0x9002) || (0xA000 <= addr && addr <= 0xA002) || (0xB000 <= addr && addr <= 0xB002)) 
+        {
+            if (debuginfo[MAPPER] == 24 || debuginfo[MAPPER] == 26 || (nsfHeader.ExtraChipSelect & VRC6_AUDIO || debuginfo[MAPPER] == 256)) 
+            {
+                send = true;
+            }
+        }
+
+        // FDS sound addresses data check (mapper 20).
+        if (0x4040 <= addr && addr < 0x4090) 
+        {
+            if (debuginfo[MAPPER] == 20 || (nsfHeader.ExtraChipSelect & FDS_AUDIO || debuginfo[MAPPER] == 256))
+            {
+                send = true;
+            }
+        }
+
+        // VRC7 sound addresses data check (add appropriate address range).
+        // if ((VRC7_ADDRESS_RANGE) && (nsfHeader.ExtraChipSelect & VRC7_AUDIO)) {
+        //     send = true;
+        // }
+
+        // Add similar checks for other sound chips like MMC5, Namco 163, Sunsoft 5B, VT02+...
+
+        // Standard APU sound addresses data check.
+        if (addr < 0x4018) 
+        {
+            send = true;
+        }
+
+        if (send) 
+        {
+            fifoSendValue32(FIFO_USER_07, (addr << 8) | val);
+            IPC_APUW++;
+            IPC_APUWRITE;
+        }
+    }
+	// NES APU 0x4011 Register data handler for RAW PCM samples.
+	if(addr == 0x4011 || debuginfo[MAPPER] == 256) 
 	{
 		unsigned char *out = IPC_PCMDATA;
 		out[__scanline] = val | 0x80;
