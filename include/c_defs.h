@@ -206,25 +206,54 @@ extern u32 __nsfInit;
 extern u32 __nsfSongNo;
 extern u32 __nsfSongMode;
 
+// NTSC/PAL bits definitions (NTSC_PALbits)
+#define NTSC_TUNE           0x00 // If clear, this is an NTSC tune
+#define PAL_TUNE            0x01 // If set, this is a PAL tune
+#define DUAL_NTSC_PAL_TUNE  0x02 // If set, this is a dual PAL/NTSC tune
+// Bits 3-7 are reserved and must be 0
+
+// Extra sound chip select definitions (ExtraChipSelect)
+#define NO_EXTRA_CHIP       0x00
+#define VRC6_AUDIO          0x01
+#define VRC7_AUDIO          0x02
+#define FDS_AUDIO           0x04
+#define MMC5_AUDIO          0x08
+#define NAMCO_163_AUDIO     0x10
+#define SUNSOFT_5B_AUDIO    0x20
+#define VT02P_AUDIO         0x40
+
 extern struct nsfHeader
 {
-	char	ID[5];
-	char	Version;
-	char	TotalSong;
-	char	StartSong;
-	unsigned short	LoadAddress;
-	unsigned short	InitAddress;
-	unsigned short	PlayAddress;
-	char	SongName[32];
-	char	ArtistName[32];
-	char	CopyrightName[32];
-	unsigned short	SpeedNTSC;
-	char	BankSwitch[8];
-	unsigned short	SpeedPAL;
-	char	NTSC_PALbits;
-	char	ExtraChipSelect;
-	char	Expansion[4];		// must be 0
+    char ID[5];                     // 'N','E','S','M',$1A (denotes an NES sound format file)
+    char Version;                   // Version number $01 (or $02 for NSF2)
+    char TotalSong;                 // Total songs (1=1 song, 2=2 songs, etc)
+    char StartSong;                 // Starting song (1=1st song, 2=2nd song, etc)
+    unsigned short LoadAddress;     // (lo, hi) load address of data ($8000-FFFF)
+    unsigned short InitAddress;     // (lo, hi) init address of data ($8000-FFFF)
+    unsigned short PlayAddress;     // (lo, hi) play address of data ($8000-FFFF)
+    char SongName[32];              // The name of the song, null terminated
+    char ArtistName[32];            // The artist, if known, null terminated
+    char CopyrightName[32];         // The copyright holder, null terminated
+    unsigned short SpeedNTSC;       // (lo, hi) Play speed, in 1/1000000th sec ticks, NTSC (see text)
+    char BankSwitch[8];             // Bankswitch init values (see text, and FDS section)
+    unsigned short SpeedPAL;        // (lo, hi) Play speed, in 1/1000000th sec ticks, PAL (see text)
+    char NTSC_PALbits;              // PAL/NTSC bits
+                                     // bit 0: if clear, this is an NTSC tune
+                                     // bit 1: if set, this is a PAL tune
+                                     // bit 2: if set, this is a dual PAL/NTSC tune
+                                     // bits 3-7: reserved, must be 0
+    unsigned char ExtraChipSelect;  // Extra Sound Chip Support
+                                     // bit 0: if set, this song uses VRC6 audio
+                                     // bit 1: if set, this song uses VRC7 audio
+                                     // bit 2: if set, this song uses FDS audio
+                                     // bit 3: if set, this song uses MMC5 audio
+                                     // bit 4: if set, this song uses Namco 163 audio
+                                     // bit 5: if set, this song uses Sunsoft 5B audio
+                                     // bit 6: if set, this song uses VT02+ audio
+                                     // bit 7: reserved, must be zero
+    char Expansion[4];              // Reserved for NSF2 (must be 0)
 } nsfHeader;
+
 
 void EMU_VBlank(void);
 void EMU_Run(void);
