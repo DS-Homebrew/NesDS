@@ -148,8 +148,9 @@ _m_ scrollX,4
 _m_ scrollY,4
 _m_ scrollYTemp,4
 _m_ sprite0Y,4
-_m_ readTemp,4
 _m_ bg0Cnt,4
+_m_ readTemp,1
+_m_ ppuBusLatch,1
 _m_ sprite0X,1
 _m_ vramAddrInc,1
 _m_ ppuStat,1
@@ -158,6 +159,7 @@ _m_ ppuCtrl0,1
 _m_ ppuCtrl0Frame,1
 _m_ ppuCtrl1,1
 _m_ ppuOamAdr,1
+_m_ ppuUnusedAlign1,2
 _m_ nesChrMap,16
 
 _m_ vromMask,4

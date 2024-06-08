@@ -1477,9 +1477,10 @@ ppustate:
 	.word 0 @scrollY
 	.word 0 @scrollYTemp
 	.word 0 @sprite0Y
-	.word 0 @readTemp
 	.word 0 @bg0Cnt (mirroring control)
 
+	.byte 0 @readTemp
+	.byte 0 @busLatch
 	.byte 0 @sprite0X
 	.byte 1 @vramAddrInc
 	.byte 0 @ppuStat
@@ -1488,6 +1489,7 @@ ppustate:
 	.byte 0 @ppuCtrl0Frame	;state of $2000 at frame start
 	.byte 0 @ppuCtrl1
 	.byte 0 @ppuOamAdr
+	.skip 2 @align
 __nes_chr_map:
 	.skip 16	@nesChrMap 	VROM map for 0000-1FFF (1k bank numbers)
 	
