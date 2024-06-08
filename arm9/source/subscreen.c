@@ -27,6 +27,39 @@ char *fdsdbg[]={
 "diskno", "makerid", "gameid",
 };
 
+// Function to get the sound mode string based on ExtraChipSelect value
+const char* getSoundModeString(unsigned char extraChipSelect) 
+{
+    if (extraChipSelect == NO_EXTRA_CHIP) 
+	{
+        return "  None";
+    } else {
+        // Check each individual bit to determine the sound mode
+        if (extraChipSelect & VRC6_AUDIO) {
+            return " VRC6";
+        } else if (extraChipSelect & VRC7_AUDIO) {
+            return " VRC7";
+        } else if (extraChipSelect & FDS_AUDIO) {
+            return " FDS";
+        } else if (extraChipSelect & MMC5_AUDIO) {
+            return " MMC5";
+        } else if (extraChipSelect & NAMCO_163_AUDIO) {
+            return " Namco 163";
+        } else if (extraChipSelect & SUNSOFT_5B_AUDIO) {
+            return " Sunsoft 5B";
+        } else if (extraChipSelect & VT02P_AUDIO) {
+            return " VT02+";
+        } else {
+            return " Unknown";
+        }
+    }
+}
+
+// TODO: ADD Graphical Objects
+const char* getPlayStatusIcon(unsigned char playingFlag) {
+    return playingFlag == 0x01 ? ">" : "  ";
+}
+
 int debugdump() {
 /*
 	int i;
@@ -78,18 +111,17 @@ int debugdump() {
 		hex16		(64 * 4 + 5 * 32 + 18, nsfHeader.PlayAddress);
 
 		// NSF Info
-		consoletext	(64 * 4 + 8 * 32, "Album:", 0);
+		consoletext	(64 * 4 + 8 * 32, "Name:", 0);
 		consoletext	(63 * 4 + 8 * 32 + 18, nsfHeader.SongName, 0);
 		consoletext	(64 * 4 + 10 * 32, "Artist:", 0);
-		consoletext	(63 * 4 + 10 * 32 + 18, nsfHeader.ArtistName, 0);
-		consoletext	(64 * 4 + 12 * 32, "CR:", 0);
-		consoletext	(63 * 4 + 12 * 32 + 18, nsfHeader.CopyrightName, 0);
+		consoletext	(63 * 4 + 10 * 32 + 20, nsfHeader.ArtistName, 0);
+		consoletext	(64 * 4 + 12 * 32, "CopyRight:", 0);
+		consoletext	(63 * 4 + 12 * 32 + 25, nsfHeader.CopyrightName, 0);
+		consoletext	(64 * 4 + 14 * 32, "XtraChip:", 0);
+		consoletext	(63 * 4 + 14 * 32 + 22, (char*)getSoundModeString(nsfHeader.ExtraChipSelect), 0);
 
 		// consoletext	(64 * 4 + 14 * 32, "Expansion:", 0);
 		// consoletext	(63 * 4 + 14 * 32 + 18, nsfHeader.Expansion, 0);
-
-		// consoletext	(64 * 4 + 16 * 32, "Chip:", 0);
-		// consoletext	(63 * 4 + 16 * 32 + 18, nsfHeader.ExtraChipSelect, 0);
 		
 		// //for debugging
 		// for(i=0;i<15;i++) {
@@ -100,9 +132,7 @@ int debugdump() {
 		consoletext	(64 * 16 + 1 * 32, "Mode:", 0);
 		hex8		(64 * 16 + 1 * 32 + 18, __nsfSongMode);
 		consoletext	(64 * 16 + 2 * 32, "Playing:", 0);
-		hex8		(64 * 16 + 2 * 32 + 18, __nsfPlay);
-		consoletext	(64 * 16 + 3 * 32, "Mapper:", 0);
-		hex8		(64 * 16 + 3 * 32 + 18, mapperstate);
+		consoletext		(64 * 16 + 2 * 32 + 18, (char*)getPlayStatusIcon(__nsfPlay), 0);
 
 		//for debugging
 		// for(i = 0; i < 4; i++) {
