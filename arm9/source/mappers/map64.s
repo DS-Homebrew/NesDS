@@ -12,6 +12,14 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ Tengen RAMBO-1
+@ Used in:
+@ Hard Drivin' (prototype)
+@ Klax
+@ Rolling Thunder
+@ Shinobi
+@ Skull and Crossbones
+@ Also see mapper 158
 mapper64init:
 @---------------------------------------------------------------------------------
 	.word write0,write1,write2,write3
@@ -85,7 +93,7 @@ write3:		@E000-E001
 RAMBO_IRQ_Hook:
 @---------------------------------------------------------------------------------
 @	ldrb r0,ppuCtrl1
-@	tst r0,#0x18		2no sprite/BG enable?  0x18
+@	tst r0,#0x18	@no sprite/BG enable?  0x18
 @	beq hk0			@bye..
 
 	ldr_ r0,scanline

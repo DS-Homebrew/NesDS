@@ -18,6 +18,9 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ Waixing VRC4 clone
+@ Used in: 三国志: 中原の覇者 (Sangokushi: Chūgen no Hasha)
+@ See also mapper 253
 mapper252init:
 @---------------------------------------------------------------------------------
 	.word write89, writeAB, writeCD, writeEF
@@ -39,7 +42,7 @@ mapper252init:
 	mov r0, #0
 	bl chr01234567_
 
-	ldr r0,=VRAM_chr		@enable/disable chr write
+	ldr r0,=VRAM_chr			@ enable/disable chr write
 	ldr r1,=vram_write_tbl		@ set the first 8 function pointers to 'void'?
 	mov r2,#8
 	bl filler

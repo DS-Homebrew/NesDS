@@ -20,6 +20,9 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ Waixing VRC4 clone
+@ Used in: Dragon Ball Z: 強襲! サイヤ人 (Dragon Ball Z: Kyōshū! Saiya-jin)
+@ See also mapper 252
 mapper253init:
 @---------------------------------------------------------------------------------
 	.word write89, writeAB, writeCD, writeEF
@@ -41,8 +44,8 @@ mapper253init:
 	mov r0, #0
 	bl chr01234567_
 
-	ldr r0,=VRAM_chr				@enable/disable chr write
-	ldr r1,=vram_write_tbl			@ set the first 8 function pointers to 'void'?
+	ldr r0,=VRAM_chr			@ enable/disable chr write
+	ldr r1,=vram_write_tbl		@ set the first 8 function pointers to 'void'?
 	mov r2,#8
 	bl filler
 
@@ -100,7 +103,7 @@ writeCD:
 	b writeppu
 @---------------------------------------------------------------------------------
 writeEF:
-	tst addy, #0x1000	@addy=0xF***
+	tst addy, #0x1000	@ addy=0xF***
 	beq writeppu
 
 	and r1, addy, #0xc

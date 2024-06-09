@@ -5,6 +5,11 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ Russian mapper (by RCM Group?)
+@ Used in:
+@ Bonza
+@ Videopoker Bonza
+@ Magic Jewelry II
 mapper216init:
 @---------------------------------------------------------------------------------
 	.word write, write, write, write
@@ -15,7 +20,6 @@ mapper216init:
 	mov r0, #0
 	bl chr01234567_
 	ldmfd sp!, {pc}
-
 
 write:
 	stmfd sp!, {lr}

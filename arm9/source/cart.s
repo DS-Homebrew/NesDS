@@ -78,7 +78,8 @@ mappertbl:
 	.word 111,mapper111init
 	.word 118,mapper118init
 	.word 119,mapper119init
-	.word 140,mapper66init
+	.word 140,mapper140init
+	.word 146,mapper79init
 	.word 151,mapper151init
 	.word 152,mapper152init
 	.word 153,mapper16init

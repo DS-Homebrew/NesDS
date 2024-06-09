@@ -46,7 +46,7 @@ mapper1init:
 @patch for games...
 	stmfd sp!, {lr}
 	ldr_ r1, romBase	@src
-	ldr_ r2, romsize8k	@size
+	ldr_ r2, romSize8k	@size
 	mov r2, r2, lsl#13
 	bl crc
 
@@ -312,7 +312,7 @@ b1:
 	and r0, r0, #3
 	tst r0, #2
 	bne 0f
-	
+
 	tst r0, #1
 	bl mirror1H_
 	b b2
@@ -355,7 +355,7 @@ b3:
 	ldrcsb_ r1, reg1
 	andcs r1, r1, #0x10
 	movcc r1, #0
-	str r1, prombase
+	str r1, promBase
 
 	ldrb_ r0, reg0
 	tst r0, #0x8
@@ -369,7 +369,7 @@ b3:
 	add r0, r1, r2
 	bl map89AB_
 
-	ldr r1, prombase
+	ldr r1, promBase
 	ldr_ r2, prgSize16k
 	cmp r2, #32
 	addcs r0, r1, #15
@@ -382,7 +382,7 @@ b4:
 	add r0, r1, r2
 	bl mapCDEF_
 
-	ldr r1, prombase
+	ldr r1, promBase
 	ldr_ r2, prgSize16k
 	cmp r2, #32
 	movcs r0, r1
@@ -398,5 +398,5 @@ b5:
 	ldmfd sp!, {pc}
 
 @-----------------
-prombase:
+promBase:
 	.word 0

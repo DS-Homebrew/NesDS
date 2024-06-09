@@ -3,7 +3,6 @@
 	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper189init
-	.word write0, write1, write2, write3
 
 	reg0 = mapperData
 	reg1 = mapperData+1
@@ -33,6 +32,11 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ This mapper is a modified MMC3.
+@ Everything operates just as it does on the MMC3, only the normal PRG regs
+@ (R:6,R:7) are ignored, and a new PRG Reg is used instead.
+@ Used in:
+@ Thunder Warrior
 mapper189init:
 @---------------------------------------------------------------------------------
 	.word write0, write1, write2, write3

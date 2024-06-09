@@ -18,17 +18,17 @@
 	reg5 = mapperData+5
 	reg6 = mapperData+6
 	reg7 = mapperData+7
-	
+
 	chr01 = mapperData+8
 	chr23 = mapperData+9
 	chr4  = mapperData+10
 	chr5  = mapperData+11
 	chr6  = mapperData+12
 	chr7  = mapperData+13
-	
+
 	prg0  = mapperData+14
 	prg1  = mapperData+15
-	
+
 	irq_enable	= mapperData+16
 	irq_counter	= mapperData+17
 	irq_latch	= mapperData+18
@@ -37,28 +37,29 @@
 	vs_index	= mapperData+21
 	we_sram		= mapperData+22
 	irq_type	= mapperData+23
-	
+
 	irq_preset	= mapperData+24
 	irq_preset_vbl	= mapperData+25
-	
+
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ MMC3
 mapper4init:
 mapper119init:
 mapper249init:
 @---------------------------------------------------------------------------------
-	.word write0, write1, write2, write3
+	.word mmc3MappingW, mmc3MirrorW, mmc3CounterW, mmc3IrqEnableW
 	stmfd sp!, {lr}
 	mov r0, #0
 	str_ r0, reg0
 	str_ r0, reg4
-	
+
 	mov r0, #0x0
 	strb_ r0, prg0			@prg0 = 0; prg1 = 1
 	mov r0, #1
 	strb_ r0, prg1
-	
+
 	bl setbank_cpu
 
 	mov r0, #0
@@ -73,9 +74,9 @@ mapper249init:
 	strb_ r0, chr6
 	mov r0, #7
 	strb_ r0, chr7
-	
+
 	bl setbank_ppu
-	
+
 	mov r0, #0
 	str_ r0, irq_enable
 	strb_ r0, irq_preset
@@ -83,11 +84,10 @@ mapper249init:
 	strb_ r0, irq_type
 	strb_ r0, vs_patch
 	strb_ r0, vs_index
-	
+
 	mov r0, #0xFF
 	strb_ r0, irq_latch
-	
-	
+
 	ldr r0,=hsync
 	str_ r0,scanlineHook
 	adr r0, writel
@@ -96,14 +96,14 @@ mapper249init:
 	str_ r0, m6502ReadTbl+8
 
 	bx lr
-	
+
 @patch for games...
 	@mov r0, #0		@init val
 	@ldr_ r1, romBase	@src
-	@ldr_ r2, romsize8k	@size
+	@ldr_ r2, romSize8k	@size
 	@mov r2, r2, lsl#13
 	@swi 0x0e0000		@swicrc16
-	
+
 	@ldr r1, =0x5807		@Tenchi o Kurau 2 - Akakabe no Tatakai Chinese Edtion.
 	@cmp r1, r0
 	@ldreq_ r2, emuFlags
@@ -135,30 +135,26 @@ readl:		@($4100-$5FFF)
 setbank_cpu:
 @-------------------------------------------------------------------
 	stmfd sp!, {lr}
+	ldrb_ r0, prg1
+	bl mapAB_
 	ldrb_ r0, reg0
 	tst r0, #0x40
 	beq sbc1
-	
+
 	mov r0, #-2
 	bl map89_
-	ldrb_ r0, prg1
-	bl mapAB_
 	ldrb_ r0, prg0
 	bl mapCD_
+	ldmfd sp!, {lr}
 	mov r0, #-1
-	bl mapEF_
-	b cend
+	b mapEF_
 
 sbc1:
 	ldrb_ r0, prg0
 	bl map89_
-	ldrb_ r0, prg1
-	bl mapAB_
+	ldmfd sp!, {lr}
 	mov r0, #-1
-	bl mapCDEF_
-
-cend:
-	ldmfd sp!, {pc}
+	b mapCDEF_
 
 @-------------------------------------------------------------------
 setbank_ppu:
@@ -168,7 +164,7 @@ setbank_ppu:
 	ldrb_ r0, reg0
 	tst r0, #0x80
 	beq 0f
-	
+
 	mov r1, #0
 	ldrb_ r0, chr4
 	bl chr1k
@@ -183,35 +179,23 @@ setbank_ppu:
 	bl chr1k
 	mov r1, #4
 	ldrb_ r0, chr01
-	bl chr1k
-	mov r1, #5
-	ldrb_ r0, chr01
-	add r0, r0, #1
-	bl chr1k
+	mov r0,r0,lsr#1
+	bl chr2k
 	mov r1, #6
 	ldrb_ r0, chr23
-	bl chr1k
-	mov r1, #7
-	ldrb_ r0, chr23
-	add r0, r0, #1
-	bl chr1k
+	mov r0,r0,lsr#1
+	bl chr2k
 	ldmfd sp!, {pc}
-	
+
 0:
 	mov r1, #0
 	ldrb_ r0, chr01
-	bl chr1k
-	mov r1, #1
-	ldrb_ r0, chr01
-	add r0, r0, #1
-	bl chr1k
+	mov r0,r0,lsr#1
+	bl chr2k
 	mov r1, #2
 	ldrb_ r0, chr23
-	bl chr1k
-	mov r1, #3
-	ldrb_ r0, chr23
-	add r0, r0, #1
-	bl chr1k
+	mov r0,r0,lsr#1
+	bl chr2k
 	mov r1, #4
 	ldrb_ r0, chr4
 	bl chr1k
@@ -227,7 +211,7 @@ setbank_ppu:
 	ldmfd sp!, {pc}
 
 @------------------------------------
-write0:
+mmc3MappingW:
 @------------------------------------
 	tst addy, #1
 	bne w8001
@@ -235,27 +219,25 @@ write0:
 	strb_ r0, reg0
 	stmfd sp!, {lr}
 	bl setbank_cpu
-	bl setbank_ppu
-	ldmfd sp!, {pc}
+	ldmfd sp!, {lr}
+	b setbank_ppu
 
 w8001:
 	strb_ r0, reg1
 	ldrb_ r1, reg0
 	and r1, r1, #7
-	cmp r1, #2
-	andcc r0, r0, #0xfe
 	adrl_ r2, chr01
 	strb r0, [r2, r1]
 	cmp r1, #6
 	bcc setbank_ppu
 	b setbank_cpu
-	
+
 @------------------------------------
-write1:
+mmc3MirrorW:		@ A000-BFFF
 @------------------------------------
 	tst addy, #1
 	bne wa001
-	
+
 	strb_ r0, reg2
 	ldrb_ r1, cartFlags
 	tst r1, #SCREEN4
@@ -263,16 +245,16 @@ write1:
 	tst r0, #1
 	b mirror2V_
 
-wa001:
+wa001:				@ WRAM enable
 	strb_ r0, reg3
 	bx lr
-	
+
 @------------------------------------
-write2:
+mmc3CounterW:		@ C000-DFFF
 @------------------------------------
 	tst addy, #1
 	bne wc001
-	
+
 	strb_ r0, reg4
 	ldrb_ r1, irq_type
 	cmp r1, #MMC3_IRQ_KLAX
@@ -291,32 +273,32 @@ wc001:
 	cmpne r1, #MMC3_IRQ_ROCKMAN3
 	streqb_ r0, irq_latch
 	bxeq lr
-	
+
 	ldrb_ r0, irq_counter
 	orr r0, r0, #0x80
 	strb_ r0, irq_counter
-	
+
 	mov r2, #0xFF
 	ldr_ r0, scanline
 	cmp r0, #240
 	strccb_ r2, irq_preset
 	bxcc lr
-	
+
 	cmp r1, #MMC3_IRQ_SHOUGIMEIKAN
 	streqb_ r2, irq_preset
 	bxeq lr
-	
+
 	strb_ r2, irq_preset_vbl
 	mov r0, #0
 	strb_ r0, irq_preset
 	bx lr
-	
+
 @------------------------------------
-write3:
+mmc3IrqEnableW:		@ E000-FFFF
 @------------------------------------
 	tst addy, #1
 	bne we001
-	
+
 	strb_ r0, reg6
 	mov r0, #0
 	strb_ r0, irq_enable
@@ -339,16 +321,16 @@ hsync:
 	ldrb_ r2, irq_type
 	cmp r2, #MMC3_IRQ_KLAX
 	bne skip1
-	
+
 	cmp r0, #240
 	bcs 0f
 	tst r1, #0x18
 	beq 0f
-	
+
 	ldrb_ r0, irq_enable
 	ands r0, r0, r0
 	beq 0f
-	
+
 	ldrb_ r2, irq_counter
 	cmp r2, #0
 	bne 1f
@@ -357,7 +339,7 @@ hsync:
 	strb_ r2, irq_counter
 	mov r0, #0xFF
 	strb_ r0, irq_request
-1:	
+1:
 	ldrb_ r2, irq_latch
 	cmp r2, #0
 	subhi r2, r2, #1
@@ -376,7 +358,7 @@ skip1:
 	bcs 0f
 	tst r1, #0x18
 	beq 0f
-	
+
 	ldrb_ r0, irq_enable
 	ands r0, r0, r0
 	beq 0f
@@ -385,12 +367,12 @@ skip1:
 	subs r2, r2, #1
 	strb_ r2, irq_counter
 	bne 0f
-	
+
 	mov r0, #0xff
 	strb_ r0, irq_request
 	ldrb_ r0, irq_latch
 	strb_ r0, irq_counter
-	
+
 0:
 	ldrb_ r0, irq_request
 	ands r0, r0, r0
@@ -402,29 +384,29 @@ skip2:
 	bcs hq
 	tst r1, #0x18
 	beq hq
-	
+
 	mov r2, #0
 	ldrb_ r1, irq_preset_vbl
 	ands r1, r1, r1
 	ldrneb_ r1, irq_latch
 	strneb_ r1, irq_counter
 	strneb_ r2, irq_preset_vbl
-	
+
 	ldrb_ r1, irq_preset
 	ands r1, r1, r1
 	beq 0f
-	
+
 	ldrb_ r1, irq_latch
 	strb_ r1, irq_counter
 	strb_ r2, irq_preset
-	
+
 	ldrb_ r2, irq_type
 	cmp r2, #MMC3_IRQ_DAI2JISUPER
 	cmpeq r0, #0
 	subeq r1, r1, #1
 	@streqb_ r1, irq_counter
 	b 1f
-	
+
 0:
 	ldrb_ r1, irq_counter
 	subs r1, r1, #1
@@ -433,10 +415,10 @@ skip2:
 	strb_ r1, irq_counter
 	ands r1, r1, r1
 	bne hq
-	
+
 	mov r2, #0xFF
 	strb_ r2, irq_preset
-	
+
 	ldrb_ r1, irq_enable
 	ands r1, r1, r1
 	strneb_ r2, irq_request

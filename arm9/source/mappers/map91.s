@@ -52,8 +52,7 @@ writel:
 addhi:
 	cmp addy, #0x8000
 	bxcs lr
-	and r2, addy, #3
-	cmp r2, #0
+	ands r2, addy, #3
 	beq map89_
 	cmp r2, #1
 	beq mapAB_

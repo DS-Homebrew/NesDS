@@ -29,7 +29,7 @@
 .section .text,"ax"
 @---------------------------------------------------------------------------------
 @ Yet another MMC3 multicart.
-@ Used on:
+@ Used in:
 @ Super Spike V'Ball + Nintendo World Cup
 mapper47init:
 @---------------------------------------------------------------------------------

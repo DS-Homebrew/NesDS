@@ -7,7 +7,15 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
-mapper75init:		@ Konami/Jaleco
+@ Konami VRC1
+@ Used in:
+@ Exciting Boxing
+@ Ganbare Goemon! Karakuri Douchuu
+@ Jajamaru Ninpouchou
+@ King Kong 2: Ikari no Megaton Punch
+@ Moero!! Junior Basket: Two on Two
+@ Tetsuwan Atom
+mapper75init:
 @---------------------------------------------------------------------------------
 	.word write8000,writeA000,writeC000,writeE000
 
