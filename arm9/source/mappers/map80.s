@@ -6,14 +6,15 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
-mapper80init:	@Taito
+@ Taito X1-005 mapper IC
+@ See also mapper 82
+mapper80init:
 @---------------------------------------------------------------------------------
 	.word void,void,void,void
 
 	ldrb_ r1,cartFlags
-
 	bic r1,r1,#SRAM			@don't use SRAM on this mapper
-	strb r1,[r0]
+	strb_ r1,cartFlags
 
 	adr r0,write80
 	str_ r0,m6502WriteTbl+12
@@ -33,8 +34,9 @@ write80:
 	bxne lr
 
 	and addy,addy,#0xF
-	adr r1,write80tbl
-	ldr pc,[r1,addy,lsl#2]
+	ldr pc,[pc,addy,lsl#2]
+	nop
+write80tbl: .word wF0,wF1,chr4_,chr5_,chr6_,chr7_,wF6,void,void,void,map89_,map89_,mapAB_,mapAB_,mapCD_,mapCD_
 
 wF0:
 	mov addy,r0
@@ -60,5 +62,4 @@ wF6:
 	b mirror2H_
 
 
-write80tbl: .word wF0,wF1,chr4_,chr5_,chr6_,chr7_,wF6,void,void,void,map89_,map89_,mapAB_,mapAB_,mapCD_,mapCD_
 @---------------------------------------------------------------------------------

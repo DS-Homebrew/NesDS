@@ -1,7 +1,7 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
 	#include "6502mac.h"
-@---------------------------------------------------------------------------------	
+@---------------------------------------------------------------------------------
 	.global mapper90init
 	irq_latch = mapperData
 	irq_occur = mapperData + 1
@@ -48,6 +48,7 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ 晶太 (Jīngtài, also known as J.Y. Company)'s proprietary ASIC
 mapper90init:
 @---------------------------------------------------------------------------------
 	.word write89,writeAB,writeCD,void
@@ -216,9 +217,8 @@ writeCD:
 	bne wd000
 
 	and r2, addy, #7
-	adr r1, ctable
-	ldr pc, [r1, r2, lsl#2]
-	and r0, r0, r0
+	ldr pc, [pc, r2, lsl#2]
+	nop
 @-----------------
 ctable:
 	.word void, void, wc002, wc003, void, wc005, wc006, void
@@ -283,10 +283,8 @@ wd000:
 @--------------------------------
 setbank_cpu:
 	ldrb_ r0, prg_size
-	adr r1, cputable
-	ldr pc, [r1, r0, lsl#2]
-	and r0, r0, r0
-
+	ldr pc, [pc, r0, lsl#2]
+	nop
 cputable:
 	.word prgset0, prgset1, prgset2, prgset3
 @---------------
@@ -338,10 +336,8 @@ prgset3:
 @--------------------------------
 setbank_ppu:
 	ldrb_ r0, chr_size
-	adr r1, pputable
-	ldr pc, [r1, r0, lsl#2]
-	and r0, r0, r0
-
+	ldr pc, [pc, r0, lsl#2]
+	nop
 pputable:
 	.word chrset0, chrset1, chrset2, chrset3
 @---------------

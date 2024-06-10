@@ -13,7 +13,12 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
-mapper21init:	@gradius 2, wai wai world 2..
+@ Konami VRC2c & VRC4(a,b,c&d)
+@ Used in:
+@ Gradius 2
+@ Wai Wai World 2
+@ Also see mapper 22 & 23
+mapper21init:
 mapper25init:
 @---------------------------------------------------------------------------------
 	.word write8000,writeA000,writeC000,writeE000
@@ -86,9 +91,8 @@ writeE000:
 	tst addy,#0x4A			@0x02 + 0x08 + 0x40
 	orrne addy,addy,#0x2
 	and addy,addy,#3
-	adr r1,writeFtbl
 	ldrb_ r2,latch
-	ldr pc,[r1,addy,lsl#2]
-
+	ldr pc,[pc,addy,lsl#2]
+	nop
 writeFtbl: .word KoLatchLo,KoCounter,KoLatchHi,KoIRQen
 @---------------------------------------------------------------------------------

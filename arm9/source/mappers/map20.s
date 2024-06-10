@@ -64,6 +64,7 @@ OFFSET_FILE_DATA	= 74
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
+@ FDS expansion
 mapper20init:
 @---------------------------------------------------------------------------------
 	@.word void, void, void, void
@@ -155,16 +156,14 @@ exread:
 	bcc IO_R
 
 	mov r0, addy, lsr#8
-	mov r1, addy, lsr#8
-	cmp r1, #0x40
+	cmp r0, #0x40
 	bxne lr
 	and r1, addy, #0xFF
 	cmp r1, #0x34
 	bcs IO_R
 	subs r1, r1, #0x30
-	bxcc lr
-	adr r2, exrtbl
-	ldr pc, [r2, r1, lsl#2]
+	ldrcs pc, [pc, r1, lsl#2]
+	b empty_R
 @--------------------------
 exrtbl:
 	.word r30, r31, r32, r33
@@ -196,9 +195,8 @@ r31:
 	bxeq lr
 
 	ldr_ r0, block_mode
-
-	adr r2, r31tbl
-	ldr pc, [r2, r0, lsl#2]
+	ldr pc, [pc, r0, lsl#2]
+	nop
 @-----------------------
 r31tbl:
 	.word exread_ready, exread_label, exread_amount, exread_header, exread_data
@@ -292,15 +290,14 @@ exwrite:
 
 	mov r1, addy, lsr#8
 	cmp r1, #0x40
-	bxne lr
+	bne empty_W
 	and r1, addy, #0xFF
 	cmp r1, #0x27
 	bcs IO_W
 	subs r1, r1, #0x20
-	bxcc lr
 
-	adr r2, exwtbl
-	ldr pc, [r2, r1, lsl#2]
+	ldrcs pc, [pc, r1, lsl#2]
+	bx lr
 exwtbl:
 	.word w20, w21, w22, w23, w24, w25, w26
 
@@ -351,8 +348,8 @@ w24:
 	bxeq lr
 
 	ldr_ r1, block_mode
-	adr r2, w24tbl
-	ldr pc, [r2, r1, lsl#2]
+	ldr pc, [pc, r1, lsl#2]
+	nop
 w24tbl:
 	.word void, exwrite_label, exwrite_amount, exwrite_header, exwrite_data
 @---------------
@@ -438,9 +435,8 @@ w25:
 	strb_ r1, first_access
 
 	ldr_ r1, block_mode
-	adr r2, exchtbl
-	ldr pc, [r2, r1, lsl#2]
-
+	ldr pc, [pc, r1, lsl#2]
+	nop
 exchtbl:
 	.word exch_ready, exch_label, exch_amount, exch_header, exch_data
 @-------------------	

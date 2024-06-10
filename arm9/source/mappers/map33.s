@@ -10,7 +10,13 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
-mapper33init:	@Taito... Insector X
+@ Taito TC0190
+@ Used in:
+@ Akira
+@ Bakushou!! Jinsei Gekijou
+@ Don Doko Don
+@ Insector X
+mapper33init:
 @---------------------------------------------------------------------------------
 	.word write8000,writeA000,writeC000,writeE000
 
@@ -22,8 +28,9 @@ mapper33init:	@Taito... Insector X
 write8000:
 @---------------------------------------------------------------------------------
 	and addy,addy,#3
-	adr r1,write8tbl
-	ldr pc,[r1,addy,lsl#2]
+	ldr pc,[pc,addy,lsl#2]
+	nop
+write8tbl: .word w80,mapAB_,chr01_,chr23_
 w80:
 	ldr_ r1,mswitch
 	tst r1,#0xFF
@@ -34,7 +41,6 @@ w80:
 	ldmfd sp!,{r0,lr}
 	b map89_
 
-write8tbl: .word w80,mapAB_,chr01_,chr23_
 @---------------------------------------------------------------------------------
 writeA000:
 @---------------------------------------------------------------------------------
