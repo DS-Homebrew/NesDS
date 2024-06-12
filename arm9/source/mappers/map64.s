@@ -112,8 +112,8 @@ RAMBO_IRQ_Hook:
 
 @	mov r1,#0
 @	strb r1,irqen
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 hk0:
 	fetch 0
 @---------------------------------------------------------------------------------

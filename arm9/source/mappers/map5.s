@@ -403,8 +403,7 @@ h2:
 
 	ldrb_ r0,enable
 	cmp r0,#0
-@	bne irq6502
-	bne CheckI
+	bne rp2A03SetIRQPin
 h1:
 	strb_ r2,mmc5irqr
 	fetch 0

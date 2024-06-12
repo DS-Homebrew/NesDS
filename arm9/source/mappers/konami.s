@@ -59,8 +59,8 @@ Konami_IRQ_Hook:
 	bcc h0
 
 	strb_ r0,counter	;@ Copy latch to counter
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 h0:
 	str_ r0,latch
 h1:

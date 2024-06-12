@@ -44,11 +44,10 @@ write0:		@$8000
 write1:		@$A000
 @---------------------------------------------------------------------------------
 	ldrb_ r1,cmd
-	tst r1,#0x08
-	and r1,r1,#7
-	ldreq r2,=writeCHRTBL
-	adrne r2,commandlist
-	ldr pc,[r2,r1,lsl#2]
+	movs r1,r1,lsl#29
+	ldrcc r2,=writeCHRTBL
+	adrcs r2,commandlist
+	ldr pc,[r2,r1,lsr#27]
 
 irqen69:
 	strb_ r0,irqen
@@ -91,8 +90,8 @@ hook:
 
 	mov r1,#0
 	strb_ r1,irqen
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 hk0:
 	fetch 0
 @---------------------------------------------------------------------------------

@@ -66,8 +66,8 @@ hook:
 	ldr_ r0,counter
 	subs r0,r0,#113
 	str_ r0,counter
-@	bcc irq6502
-	bcc CheckI
+	mov r0,#1
+	bcc rp2A03SetIRQPin
 h1:
 	fetch 0
 @-------------------------------------------------------

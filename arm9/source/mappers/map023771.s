@@ -70,7 +70,8 @@ m71irqhook:
 
 	mov r0, #0
 	str r0, irq_pend
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 hk0:
 	fetch 0
 m71iow:

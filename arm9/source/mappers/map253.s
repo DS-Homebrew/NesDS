@@ -49,7 +49,7 @@ mapper253init:
 	mov r2,#8
 	bl filler
 
-	adr r0, framehook
+	adr r0, frameHook
 	str_ r0, newFrameHook
 
 	ldmfd sp!, {pc}
@@ -153,13 +153,14 @@ hook:
 	strb_ r0, irq_enable
 	ldrb_ r1, irq_latch
 	strb_ r1, irq_counter
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 
 hk0:
 	fetch 0
 
 @------------------------
-framehook:
+frameHook:
 	mov r0,#-1
 	ldr r1,=agb_obj_map
 	str r0,[r1],#4

@@ -66,6 +66,7 @@ hsync:
 	bcs hk
 
 	ands r0, r0, #7
-	beq CheckI
+	mov r0,#1
+	beq rp2A03SetIRQPin
 hk:
 	fetch 0

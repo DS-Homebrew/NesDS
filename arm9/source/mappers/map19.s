@@ -36,7 +36,7 @@ mapper19init:
 
 @---------------------------------------------------------------------------------
 write0:
-	cmp addy,#0x5000
+	cmp addy,#0x4800
 	blo IO_W
 	and r1,addy,#0x7800
 	cmp r1,#0x5000
@@ -51,7 +51,7 @@ write0:
 	bx lr
 @---------------------------------------------------------------------------------
 map19_r:
-	cmp addy,#0x5000
+	cmp addy,#0x4800
 	blo IO_R
 	mov r0, #0
 
@@ -144,7 +144,7 @@ hook:
 	strb_ r0,enable
 	sub r0,r0,#0x10000
 	str_ r0,counter
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 h1:
 	fetch 0

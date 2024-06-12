@@ -463,7 +463,7 @@ hbhook:
 
 	ldrb_ r0, irq_enable
 	ands r0, r0, r0
-	bne CheckI
+	bne rp2A03SetIRQPin
 
 hk0:
 	fetch 0

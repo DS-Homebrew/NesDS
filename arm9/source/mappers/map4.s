@@ -349,7 +349,7 @@ hsync:
 	ands r0, r0, r0
 	beq hq
 
-	b CheckI
+	b rp2A03SetIRQPin
 @--------
 skip1:
 	cmp r2, #MMC3_IRQ_ROCKMAN3
@@ -377,7 +377,7 @@ skip1:
 	ldrb_ r0, irq_request
 	ands r0, r0, r0
 	beq hq
-	b CheckI
+	b rp2A03SetIRQPin
 @--------
 skip2:
 	cmp r0, #240
@@ -419,9 +419,9 @@ skip2:
 	mov r2, #0xFF
 	strb_ r2, irq_preset
 
-	ldrb_ r1, irq_enable
-	ands r1, r1, r1
+	ldrb_ r0, irq_enable
+	ands r0, r0, r0
 	strneb_ r2, irq_request
-	bne CheckI
+	bne rp2A03SetIRQPin
 hq:
 	fetch 0

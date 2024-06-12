@@ -79,8 +79,8 @@ map67_IRQ_Hook:
 	strb_ r1,irqen
 	mov r0,r0,lsr#16
 	str_ r0,countdown
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 hk0:
 	fetch 0
 @---------------------------------------------------------------------------------

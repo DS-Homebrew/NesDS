@@ -305,7 +305,8 @@ hook:
 	ldr r1, =0xFFFF
 	and r0, r0, r1
 	str_ r0, irq_counter
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 
 hk:
 	fetch 0

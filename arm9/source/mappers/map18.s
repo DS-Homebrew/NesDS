@@ -115,8 +115,8 @@ hook:
 	mov r0,#0
 	str_ r0,counter	@clear counter and IRQenable.
 	strb_ r0,irqen
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 h0:
 	str_ r0,counter
 h1:

@@ -95,7 +95,7 @@ mapper74init:
 	adr r0, hsync
 	str_ r0,scanlineHook
 
-	adr r0, framehook
+	adr r0, frameHook
 	str_ r0,newFrameHook
 
 	ldr r0,=VRAM_chr		@enable/disable chr write
@@ -227,7 +227,7 @@ cirq:
 	strb_ r0, irq_request
 	ldrb_ r0, irq_latch
 	strb_ r0, irq_counter
-	b CheckI
+	b rp2A03SetIRQPin
 hk:
 	fetch 0
 
@@ -324,7 +324,7 @@ we001:
 
 
 @------------------------------------
-framehook:
+frameHook:
 @------------------------------------
 	mov r0,#-1
 	ldr r1,=agb_obj_map

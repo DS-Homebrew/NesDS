@@ -160,7 +160,7 @@ exread:
 	bxne lr
 	and r1, addy, #0xFF
 	cmp r1, #0x34
-	bcs IO_R
+	bcs empty_R
 	subs r1, r1, #0x30
 	ldrcs pc, [pc, r1, lsl#2]
 	b empty_R
@@ -293,11 +293,11 @@ exwrite:
 	bne empty_W
 	and r1, addy, #0xFF
 	cmp r1, #0x27
-	bcs IO_W
+	bcs empty_W
 	subs r1, r1, #0x20
 
 	ldrcs pc, [pc, r1, lsl#2]
-	bx lr
+	b empty_W
 exwtbl:
 	.word w20, w21, w22, w23, w24, w25, w26
 
@@ -575,7 +575,8 @@ hsync:
 	ands r0, r0, r0
 	streqb_ r0, irq_enable
 
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 
 0:
 	ldr_ r1, irq_counter
@@ -587,7 +588,7 @@ hsync:
 checktr:
 	ldrb_ r0, irq_transfer
 	ands r0, r0, r0
-	bne CheckI
+	bne rp2A03SetIRQPin
 hk:
 	fetch 0
 

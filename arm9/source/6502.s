@@ -9,6 +9,7 @@
 	.global op_table
 	.global default_scanlinehook
 	.global pcm_scanlinehook
+	.global rp2A03SetIRQPin
 	.global CheckI
 	.global PAL60
 	.global cpustate
@@ -1283,6 +1284,10 @@ hk0:
 default_scanlinehook:
 @---------------------------------------------------------------------------------
 	fetch 0
+@---------------------------------------------------------------------------------
+rp2A03SetIRQPin:
+	cmp r0,#0
+	bxeq lr
 @---------------------------------------------------------------------------------
 CheckI:								@Check Interrupt Disable
 @---------------------------------------------------------------------------------

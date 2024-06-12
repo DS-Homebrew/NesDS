@@ -269,7 +269,8 @@ hsync:
 	bne hk
 	ldrb_ r0, irq_latch
 	strb_ r0, irq_counter
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 hk:
 	fetch 0
 
