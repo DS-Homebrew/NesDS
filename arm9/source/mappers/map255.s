@@ -25,7 +25,7 @@ w255:
 	and r0, addy, #0xF80
 	mov r0, r0, lsr#5
 	and r1, addy, #0x3f
-	tst addy, #0x4000
+	tst addy, #0x4000		;@ 7th bit of both chr & prg
 	orrne r0, r0, #0x80
 	orrne r1, r1, #0x40
 	str_ r1, tmp1

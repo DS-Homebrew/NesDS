@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper253init
 	.global debugwrite
@@ -140,13 +139,13 @@ hook:
 
 	ldrb_ r0, irq_enable
 	tst r0, #2
-	beq hk0
+	bxeq lr
 
 	ldrb_ r1, irq_counter
 	add r1, r1, #1
 	tst r1, #0xFF
 	strneb_ r1, irq_counter
-	bne hk0
+	bxne lr
 
 	tst r0, #1
 	moveq r0, #0
@@ -155,9 +154,6 @@ hook:
 	strb_ r1, irq_counter
 	mov r0,#1
 	b rp2A03SetIRQPin
-
-hk0:
-	fetch 0
 
 @------------------------
 frameHook:

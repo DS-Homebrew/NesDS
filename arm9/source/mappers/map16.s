@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper16init
 	patch		= mapperData	@may never used
@@ -296,20 +295,18 @@ hook:
 0:
 	ldrb_ r0, irq_enable
 	ands r0, r0, r0
-	beq hk
+	bxeq lr
 	ldr_ r0, irq_counter
 	cmp r0, #115
 	subcs r0, r0, #114
 	strcs_ r0, irq_counter
-	bcs hk
+	bxcs lr
+
 	ldr r1, =0xFFFF
 	and r0, r0, r1
 	str_ r0, irq_counter
 	mov r0,#1
 	b rp2A03SetIRQPin
-
-hk:
-	fetch 0
 @---------------------------------------------------------------------------------
 barcode_ptr:
 	.byte 0

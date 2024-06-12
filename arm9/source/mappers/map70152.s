@@ -6,7 +6,8 @@
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
-@ Bandai mapper 70, no miroring
+@ Bandai mapper 70, no mirroring
+@ Many of these games use the Family Trainer Mat as an input device.
 @ Family Trainer - Manhattan Police
 @ Family Trainer - Meiro Daisakusen
 @ Kamen Rider Club
@@ -16,7 +17,7 @@ mapper70init:
 	.word write70,write70,write70,write70
 	bx lr
 @---------------------------------------------------------------------------------
-@ Bandai mapper 152, miroring
+@ Bandai mapper 152, mirroring
 @ Arkanoid 2 (J)
 @ Gegege no Kitarou 2
 @ Saint Seiya ..

@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper73init
 	latch = mapperData
@@ -58,7 +57,7 @@ writeC000:
 	tst addy,#0x1000
 	bne writeD000
 	strb_ r0,irqen
-	tst r0,#2				;@ Timer enable?
+	tst r0,#2				;@ Timer enabled?
 	ldrne_ r0,latch
 	strne_ r0,counter
 	// Ack IRQ
@@ -81,10 +80,10 @@ hook:
 @---------------------------------------------------------------------------------
 	ldrb_ r0,irqen
 	tst r0,#2				;@ Timer active?
-	beq h1
+	bxeq lr
 
 	ldr_ r2,counter
-	ldr r1,=0x71aaab		;@ 113.66667
+	ldr r1,=0x71aaab		;@ 113.66667 (Cycles per scanline)
 	tst r0,#4				;@ 8-bit timer?
 	bne timer8bit
 
@@ -105,6 +104,5 @@ timer8bit:
 	bcs takeIrq
 h0:
 	str_ r2,counter
-h1:
-	fetch 0
+	bx lr
 @---------------------------------------------------------------------------------

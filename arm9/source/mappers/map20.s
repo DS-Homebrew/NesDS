@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper20init
 	.global fdscmdwrite
@@ -157,7 +156,7 @@ exread:
 
 	mov r0, addy, lsr#8
 	cmp r0, #0x40
-	bxne lr
+	bne empty_R
 	and r1, addy, #0xFF
 	cmp r1, #0x34
 	bcs empty_R
@@ -576,7 +575,7 @@ hsync:
 	streqb_ r0, irq_enable
 
 	mov r0,#1
-	b rp2A03SetIRQPin
+	b rp2A03SetIRQPin			;@ Set IRQ pin on CPU
 
 0:
 	ldr_ r1, irq_counter
@@ -588,9 +587,8 @@ hsync:
 checktr:
 	ldrb_ r0, irq_transfer
 	ands r0, r0, r0
-	bne rp2A03SetIRQPin
-hk:
-	fetch 0
+	bne rp2A03SetIRQPin			;@ Set IRQ pin on CPU
+	bx lr
 
 
 @-------------

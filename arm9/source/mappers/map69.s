@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper69init
 	countdown = mapperData+0
@@ -53,10 +52,10 @@ irqen69:
 	strb_ r0,irqen
 	bx lr
 irqA69:
-	strb_ r0,countdown
+	strb_ r0,countdown+2
 	bx lr
 irqB69:
-	strb_ r0,countdown+1
+	strb_ r0,countdown+3
 	bx lr
 @---------------------------------------------------------------------------------
 mapJinx:
@@ -74,26 +73,21 @@ mapJinx:
 @---------------------------------------------------------------------------------
 hook:
 @---------------------------------------------------------------------------------
-	ldrb_ r1,irqen
-	cmp r1,#0
-	beq hk0
+	ldrb_ r2,irqen
+	tst r2,#0x80			@ Timer enabled?
+	bxeq lr
 
 	ldr_ r0,countdown
 	ldrb_ r1,video			@ Number of cycles per scanline.
-	subs r0,r0,r1
+	subs r0,r0,r1,lsl#16
 	str_ r0,countdown
-	bhi hk0
-
-	mov r1,#-1
-	mov r1,r1,lsr#16
-	str_ r1,countdown
+	bxhi lr
 
 	mov r1,#0
 	strb_ r1,irqen
-	mov r0,#1
-	b rp2A03SetIRQPin
-hk0:
-	fetch 0
+	ands r0,r2,#1			@ IRQ enabled?
+	bne rp2A03SetIRQPin
+	bx lr
 @---------------------------------------------------------------------------------
 commandlist:	.word mapJinx,map89_,mapAB_,mapCD_,mirrorKonami_,irqen69,irqA69,irqB69
 @---------------------------------------------------------------------------------

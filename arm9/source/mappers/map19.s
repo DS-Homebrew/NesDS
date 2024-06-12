@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper19init
 	counter = mapperData+0
@@ -133,18 +132,17 @@ hook:
 
 	ldrb_ r0,enable
 	cmp r0,#0
-	beq h1
+	bxeq lr
 
 	ldr_ r0,counter
 @	adds r0,r0,#0x71aaab		@113.66667
 	adds r0,r0,#0x720000
 	str_ r0,counter
-	bcc h1
+	bxcc lr
+
 	mov r0,#0
 	strb_ r0,enable
 	sub r0,r0,#0x10000
 	str_ r0,counter
 	mov r0,#1
 	b rp2A03SetIRQPin
-h1:
-	fetch 0

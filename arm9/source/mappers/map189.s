@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper189init
 
@@ -253,26 +252,24 @@ hsync:
 @-------------------------------------------------------------------
 	ldr_ r0, scanline
 	cmp r0, #240
-	bcs hk
+	bxcs lr
 
 	ldrb_ r1, ppuCtrl1
 	tst r1, #0x18
-	beq hk
+	bxeq lr
 
 	ldrb_ r1, irq_enable
 	ands r1, r1, r1
-	beq hk
+	bxeq lr
 
 	ldrb_ r1, irq_counter
 	subs r1, r1, #1
 	strb_ r1, irq_counter
-	bne hk
+	bxne lr
 	ldrb_ r0, irq_latch
 	strb_ r0, irq_counter
 	mov r0,#1
 	b rp2A03SetIRQPin
-hk:
-	fetch 0
 
 @------------------------------------
 write0:

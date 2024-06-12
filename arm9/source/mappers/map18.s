@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper18init
 	prg_xx = mapperData+0 @4 bytes
@@ -89,7 +88,6 @@ wF0: @- - - - - - - - - - - - - - -
 	str_ r2,counter
 	bx lr
 wF1: @- - - - - - - - - - - - - - -
-	and r0,r0,#1
 	strb_ r0,irqen
 	bx lr
 wF2: @- - - - - - - - - - - - - - -
@@ -103,12 +101,12 @@ writeFtbl: .word wE0,wE1,wE2,wE3,wF0,wF1,wF2,void
 hook:
 @---------------------------------------------------------------------------------
 	ldrb_ r0,irqen
-	cmp r0,#0	@timer active?
-	beq h1
+	tst r0,#1	@timer active?
+	bxeq lr
 
 	ldr_ r0,counter
 	cmp r0,#0	@timer active?
-	beq h1
+	bxeq lr
 	subs r0,r0,#113		@counter-A
 	bhi h0
 
@@ -119,6 +117,5 @@ hook:
 	b rp2A03SetIRQPin
 h0:
 	str_ r0,counter
-h1:
-	fetch 0
+	bx lr
 @---------------------------------------------------------------------------------

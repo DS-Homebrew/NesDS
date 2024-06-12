@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper64init
 	countdown = mapperData+0
@@ -94,26 +93,24 @@ RAMBO_IRQ_Hook:
 @---------------------------------------------------------------------------------
 @	ldrb r0,ppuCtrl1
 @	tst r0,#0x18	@no sprite/BG enable?  0x18
-@	beq hk0			@bye..
+@	bxeq lr			@bye..
 
 	ldr_ r0,scanline
 	cmp r0,#240		@not rendering?
-	bhi hk0			@bye..
+	bxhi lr			@bye..
 
 	ldrb_ r0,countdown
 	subs r0,r0,#1
 	ldrmib_ r0,latch
 	strb_ r0,countdown
-	bne hk0
+	bxne lr
 
 	ldrb_ r1,irqen
 	cmp r1,#0
-	beq hk0
+	bxeq lr
 
 @	mov r1,#0
 @	strb r1,irqen
 	mov r0,#1
 	b rp2A03SetIRQPin
-hk0:
-	fetch 0
 @---------------------------------------------------------------------------------
