@@ -1,12 +1,11 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper33init
+	.global mapper48init
 	irqen = mapperData+0
 	counter = mapperData+3
 	mswitch = mapperData+4
-	pswitch = mapperData+5
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
@@ -17,6 +16,16 @@
 @ Don Doko Don
 @ Insector X
 mapper33init:
+@---------------------------------------------------------------------------------
+@ Taito TC0690
+@ Used in:
+@ Bakushou!! Jinsei Gekijou 3
+@ Bubble Bobble 2 (J)
+@ Captain Saver (J)
+@ Don Doko Don 2
+@ Flintstones, The - The Rescue of Dino & Hoppy (J)
+@ Jetsons, The - Cogswell's Caper! (J)
+mapper48init:
 @---------------------------------------------------------------------------------
 	.word write8000,writeA000,writeC000,writeE000
 
@@ -48,7 +57,7 @@ writeA000:
 	ldr r1,=writeCHRTBL+4*4		@chr4_,chr5_,chr6_,chr7_
 	ldr pc,[r1,addy,lsl#2]
 @---------------------------------------------------------------------------------
-writeC000:
+writeC000:						@ Only mapper 48
 @---------------------------------------------------------------------------------
 	ands addy,addy,#3
 	bne wC1
@@ -59,7 +68,7 @@ wC1:
 	streqb_ r0,irqen
 	bx lr
 @---------------------------------------------------------------------------------
-writeE000:
+writeE000:						@ Only mapper 48
 @---------------------------------------------------------------------------------
 	ands addy,addy,#3
 	bne wC1
@@ -72,29 +81,28 @@ hook:
 @---------------------------------------------------------------------------------
 	ldrb_ r0,ppuCtrl1
 	tst r0,#0x18		@no sprite/BG enable?
-	beq h1			@bye..
+	bxeq lr			@bye..
 
 	ldr_ r0,scanline
 	cmp r0,#1		@not rendering?
-	blt h1			@bye..
+	bxlt lr			@bye..
 
 	ldr_ r0,scanline
 	cmp r0,#240		@not rendering?
-	bhi h1			@bye..
+	bxhi lr			@bye..
 
 	ldr_ r0,irqen
 	tst r0,#0xFF		@irq timer active?
-	beq h1
+	bxeq lr
 
 	adds r0,r0,#0x01000000	@counter++
 	bcc h0
 
 	mov r0,#0
 	str_ r0,irqen	@copy latch to counter
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 h0:
 	str_ r0,irqen
-h1:
-	fetch 0
+	bx lr
 @---------------------------------------------------------------------------------

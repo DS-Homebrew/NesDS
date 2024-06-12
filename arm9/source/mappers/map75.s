@@ -2,7 +2,8 @@
 	#include "equates.h"
 @---------------------------------------------------------------------------------
 	.global mapper75init
-	map75ar = mapperData
+	map75ar0 = mapperData
+	map75ar1 = mapperData+1
 	map75sel = mapperData+2
 @---------------------------------------------------------------------------------
 .section .text,"ax"
@@ -32,13 +33,13 @@ write9000:
 	stmfd sp!,{lr}
 	tst r0,#1
 	bl mirror2V_
-	ldrb_ r1,map75ar
+	ldrb_ r1,map75ar0
 	and r0,addy,#2
 	orr r0,r1,r0,lsl#3
 	bl chr0123_
 
 	ldmfd sp!,{lr}
-	ldrb_ r1,map75ar+1
+	ldrb_ r1,map75ar1
 	and r0,addy,#4
 	orr r0,r1,r0,lsl#2
 	b chr4567_
@@ -65,13 +66,13 @@ writeE000:
 	ldrb_ r1,map75sel
 	tst addy,#0x1000
 	bne writeF000
-	strb_ r0,map75ar
+	strb_ r0,map75ar0
 	and r1,r1,#2
 	orr r0,r0,r1,lsl#3
 	b chr0123_
 
 writeF000:
-	strb_ r0,map75ar+1
+	strb_ r0,map75ar1
 	and r1,r1,#4
 	orr r0,r0,r1,lsl#2
 	b chr4567_

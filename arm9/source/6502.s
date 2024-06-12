@@ -9,6 +9,7 @@
 	.global op_table
 	.global default_scanlinehook
 	.global pcm_scanlinehook
+	.global rp2A03SetIRQPin
 	.global CheckI
 	.global PAL60
 	.global cpustate
@@ -1041,6 +1042,7 @@ line0:
 	add cycles,cycles,r0
 	adr r0,line1_to_119
 	str_ r0,nexttimeout
+	adr lr,hk0
 	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line1_to_119:
@@ -1054,6 +1056,7 @@ line1_to_119:
 	beq line119
 	
 	bl ppusync
+	adr lr,hk0
 	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line119:
@@ -1064,6 +1067,7 @@ line119:
 
 	adr addy,line120_to_240
 	str_ addy,nexttimeout
+	adr lr,hk0
 	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line120_to_240:
@@ -1079,6 +1083,7 @@ line120_to_240:
 	streq_ addy,nexttimeout
 	blne ppusync
 
+	adr lr,hk0
 	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line241:
@@ -1179,6 +1184,7 @@ NSF_Run:
 	
 	mov r0, #0
 	str_ r0, nsfinit
+	adr lr,hk0
 	ldr_ pc,scanlineHook
 
 noinit:
@@ -1188,6 +1194,7 @@ noinit:
 	ldr_ r1,m6502LastBank
 	sub m6502pc,m6502pc,r1
 	cmp m6502pc, #0x4700
+	adrne lr,hk0
 	ldrne_ pc,scanlineHook
 
 	ldr m6502pc, =0x4720
@@ -1195,6 +1202,7 @@ noinit:
 	ldr r0,=NES_RAM+0x100
 	str_ r0, m6502_s
 	mov m6502_a, #0
+	adr lr,hk0
 	ldr_ pc,scanlineHook
 
 noplay:
@@ -1205,6 +1213,7 @@ noplay:
 	encodePC
 	ldr r0,=NES_RAM+0x100
 	str_ r0, m6502_s
+	adr lr,hk0
 	ldr_ pc,scanlineHook
 
 nsf_out:
@@ -1237,6 +1246,7 @@ EMU_Run:
 	tst r1, #NSFFILE
 	bne NSF_Run
 
+	adr lr,hk0
 	ldr_ pc,scanlineHook
 @---------------------------------------------------------------------------------
 line242_to_end:
@@ -1248,6 +1258,7 @@ line242_to_end:
 	add r1,r1,#1
 	str_ r1,scanline
 	cmp r1,r2
+	adr lr,hk0
 	ldrne_ pc,scanlineHook
 
 	adr addy,line0
@@ -1283,6 +1294,10 @@ hk0:
 default_scanlinehook:
 @---------------------------------------------------------------------------------
 	fetch 0
+@---------------------------------------------------------------------------------
+rp2A03SetIRQPin:
+	cmp r0,#0
+	bxeq lr
 @---------------------------------------------------------------------------------
 CheckI:								@Check Interrupt Disable
 @---------------------------------------------------------------------------------

@@ -40,7 +40,7 @@ map10start:
 @	ldr r0,=mapper_9_hook
 @	str_ r0,scanlineHook
 
-	adr r0,framehook
+	adr r0,frameHook
 	str_ r0,newFrameHook
 
 	adr r0, chrlatch2
@@ -131,9 +131,9 @@ f000: @-------------------------
 @	ldrneb_ r0,reg3
 @	bl chr4567_
 @h9:
-@	fetch 0
+@	bl
 @---------------------------------------------------------------------------------
-framehook:
+frameHook:
 	stmfd sp!, {r3-r9}
 
 	ldrb_ r6, ppuCtrl0
@@ -231,7 +231,6 @@ chrlp:
 lend:
 	ldmfd sp!, {r3-r9}
 	bx lr
-
 
 @---------------------------------------------------------------------------------
 chrlatch:

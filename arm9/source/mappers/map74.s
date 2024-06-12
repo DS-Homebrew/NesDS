@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper74init
 	.word write0, write1, write2, write3
@@ -95,7 +94,7 @@ mapper74init:
 	adr r0, hsync
 	str_ r0,scanlineHook
 
-	adr r0, framehook
+	adr r0, frameHook
 	str_ r0,newFrameHook
 
 	ldr r0,=VRAM_chr		@enable/disable chr write
@@ -200,18 +199,18 @@ hsync:
 @-------------------------------------------------------------------
 	ldr_ r0, scanline
 	cmp r0, #240
-	bcs hk
+	bxcs lr
 
 	ldrb_ r1, ppuCtrl1
 	tst r1, #0x18
-	beq hk
+	bxeq lr
 
 	ldrb_ r1, irq_enable
 	ands r1, r1, r1
-	beq hk
+	bxeq lr
 	ldrb_ r1, irq_request
 	ands r1, r1, r1
-	bne hk
+	bxne lr
 
 	ldrb_ r1, irq_counter
 	cmp r0, #0
@@ -222,14 +221,12 @@ hsync:
 cirq:
 	subs r1, r1, #1
 	strb_ r1, irq_counter
-	bcs hk
+	bxcs lr
 	mov r0, #0xff
 	strb_ r0, irq_request
 	ldrb_ r0, irq_latch
 	strb_ r0, irq_counter
-	b CheckI
-hk:
-	fetch 0
+	b rp2A03SetIRQPin
 
 @------------------------------------
 write0:
@@ -324,7 +321,7 @@ we001:
 
 
 @------------------------------------
-framehook:
+frameHook:
 @------------------------------------
 	mov r0,#-1
 	ldr r1,=agb_obj_map

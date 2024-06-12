@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper65init
 	latch = mapperData+0
@@ -81,7 +80,7 @@ hook:
 @---------------------------------------------------------------------------------
 	ldrb_ r0,irqen
 	cmp r0,#0	@timer active?
-	beq h1
+	bxeq lr
 
 	ldr_ r0,counter
 	subs r0,r0,#113		@counter-A
@@ -90,10 +89,9 @@ hook:
 	mov r0,#0
 	strb_ r0,irqen
 	str_ r0,counter		@ clear counter and IRQenable.
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 h0:
 	str_ r0,counter
-h1:
-	fetch 0
+	bx lr
 @---------------------------------------------------------------------------------

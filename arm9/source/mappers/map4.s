@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 #define	MMC3_IRQ_KLAX		1
 #define	MMC3_IRQ_SHOUGIMEIKAN	2
 #define	MMC3_IRQ_DAI2JISUPER	3
@@ -347,9 +346,9 @@ hsync:
 0:
 	ldrb_ r0, irq_request
 	ands r0, r0, r0
-	beq hq
+	bxeq lr
 
-	b CheckI
+	b rp2A03SetIRQPin
 @--------
 skip1:
 	cmp r2, #MMC3_IRQ_ROCKMAN3
@@ -376,14 +375,14 @@ skip1:
 0:
 	ldrb_ r0, irq_request
 	ands r0, r0, r0
-	beq hq
-	b CheckI
+	bxeq lr
+	b rp2A03SetIRQPin
 @--------
 skip2:
 	cmp r0, #240
-	bcs hq
+	bxcs lr
 	tst r1, #0x18
-	beq hq
+	bxeq lr
 
 	mov r2, #0
 	ldrb_ r1, irq_preset_vbl
@@ -414,14 +413,13 @@ skip2:
 1:
 	strb_ r1, irq_counter
 	ands r1, r1, r1
-	bne hq
+	bxne lr
 
 	mov r2, #0xFF
 	strb_ r2, irq_preset
 
-	ldrb_ r1, irq_enable
-	ands r1, r1, r1
+	ldrb_ r0, irq_enable
+	ands r0, r0, r0
 	strneb_ r2, irq_request
-	bne CheckI
-hq:
-	fetch 0
+	bne rp2A03SetIRQPin
+	bx lr
