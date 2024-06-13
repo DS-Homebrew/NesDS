@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper90init
 	irq_latch = mapperData
@@ -444,9 +443,9 @@ hbhook:
 	ldr_ r0, scanline
 	ldrb_ r1, ppuCtrl1
 	cmp r0, #240
-	bcs hk0
+	bxcs lr
 	tst r1, #0x18
-	beq hk0
+	bxeq lr
 
 	ldrb_ r0, irq_counter
 	ldrb_ r1, irq_preset
@@ -459,11 +458,9 @@ hbhook:
 	subs r0, r0, #0x1
 	strcsb_ r0, irq_counter
 
-	bhi hk0
+	bxhi lr
 
 	ldrb_ r0, irq_enable
 	ands r0, r0, r0
-	bne CheckI
-
-hk0:
-	fetch 0
+	bne rp2A03SetIRQPin
+	bx lr

@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global Konami_Init
 	.global Konami_IRQ_Hook
@@ -53,16 +52,15 @@ Konami_IRQ_Hook:
 @---------------------------------------------------------------------------------
 	ldr_ r0,latch
 	tst r0,#0x200		;@ Timer active?
-	beq h1
+	bxeq lr
 
 	adds r0,r0,#0x01000000	;@ Counter++
 	bcc h0
 
 	strb_ r0,counter	;@ Copy latch to counter
-@	b irq6502
-	b CheckI
+	mov r0,#1
+	b rp2A03SetIRQPin
 h0:
 	str_ r0,latch
-h1:
-	fetch 0
+	bx lr
 @---------------------------------------------------------------------------------

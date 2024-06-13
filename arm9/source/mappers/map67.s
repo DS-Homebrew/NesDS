@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper67init
 	.global map67_IRQ_Hook
@@ -49,11 +48,10 @@ write2:		@C800,D800
 	bxne lr
 
 	ldrb_ r1,suntoggle
-	cmp r1,#0
-	streqb_ r0,countdown+1
-	strneb_ r0,countdown
-	eor r1,r1,#1
+	eors r1,r1,#1
 	strb_ r1,suntoggle
+	strneb_ r0,countdown+1
+	streqb_ r0,countdown
 	bx lr
 @---------------------------------------------------------------------------------
 write3:		@E800,F800
@@ -68,19 +66,17 @@ map67_IRQ_Hook:
 @---------------------------------------------------------------------------------
 	ldrb_ r1,irqen
 	cmp r1,#0
-	beq hk0
+	bxeq lr
 
 	ldr_ r0,countdown
 	subs r0,r0,#113
 	str_ r0,countdown
-	bpl hk0
+	bxpl lr
 
 	mov r1,#0
 	strb_ r1,irqen
 	mov r0,r0,lsr#16
 	str_ r0,countdown
-@	b irq6502
-	b CheckI
-hk0:
-	fetch 0
+	mov r0,#1
+	b rp2A03SetIRQPin
 @---------------------------------------------------------------------------------

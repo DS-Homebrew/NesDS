@@ -75,14 +75,22 @@
 	strneb \reg,[globalptr,#\label]
 	.endm
 	
-	.macro strcsb_ reg,label
-	strcsb \reg,[globalptr,#\label]
+	.macro ldrcs_ reg,label
+	ldrcs \reg,[globalptr,#\label]
+	.endm
+
+	.macro ldrcsb_ reg,label
+	ldrcsb \reg,[globalptr,#\label]
 	.endm
 	
 	.macro strcs_ reg,label
 	strcs \reg,[globalptr,#\label]
 	.endm
 
+	.macro strcsb_ reg,label
+	strcsb \reg,[globalptr,#\label]
+	.endm
+	
 	.macro ldrhi_ reg,label
 	ldrhi \reg,[globalptr,#\label]
 	.endm
@@ -231,10 +239,6 @@
 	
 	.macro ldrccb_ reg,label
 	ldrccb \reg,[globalptr,#\label]
-	.endm
-
-	.macro ldrcsb_ reg,label
-	ldrcsb \reg,[globalptr,#\label]
 	.endm
 
 	.macro strls_ reg,label

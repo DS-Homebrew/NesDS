@@ -7,7 +7,11 @@
 .section .text,"ax"
 @---------------------------------------------------------------------------------
 @ Taito X1-005 mapper IC
-@ See also mapper 82
+@ Used in:
+@ Kyonshiizu 2
+@ Minelvaton Saga
+@ Taito Grand Prix - Eikou heno License
+@ See also mapper 82, 207
 mapper80init:
 @---------------------------------------------------------------------------------
 	.word void,void,void,void
@@ -36,7 +40,7 @@ write80:
 	and addy,addy,#0xF
 	ldr pc,[pc,addy,lsl#2]
 	nop
-write80tbl: .word wF0,wF1,chr4_,chr5_,chr6_,chr7_,wF6,void,void,void,map89_,map89_,mapAB_,mapAB_,mapCD_,mapCD_
+write80tbl: .word wF0,wF1,chr4_,chr5_,chr6_,chr7_,wF6,wF6,wF8,wF8,map89_,map89_,mapAB_,mapAB_,mapCD_,mapCD_
 
 wF0:
 	mov addy,r0
@@ -60,6 +64,7 @@ wF1:
 wF6:
 	ands r0,r0,#1
 	b mirror2H_
-
+wF8:
+	bx lr
 
 @---------------------------------------------------------------------------------

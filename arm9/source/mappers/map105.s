@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper105init
 	counter = mapperData+0
@@ -162,19 +161,17 @@ hook:
 
 	ldrb_ r1,reg1
 	tst r1,#0x10
-	bne hk0
+	bxne lr
 
 	ldr_ r0,counter
 	add r0,r0,#113			@ Cycles per scanline
 	str_ r0,counter
 	orr r0,r0,#dip<<25		@ DIP switch
 	cmp r0,#0x3e000000
-	blo hk0
+	bxlo lr
 
 @	mov r1,#0
 @	str r1,counter
-@	b irq6502
-	b CheckI
-hk0:
-	fetch 0
+	mov r0,#1
+	b rp2A03SetIRQPin
 @---------------------------------------------------------------------------------

@@ -1,5 +1,4 @@
 #include "equates.h"
-#include "6502mac.h"
 
 	.global soft_render
 	.global render_all

@@ -1,6 +1,5 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
 @---------------------------------------------------------------------------------
 	.global mapper40init
 	countdown = mapperData+0
@@ -48,18 +47,15 @@ hook:
 @---------------------------------------------------------------------------------
 	ldrb_ r0,irqen
 	cmp r0,#0
-	beq hk0
+	bxeq lr
 
 	ldr_ r0,countdown
-@	bmi hk0
 	subs r0,r0,#1
 	str_ r0,countdown
-	bcs hk0
+	bxcs lr
 
 	mov r0,#0
 	strb_ r0,irqen
-@	b irq6502
-	b CheckI
-hk0:
-	fetch 0
+	mov r0,#1
+	b rp2A03SetIRQPin
 @---------------------------------------------------------------------------------
