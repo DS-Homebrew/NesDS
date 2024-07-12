@@ -3316,8 +3316,8 @@ void romcorrect(char *s)
 				if(oldmapper == newmapper) {
 					rom[6] = tmp & 0xff;			
 					rom[7] = (tmp >> 8) & 0xff;	
-					__emuflags &= ~PALTIMING;		
-					if(! (tmp & (1 << 16)))		
+					__emuflags &= ~PALTIMING;
+					if(! (tmp & (1 << 16)))
 						__emuflags |= PALTIMING;
 				}
 				break;

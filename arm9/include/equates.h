@@ -120,7 +120,8 @@ _m_ opz,256*4
 _m_ m6502ReadTbl,8*4
 _m_ m6502WriteTbl,8*4
 _m_ m6502MemTbl,8*4
-_m_ cpuregs,7*4
+_m_ cpuregs,6*4
+_m_ m6502RegPC,4
 _m_ m6502_s,4
 _m_ m6502LastBank,4
 _m_ nexttimeout,4

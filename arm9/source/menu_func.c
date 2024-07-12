@@ -25,7 +25,7 @@ extern u32 agb_bg_map[];
 
 u8 gammavalue = 0;
 
-u8 nes_rgb[] = { 
+u8 nes_rgb[] = {
 	0x75,0x75,0x75, 0x27,0x1b,0x8f, 0x00,0x00,0xab, 0x47,0x00,0x9f, 0x8f,0x00,0x77, 0xab,0x00,0x13, 0xa7,0x00,0x00, 0x7f,0x0b,0x00,
 	0x43,0x2f,0x00, 0x00,0x47,0x00, 0x00,0x51,0x00, 0x00,0x3f,0x17, 0x1b,0x3f,0x5f, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00,
 	0xbc,0xbc,0xbc, 0x00,0x73,0xef, 0x23,0x3b,0xef, 0x83,0x00,0xf3, 0xbf,0x00,0xbf, 0xe7,0x00,0x5b, 0xdb,0x2b,0x00, 0xcb,0x4f,0x0f,
@@ -125,7 +125,7 @@ void show_all_pixel(void)
 	menu_stat = 3;
 	__emuflags ^= ALLPIXELON;
 	if(__emuflags & ALLPIXELON) {
-		consoletext(64*18 + 32, "YES", 0x1000);	
+		consoletext(64*18 + 32, "YES", 0x1000);
 	}
 	else
 		consoletext(64*18 + 32, "NO ", 0x1000);
@@ -332,7 +332,7 @@ void menu_display_start(void)
 	consoletext(64*4 + 42, "Frame-skip\rPureSoft:", 0);
 	hex8(64*5 + 30*2, soft_frameskip - 1);
 	consoletext(64*11 + 23*2, "Palette\rsync:", 0);
-	consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000); 
+	consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000);
 	consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
 	hex8(64*8 + 36, palette_value);
 	consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
@@ -516,7 +516,7 @@ void menu_display_br(void)
 			int type = lastbutton_cnt - 4;
 			int i;
 			__emuflags &= ~(3 << 6);
-			__emuflags += type << 6;				
+			__emuflags += type << 6;
 
 			switch(type) {
 			case 0:	
@@ -578,7 +578,7 @@ void menu_display_br(void)
 		__emuflags ^= PALSYNC;
 		if(__emuflags & (SOFTRENDER | PALTIMING))
 			__emuflags &= ~PALSYNC;
-		consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000); 
+		consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000);
 	}
 	else if(lastbutton_cnt == 10) {
 		gammavalue++;
@@ -620,28 +620,28 @@ void palset(void) {
 	memcpy(nes_rgb,nes_rgb_2,192);
 	}
 	else if(palette_value == 3) {
-	memcpy(nes_rgb,nes_rgb_3,192);	
+	memcpy(nes_rgb,nes_rgb_3,192);
 	}
 	else if(palette_value == 4) {
-	memcpy(nes_rgb,nes_rgb_4,192);	
+	memcpy(nes_rgb,nes_rgb_4,192);
 	}
 	else if(palette_value == 5) {
-	memcpy(nes_rgb,nes_rgb_5,192);	
+	memcpy(nes_rgb,nes_rgb_5,192);
 	}
 	else if(palette_value == 6) {
-	memcpy(nes_rgb,nes_rgb_6,192);	
+	memcpy(nes_rgb,nes_rgb_6,192);
 	}
 	else if(palette_value == 7) {
 	memcpy(nes_rgb,nes_rgb_7,192);
 	}
 	else if(palette_value == 8) {
-	memcpy(nes_rgb,nes_rgb_8,192);	
+	memcpy(nes_rgb,nes_rgb_8,192);
 	}
 	else if(palette_value == 9) {
-	memcpy(nes_rgb,nes_rgb_9,192);	
+	memcpy(nes_rgb,nes_rgb_9,192);
 	}
 	else if(palette_value == 10) {
-	memcpy(nes_rgb,nes_rgb_10,192);	
+	memcpy(nes_rgb,nes_rgb_10,192);
 	}
 	else if(palette_value == 11) {
 	memcpy(nes_rgb,nes_rgb_11,192);
