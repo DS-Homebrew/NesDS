@@ -8,7 +8,6 @@ extern u32 __y;
 extern u32 __p;
 extern unsigned char *__pc;
 extern unsigned char * __lastbank;
-extern u32 __scanline;
 extern u16 __nes_chr_map[];
 extern u32* __memmap_tbl[];
 extern u32* __rombase;
@@ -90,12 +89,12 @@ void stepdebug()
 	shex8(ptbuf + 32 + 11, *(__pc + 1));
 	shex8(ptbuf + 32 + 14, *(__pc + 2));
 	shex32(ptbuf + 50, opCount);
-	
+
 	shex8(ptbuf + 64 + 2, __a>>24);
 	shex8(ptbuf + 64 + 7, __x>>24);
 	shex8(ptbuf + 64 + 12, __y>>24);
 	shex8(ptbuf + 64 + 17, __p);
-	
+
 	for(i = 0; i < 8; i++) {
 		shex8(ptbuf + 96 + 3*i, __nes_chr_map[i]);
 	}
@@ -105,7 +104,7 @@ void stepdebug()
 	for(i = 4; i < 8; i++) {
 		shex8(ptbuf + 128 + 3*i, ((__memmap_tbl[i] - __rombase) >> 13) + i);
 	}
-	
+
 	count = pstep - stepinfo;
 	if(count > 18 * 4) {
 		count = 18 * 4;
@@ -122,7 +121,7 @@ void stepdebug()
 
 	consoletext(0, ptbuf, 0);
 	//memset( ptbuf + 192 + count * 8, 32, (18 * 4 - count) * 8);
-	
+
 	do {
 		IPC_KEYS = keysCurrent();
 		keys = IPC_KEYS;

@@ -6,7 +6,7 @@
 .section .text,"ax"
 @---------------------------------------------------------------------------------
 @ Jaleco J87
-@ USed in:
+@ Used in:
 @ Argus (J)
 @ City Connection (J)
 @ Ninja Jajamaru Kun
