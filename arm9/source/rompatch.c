@@ -1,5 +1,6 @@
 #include <nds.h>
 #include "c_defs.h"
+#include "NesMachine.h"
 
 unsigned int romdb[] = {
 0x0021ed29, 0x0021ed29, 0x00010010,

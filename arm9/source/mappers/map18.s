@@ -86,10 +86,12 @@ wE3: @- - - - - - - - - - - - - - -
 	bx lr
 wF0: @- - - - - - - - - - - - - - -
 	str_ r2,counter
-	bx lr
+	mov r0,#0
+	b rp2A03SetIRQPin
 wF1: @- - - - - - - - - - - - - - -
 	strb_ r0,irqen
-	bx lr
+	mov r0,#0
+	b rp2A03SetIRQPin
 wF2: @- - - - - - - - - - - - - - -
 	movs r1,r0,lsr#2
 	tst r0,#1

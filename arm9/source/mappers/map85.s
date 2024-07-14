@@ -29,5 +29,5 @@ write85:
 
 	ldr pc,[pc,r1,lsl#2]
 	nop
-tbl85:	.word map89_,mapAB_,mapCD_,VRC7,chr0_,chr1_,chr2_,chr3_,chr4_,chr5_,chr6_,chr7_,mirrorKonami_,KoLatch,KoCounter,KoIRQen
+tbl85:	.word map89_,mapAB_,mapCD_,VRC7,chr0_,chr1_,chr2_,chr3_,chr4_,chr5_,chr6_,chr7_,mirrorKonami_,KoLatch,KoIRQEnable,KoIRQack
 @---------------------------------------------------------------------------------

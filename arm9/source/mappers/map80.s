@@ -16,10 +16,6 @@ mapper80init:
 @---------------------------------------------------------------------------------
 	.word void,void,void,void
 
-	ldrb_ r1,cartFlags
-	bic r1,r1,#SRAM			@don't use SRAM on this mapper
-	strb_ r1,cartFlags
-
 	adr r0,write80
 	str_ r0,m6502WriteTbl+12
 	ldr_ r0,romMask
@@ -34,8 +30,8 @@ write80:
 @---------------------------------------------------------------------------------
 	mov r1,#0x7F0
 	sub r1,r1,#1
-	teq r1,addy,lsr#4
-	bxne lr
+	cmp r1,addy,lsr#4
+	bne handleRAM
 
 	and addy,addy,#0xF
 	ldr pc,[pc,addy,lsl#2]
@@ -43,28 +39,28 @@ write80:
 write80tbl: .word wF0,wF1,chr4_,chr5_,chr6_,chr7_,wF6,wF6,wF8,wF8,map89_,map89_,mapAB_,mapAB_,mapCD_,mapCD_
 
 wF0:
-	mov addy,r0
 	stmfd sp!,{r0,lr}
-	bl chr0_
+	mov r0,r0,lsr#1
+	bl chr01_
+	ldmfd sp!,{r0,lr}
 	ldr_ r1,patch
 	cmp r1,#0
-	beq noPatch
-	tst addy,#0x80
-	bl mirror1_
-noPatch:
-	ldmfd sp!,{r0,lr}
-	add r0,r0,#1
-	b chr1_
+	bxeq lr
+	tst r0,#0x80
+	b mirror1_
 wF1:
-	stmfd sp!,{r0,lr}
-	bl chr2_
-	ldmfd sp!,{r0,lr}
-	add r0,r0,#1
-	b chr3_
+	mov r0,r0,lsr#1
+	b chr23_
 wF6:
 	ands r0,r0,#1
 	b mirror2H_
 wF8:
+	@ IRAM permission ($A3 enables reads/writes; any other value disables)
+	bx lr
+
+handleRAM:
+	bxlo lr
+	@ Write RAM
 	bx lr
 
 @---------------------------------------------------------------------------------

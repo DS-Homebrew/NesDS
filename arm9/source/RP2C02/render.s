@@ -1,15 +1,14 @@
 #include "equates.h"
 
+	.global renderInit
 	.global soft_render
 	.global render_all
 	.global render_sub
 	.global renderData
 	.global scanlinenext
 	.global scanlinestart
-	.global rev_data
 
-	.global BGwrite_data	
-	.global SPwrite_data	
+	.global rev_data
 @renderData = 0x6040000 - 4
 
 tileOfs 	= tempData
@@ -24,6 +23,18 @@ attr		= pBGw + 4
 BGwrite		= attr + 4
 SPwrite		= BGwrite + 4
 Bit2Rev		= SPwrite + 4
+
+	.section .text
+;@-----------------------------------------------------------------------------
+renderInit:
+;@-----------------------------------------------------------------------------
+	ldr r0,=BGwrite_data
+	str_ r0,BGwrite
+	ldr r0,=SPwrite_data
+	str_ r0,SPwrite
+	ldr r0,=rev_data
+	str_ r0,Bit2Rev
+	bx lr
 
 	.section .itcm, "ax"
 ;@-----------------------------------------------------------------------------
@@ -162,7 +173,7 @@ dummy_render:
 	stmfd sp!, {r3-r6}
 	mov r3, #0
 	mov r6, #0
-	ldr r4, =NES_SPRAM
+	adrl_ r4,ppuOAMMem
 	ldrb_ r5, scanline
 	sub r5, r5, #1
 
@@ -206,7 +217,7 @@ sp_render:
 
 	mov r12, #0				;@ spmax = 0
 					;@ r11 = spraddr, r9 = sp_y, r8 = sp_h, r7 = chr_h, r6 = chr_l, r5 = sp, r4 = i
-	ldr r5, =NES_SPRAM		;@ r5 = sp
+	adrl_ r5,ppuOAMMem		;@ r5 = sp
 	ldrb_ r1, ppuCtrl0
 	tst r1, #0x20
 	movne r8, #15			;@ r8 = sp_h = (PPUREG[0]&PPU_SP16_BIT)?15:7
@@ -732,14 +743,14 @@ render_all:
 ;@--------------------------------------------
 render_sub:
 ;@--------------------------------------------
-	stmfd sp!,{r0-r4, lr}
+	stmfd sp!,{globalptr, lr}
 	ldr r0, =0x6200000
 	ldr r1, =renderData
 
-	ldr r4, =all_pix_start
-	ldr r2, [r4]
+	ldr globalptr,=globals
+	ldr_ r2,pixStart
 	add r1, r2, lsl#8
-	ldr r3, [r4, #4]
+	ldr_ r3, pixEnd
 	sub r2, r3, r2
 
 	ldr r3, =(0x80000000 | (1 << 26))
@@ -749,7 +760,7 @@ render_sub:
 	str r1, [r2], #4
 	str r0, [r2], #4
 	str r3, [r2]
-	ldmfd sp!, {r0-r4, pc}
+	ldmfd sp!, {globalptr, pc}
 
 ;@--------------------------------------------
 render_sub2:

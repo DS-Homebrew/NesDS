@@ -20,6 +20,8 @@
 #include "nesclassic_pal.h"
 #include "3dsvc_pal.h"
 #include "nespvm_pal.h"
+#include "NesMachine.h"
+#include "RP2C02.h"
 
 extern u32 agb_bg_map[];
 
@@ -840,7 +842,7 @@ void menu_extra_action(void)
 						romfileext[3]=0;
 						f=fopen(romfilename,"w");
 						if(f) {
-							fwrite((u8*)rom_start,1,16 + (65500 * (__prgsize16k >> 2)),f);
+							fwrite((u8*)rom_start,1,16 + (65500 * (globals.prgSize16k >> 2)),f);
 							fflush(f);
 							fclose(f);
 						}

@@ -3,28 +3,29 @@
 @---------------------------------------------------------------------------------
 	.global mapper118init
 
-	reg0 = mapperData
-	reg1 = mapperData+1
-	reg2 = mapperData+2
-	reg3 = mapperData+3
-	reg4 = mapperData+4
-	reg5 = mapperData+5
-	reg6 = mapperData+6
-	reg7 = mapperData+7
+	irq_latch	= mapperData+0
+	irq_enable	= mapperData+1
+	irq_reload	= mapperData+2
+	irq_counter	= mapperData+3
 
-	chr01 = mapperData+8
-	chr23 = mapperData+9
-	chr4  = mapperData+10
-	chr5  = mapperData+11
-	chr6  = mapperData+12
-	chr7  = mapperData+13
+	reg0 = mapperData+4
+	reg1 = mapperData+5
+	reg2 = mapperData+6
+	reg3 = mapperData+7
+	reg4 = mapperData+8
+	reg5 = mapperData+9
+	reg6 = mapperData+10
+	reg7 = mapperData+11
 
-	prg0  = mapperData+14
-	prg1  = mapperData+15
+	chr01 = mapperData+12
+	chr23 = mapperData+13
+	chr4  = mapperData+14
+	chr5  = mapperData+15
+	chr6  = mapperData+16
+	chr7  = mapperData+17
 
-	irq_enable	= mapperData+16
-	irq_counter	= mapperData+17
-	irq_latch	= mapperData+18
+	prg0  = mapperData+18
+	prg1  = mapperData+19
 
 @---------------------------------------------------------------------------------
 .section .text,"ax"
@@ -36,65 +37,8 @@
 @ Also see mapper 95, 158 & 207
 mapper118init:
 @---------------------------------------------------------------------------------
-	.word write0, empty_W, write2, write3
-	stmfd sp!, {lr}
-	mov r0, #0
-	str_ r0, reg0
-	str_ r0, reg4
-
-	mov r0, #0x0
-	strb_ r0, prg0			@prg0 = 0; prg1 = 1
-	mov r0, #1
-	strb_ r0, prg1
-
-	bl setbank_cpu
-
-	mov r0, #0
-	strb_ r0, chr01
-	mov r0, #2
-	strb_ r0, chr23
-	mov r0, #4
-	strb_ r0, chr4
-	mov r0, #5
-	strb_ r0, chr5
-	mov r0, #6
-	strb_ r0, chr6
-	mov r0, #7
-	strb_ r0, chr7
-
-	bl setbank_ppu
-
-	mov r0, #0
-	str_ r0, irq_enable
-
-	ldr r0,=hsync
-	str_ r0,scanlineHook
-
-	ldmfd sp!, {pc}
-@-------------------------------------------------------------------
-setbank_cpu:
-@-------------------------------------------------------------------
-	stmfd sp!, {lr}
-	ldrb_ r0, prg1
-	bl mapAB_
-	ldrb_ r0, reg0
-	tst r0, #0x40
-	beq sbc1
-
-	mov r0, #-2
-	bl map89_
-	ldrb_ r0, prg0
-	bl mapCD_
-	ldmfd sp!, {lr}
-	mov r0, #-1
-	b mapEF_
-
-sbc1:
-	ldrb_ r0, prg0
-	bl map89_
-	ldmfd sp!, {lr}
-	mov r0, #-1
-	b mapCDEF_
+	.word write0, empty_W, mmc3CounterW, mmc3IrqEnableW
+	b mapper4init+4*4
 
 @-------------------------------------------------------------------
 setbank_ppu:
@@ -170,7 +114,7 @@ write0:
 	bne w8001
 
 	strb_ r0, reg0
-	bl setbank_cpu
+	bl mmc3SetBankCpu
 	bl setbank_ppu
 	ldmfd sp!, {pc}
 
@@ -184,7 +128,8 @@ w8001:
 	bne 1f
 	adr lr, 1f
 	tst r0, #0x80
-	b mirror1H_	
+	ldmfd sp!, {lr}
+	b mirror1H_
 0:
 	cmp r1, #0
 	bne 1f
@@ -201,60 +146,4 @@ w8001:
 	ldmfd sp!, {lr}
 	cmp r1, #6
 	bcc setbank_ppu
-	b setbank_cpu
-
-@------------------------------------
-write2:
-@------------------------------------
-	tst addy, #1
-	bne wc001
-
-	strb_ r0, reg4
-	strb_ r0, irq_counter
-	bx lr
-
-wc001:
-	strb_ r0, reg5
-	strb_ r0, irq_latch
-	bx lr
-	
-@------------------------------------
-write3:
-@------------------------------------
-	tst addy, #1
-	bne we001
-
-	strb_ r0, reg6
-	mov r0, #0
-	strb_ r0, irq_enable
-	bx lr
-
-we001:
-	strb_ r0, reg7
-	mov r0, #1
-	strb_ r0, irq_enable
-	bx lr
-
-@-------------------------------------------------------------------
-hsync:
-@-------------------------------------------------------------------
-	ldr_ r0, scanline
-	cmp r0, #240
-	bxcs lr
-	ldrb_ r1, ppuCtrl1
-	tst r1, #0x18
-	bxeq lr
-
-	ldrb_ r0, irq_enable
-	ands r0, r0, r0
-	bxeq lr
-
-	ldrb_ r2, irq_counter
-	subs r2, r2, #1
-	strneb_ r2, irq_counter
-	bxne lr
-
-	ldrb_ r0, irq_latch
-	strb_ r0, irq_counter
-	mov r0,#1
-	b rp2A03SetIRQPin
+	b mmc3SetBankCpu

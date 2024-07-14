@@ -3,31 +3,32 @@
 @---------------------------------------------------------------------------------
 	.global mapper189init
 
-	reg0 = mapperData
-	reg1 = mapperData+1
-	reg2 = mapperData+2
-	reg3 = mapperData+3
-	reg4 = mapperData+4
-	reg5 = mapperData+5
-	reg6 = mapperData+6
-	reg7 = mapperData+7
+	irq_latch	= mapperData+0
+	irq_enable	= mapperData+1
+	irq_reload	= mapperData+2
+	irq_counter	= mapperData+3
 
-	chr01 = mapperData+8
-	chr23 = mapperData+9
-	chr4  = mapperData+10
-	chr5  = mapperData+11
-	chr6  = mapperData+12
-	chr7  = mapperData+13
+	reg0 = mapperData+4
+	reg1 = mapperData+5
+	reg2 = mapperData+6
+	reg3 = mapperData+7
+	reg4 = mapperData+8
+	reg5 = mapperData+9
+	reg6 = mapperData+10
+	reg7 = mapperData+11
 
-	irq_enable	= mapperData+20
-	irq_counter	= mapperData+21
-	irq_latch	= mapperData+22
-	patch		= mapperData+24
-	lwd		= mapperData+25
+	chr01 = mapperData+12
+	chr23 = mapperData+13
+	chr4  = mapperData+14
+	chr5  = mapperData+15
+	chr6  = mapperData+16
+	chr7  = mapperData+17
 
-	datar0		= mapperData+26
+	patch		= mapperData+20
+	lwd		= mapperData+21
 
-
+	datar0		= mapperData+22
+	
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
@@ -38,7 +39,7 @@
 @ Thunder Warrior
 mapper189init:
 @---------------------------------------------------------------------------------
-	.word write0, write1, write2, write3
+	.word write0, write1, mmc3CounterW, mmc3IrqEnableW
 	stmfd sp!, {lr}
 	mov r0, #0
 	str_ r0, reg0
@@ -66,12 +67,12 @@ mapper189init:
 	str_ r0, irq_enable
 	strb_ r0, patch
 
-	adr r0, hsync
+	ldr r0,=mmc3HSync
 	str_ r0,scanlineHook
 
 	adr r0, writel
+	str_ r0, rp2A03MemWrite
 	str_ r0, m6502WriteTbl+12
-	str_ r0, m6502WriteTbl+8
 
 	ldr_ r0, prgcrc
 	ldr r1, =0x2A9E
@@ -83,7 +84,7 @@ mapper189init:
 @-------------------------------------------------------------------
 writel:
 	cmp addy, #0x4100
-	bcc IO_W
+	bcc empty_W
 
 	strb_ r0, datar0
 
@@ -247,30 +248,6 @@ setbank_ppu:
 	bl chr1k
 	ldmfd sp!, {pc}
 
-@-------------------------------------------------------------------
-hsync:
-@-------------------------------------------------------------------
-	ldr_ r0, scanline
-	cmp r0, #240
-	bxcs lr
-
-	ldrb_ r1, ppuCtrl1
-	tst r1, #0x18
-	bxeq lr
-
-	ldrb_ r1, irq_enable
-	ands r1, r1, r1
-	bxeq lr
-
-	ldrb_ r1, irq_counter
-	subs r1, r1, #1
-	strb_ r1, irq_counter
-	bxne lr
-	ldrb_ r0, irq_latch
-	strb_ r0, irq_counter
-	mov r0,#1
-	b rp2A03SetIRQPin
-
 @------------------------------------
 write0:
 @------------------------------------
@@ -296,26 +273,7 @@ write1:
 @------------------------------------
 	tst r0, #1
 	b mirror2V_
-
-@------------------------------------
-write2:
-@------------------------------------
-	tst addy, #1
-	bne wc001
-
-	strb_ r0, irq_counter
-	bx lr
-
-wc001:
-	strb_ r0, irq_latch
-	bx lr
-
-@------------------------------------
-write3:
-@------------------------------------
-	and r0, addy, #1
-	strb_ r0, irq_enable
-	bx lr
+	
 @------------------------------------
 a5000xordat:
 .byte 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x49, 0x19, 0x09, 0x59, 0x49, 0x19, 0x09

@@ -1,6 +1,8 @@
 #ifdef __arm__
 
 ;@-----------------------------------------------------------------------------
+	#include "macro.h"
+//	#include "RP2C02.i"
 	#include "equates.h"
 ;@-----------------------------------------------------------------------------
 	.global PPU_init
@@ -8,14 +10,14 @@
 	.global PPU_R
 	.global PPU_W
 	.global ppuOamDataW
+	.global updateINTPin
+	.global ppuDoScanline
 	.global ntsc_pal_reset
 	.global agb_nt_map
 	.global vram_map
 	.global vram_write_tbl
 	.global VRAM_chr
 	.global paletteinit
-	.global PaletteTxAll
-	.global Update_Palette
 	.global newframe
 	.global agb_pal
 	.global writeBG
@@ -307,6 +309,13 @@ PPU_reset:
 
 	bl ntsc_pal_reset
 
+	ldr r2,=PPULineStateTable
+	ldr r1,[r2],#4
+	mov r0,#-1
+	str_ r0,scanline		;@ Reset scanline, nextChange & lineState
+	str_ r1,nextLineChange
+	str_ r2,lineState
+
 	mov r0,#1
 	strb_ r0,vramAddrInc
 
@@ -332,6 +341,7 @@ PPU_reset:
 	bl filler
 
 	bl paletteinit		;@ Do palette mapping (for VS) & gamma
+	bl renderInit
 
 	ldmfd sp!,{pc}
 ;@-----------------------------------------------------------------------------
@@ -343,21 +353,25 @@ ntsc_pal_reset:
 
 	ldr_ r0,emuFlags
 	tst r0,#PALTIMING
-	
-	ldreq r0,=341*CYCLE		;@ NTSC		(113+2/3)*3
-	ldrne r0,=320*CYCLE		;@ PAL		(106+9/16)*3
-	str_ r0,cyclesPerScanline
-	ldreq r0,=261			;@ NTSC
-	ldrne r0,=311			;@ PAL
-	str_ r0,lastScanline
-	mov globalptr, r1
 
+	ldreq r0,=341			;@ NTSC		(113+2/3)*3
+	ldrne r0,=320			;@ PAL		(106+9/16)*3
+	str_ r0,cyclesPerScanline
+	ldreq r0,=262			;@ NTSC
+	ldrne r0,=312			;@ PAL
+	str_ r0,lastScanline
+	str r0,ppuTotalLines
+
+	mov globalptr, r1
 	bx lr
 ;@-----------------------------------------------------------------------------
 EMU_VBlank:	;@ Call every vblank
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{r4-r7,globalptr,lr}
 	ldr globalptr,=globals
+
+	mov r0,#0
+	strb_ r0,ppuBusLatch
 
 	ldrb_ r1,cartFlags		;@ Set cartFlags(upper 4-bits (<<8, ignored) + 0000(should be zero)(<<4) + vTsM)
 	DEBUGINFO CARTFLAG, r1
@@ -453,6 +467,9 @@ PAL60: 			.byte 0
 ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{r3,lr}
+
+//	mov r0,#0
+//	strb_ r0,ppuOamAdr
 
 	ldr_ r0, emuFlags
 	tst r0, #SOFTRENDER
@@ -642,6 +659,97 @@ DMAline: .word 0
 DMAlinestart: .word 0
 
 ;@-----------------------------------------------------------------------------
+PPULineStateTable:
+	.long 0, newframe			;@ ppuZeroLine
+	.long 119, midFrame			;@ ppuMidScanline
+	.long 241, line241			;@ Last visible scanline
+	.long 241, line241NMI		;@ frameIRQ on
+ppuTotalLines:
+	.long 262, frameEndHook		;@ totalScanlines
+;@-----------------------------------------------------------------------------
+redoScanline:
+;@-----------------------------------------------------------------------------
+	ldr_ r2,lineState
+	ldmia r2!,{r0,r1}
+	str_ r1,nextLineChange		;@ Write nextLineChange & lineState
+	str_ r2,lineState
+	adr lr,continueScanline
+	bx r0
+;@-----------------------------------------------------------------------------
+ppuDoScanline:			;@ Returns number of PPU cycles to execute.
+;@-----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+continueScanline:
+//	ldmia puptr,{r0,r1}			;@ Read scanLine & nextLineChange
+	ldr_ r0,scanline
+	ldr_ r1,nextLineChange
+	add r0,r0,#1
+	cmp r0,r1
+	bpl redoScanline
+	str_ r0,scanline
+
+	cmp r0,#240
+	blmi ppusync
+
+	mov lr,pc
+	ldr_ pc,scanlineHook
+
+	ldr_ r0,scanline
+	subs r0,r0,#240				;@ Return from emulation loop on this scanline
+	ldrne_ r0,cyclesPerScanline
+	ldmfd sp!,{pc}
+
+;@-----------------------------------------------------------------------------
+midFrame:
+	ldrb_ r0,ppuCtrl0
+	strb_ r0,ppuCtrl0Frame		@ Contra likes this
+	bx lr
+
+;@-----------------------------------------------------------------------------
+line241:
+NMIDELAY = 2
+
+	ldrb_ r1,ppuStat
+	orr r1,r1,#0x80		@ vbl flag
+	strb_ r1,ppuStat
+
+	mov r0,#NMIDELAY*3	@ NMI is delayed a few cycles..
+	ldmfd sp!,{pc}		@ Break early
+;@-----------------------------------------------------------------------------
+line241NMI:
+	ldr_ r0,frame
+	add r0,r0,#1
+	str_ r0,frame
+
+	stmfd sp!,{lr}
+	bl updateINTPin
+	ldmfd sp!,{lr}
+	sub cycles,cycles,#NMIDELAY*3*CYCLE
+
+	ldr_ pc, endFrameHook
+
+;@-----------------------------------------------------------------------------
+frameEndHook:
+	adr r2,PPULineStateTable
+	ldr r1,[r2],#4
+	mov r0,#-1
+	str_ r0,scanline		;@ Reset scanline, nextChange & lineState
+	str_ r1,nextLineChange
+	str_ r2,lineState
+	bx lr
+
+;@-----------------------------------------------------------------------------
+updateINTPin:
+;@-----------------------------------------------------------------------------
+	stmfd sp!,{r0,lr}
+	ldrb_ r0,ppuCtrl0
+	ldrb_ r1,ppuStat
+	and r0,r0,r1
+	and r0,r0,#0x80
+	mov lr,pc
+	ldr_ pc,ppuIrqFunc		;@ Set INT Pin (on PPU)
+	ldmfd sp!,{r0,pc}
+;@-----------------------------------------------------------------------------
 PPU_R:	;@
 ;@-----------------------------------------------------------------------------
 	and r0,addy,#7
@@ -702,7 +810,8 @@ ctrl0_W:		;@ (2000)
 	strb_ r0,ppuCtrl0
 	eor r0,r0,r1
 	ands r0,r0,#0x80
-	bx lr
+	bxeq lr
+	b updateINTPin
 ;@-----------------------------------------------------------------------------
 ctrl1_W:		;@ (2001)
 ;@-----------------------------------------------------------------------------
@@ -764,7 +873,9 @@ stat_R:		;@ (2002)
 	and r1,r1,#0x1F
 	orr r0,r2,r1
 
-	bx lr
+	tst r0,#0x80				;@ Was VBlank set before?
+	bxeq lr
+	b updateINTPin
 ;@-----------------------------------------------------------------------------
 oamAddrW:		;@ (2003)
 ;@-----------------------------------------------------------------------------
@@ -774,7 +885,7 @@ oamAddrW:		;@ (2003)
 ppuOamDataR:	;@ (2004)
 ;@-----------------------------------------------------------------------------
 	ldrb_ r1,ppuOamAdr
-	ldr r2, =NES_SPRAM
+	adrl_ r2,ppuOAMMem
 	ldrb r0,[r2,r1]
 //	bic r0,r0,#0x1C			;@ Actualy only when reading attribute (2).
 	strb_ r0,ppuBusLatch
@@ -783,7 +894,7 @@ ppuOamDataR:	;@ (2004)
 ppuOamDataW:	;@ (2004)
 ;@-----------------------------------------------------------------------------
 	ldrb_ r1,ppuOamAdr
-	ldr r2, =NES_SPRAM
+	adrl_ r2,ppuOAMMem
 	strb r0,[r2,r1]
 	add r1,r1,#1
 	strb_ r1,ppuOamAdr
@@ -939,8 +1050,6 @@ writeBG:		;@ loadcart jumps here
 	and r1,r1,#0xf000
 	orr r1,r0,r1
 	strh r1,[r2,addy]	;@ Write tile#
-		cmp r0,#0xfd	@mapper 9 shit..
-		bhs mapper9BGcheck
 	bx lr
 writeAttrib:
 	stmfd sp!,{r3,r4,lr}
@@ -1045,6 +1154,7 @@ newframe:	;@ Called at NES scanline 0
 
 	mov r0,#0
 	strb_ r0,ppuStat			;@ Vbl, sprite0 & sprite ovr clear
+	bl updateINTPin
 
 	bl renderSprites
 
@@ -1511,14 +1621,14 @@ unpack_tiles:	;@ r1=old^new, r5=CHR dst, r6=map ---------UPDATEOBJCHR JUMPS HERE
 
 	ldr decodeptr,=CHR_DECODE
 bg0:
-	movs r0, r1, lsl#16
-	ldrh r0,[bankptr],#2
-	mov r1,r1,lsr#16
-	addeq agbptr,agbptr,#0x800
-	beq bg2
-	mov tilecount,#64
-	ldr_ nesptr,vromBase
-	add nesptr,nesptr,r0,lsl#10	;@ Bank#*$400
+	 movs r0, r1, lsl#16
+	 ldrh r0,[bankptr],#2
+	 mov r1,r1,lsr#16
+	 addeq agbptr,agbptr,#0x800
+	 beq bg2
+	 mov tilecount,#64
+	 ldr_ nesptr,vromBase
+	 add nesptr,nesptr,r0,lsl#10	;@ Bank#*$400
 bg1:
 	  ldrb r0,[nesptr],#1
 	  ldrb r7,[nesptr,#7]
@@ -1568,7 +1678,7 @@ cached: ;@--------------
 	str r7,currentBG
 	bx lr
 
-
+	.pool
 ;@-----------------------------------------------------------------------------
 renderSprites:
 ;@-----------------------------------------------------------------------------
@@ -1579,7 +1689,7 @@ PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 	bxne lr
 	stmfd sp!,{r3-r9,lr}
 
-	ldr addy, =NES_SPRAM
+	adrl_ addy,ppuOAMMem
 	ldr_ r0,emuFlags			;@ r7,8=priority flags for scaling type
 	tst r0,#ALPHALERP
 	moveq r7,#0x00200000
@@ -1784,7 +1894,7 @@ spchr_update:
 	@r5  = ppu_decode
 	@r4  = pdatabase
 
-	ldr r9, =NES_SPRAM		;@ r9 = sp
+	adrl_ r9,ppuOAMMem		;@ r9 = sp
 
 	ldr_ r3, scanline
 	cmp r3, #0
@@ -1837,7 +1947,7 @@ msplp:
 	bxeq lr
 
 hidesp:
-	ldr r3, =NES_SPRAM
+	adrl_ r3,ppuOAMMem
 	ldr r2, =0x7000008
 	mov r4, #0x200
 	mov r1, #64

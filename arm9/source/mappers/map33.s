@@ -3,7 +3,8 @@
 @---------------------------------------------------------------------------------
 	.global mapper33init
 	.global mapper48init
-	irqen = mapperData+0
+	latch = mapperData+0
+	irqen = mapperData+1
 	counter = mapperData+3
 	mswitch = mapperData+4
 @---------------------------------------------------------------------------------
@@ -60,18 +61,19 @@ writeA000:
 writeC000:						@ Only mapper 48
 @---------------------------------------------------------------------------------
 	ands addy,addy,#3
-	bne wC1
-	strb_ r0,counter
-	bx lr
-wC1:
-	cmp addy,#1
-	streqb_ r0,irqen
+	streqb_ r0,latch
+	bxeq lr
+	cmp addy,#2
+	mov r0,addy
+	movhi r0,#0
+	strplb_ r0,irqen
+	bhi rp2A03SetIRQPin
+	ldrmib_ r0,latch
+	strmib_ r0,counter
 	bx lr
 @---------------------------------------------------------------------------------
 writeE000:						@ Only mapper 48
 @---------------------------------------------------------------------------------
-	ands addy,addy,#3
-	bne wC1
 	mov r1,#1
 	strb_ r1,mswitch
 	tst r0,#0x40
@@ -91,18 +93,17 @@ hook:
 	cmp r0,#240		@not rendering?
 	bxhi lr			@bye..
 
-	ldr_ r0,irqen
-	tst r0,#0xFF		@irq timer active?
+	ldr_ r0,latch
+	tst r0,#0x200	@irq timer active?
 	bxeq lr
 
 	adds r0,r0,#0x01000000	@counter++
 	bcc h0
 
-	mov r0,#0
-	str_ r0,irqen	@copy latch to counter
+	strb_ r0,counter	@copy latch to counter
 	mov r0,#1
 	b rp2A03SetIRQPin
 h0:
-	str_ r0,irqen
+	str_ r0,latch
 	bx lr
 @---------------------------------------------------------------------------------

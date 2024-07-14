@@ -15,9 +15,7 @@ mapper40init:		@SMB2j
 	adr r0,hook
 	str_ r0,scanlineHook
 
-	ldr r0,=mem_R60			@Set ROM at $6000-$7FFF.
-	str_ r0,m6502ReadTbl+12
-	ldr r0,=empty_W			@ROM.
+	ldr r0,=empty_W			@Set ROM at $6000-$7FFF.
 	str_ r0,m6502WriteTbl+12
 
 	bl write0
@@ -35,7 +33,7 @@ write0:		@$8000-$9FFF
 	str_ r0,countdown
 	mov r0,#0
 	strb_ r0,irqen
-	bx lr
+	b rp2A03SetIRQPin
 @---------------------------------------------------------------------------------
 write1:		@$A000-$BFFF
 @---------------------------------------------------------------------------------
