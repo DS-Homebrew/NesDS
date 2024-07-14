@@ -1,6 +1,6 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
-	#include "6502mac.h"
+	#include "M6502mac.h"
 @---------------------------------------------------------------------------------
 	.global map67_
 	.global map89_
@@ -14,7 +14,8 @@
 	.global NES_reset
 	.global savestate
 	.global loadstate
-	.global _ck
+	.global globals
+	.global rp2A03
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
@@ -47,6 +48,8 @@ mappertbl:
 	.word 34,mapper34init
 	.word 40,mapper40init
 	.word 42,mapper42init
+	.word 47,mapper47init
+	.word 48,mapper48init
 	.word 64,mapper64init
 	.word 65,mapper65init
 	.word 66,mapper66init
@@ -77,9 +80,9 @@ mappertbl:
 	.word 105,mapper105init
 	.word 111,mapper111init
 	.word 118,mapper118init
-	.word 119,mapper119init
-	.word 140,mapper140init
-	.word 146,mapper79init
+	.word 119,mapper4init
+	.word 140,mapper66init
+	.word 148,mapper148init
 	.word 151,mapper151init
 	.word 152,mapper152init
 	.word 153,mapper16init
@@ -103,7 +106,6 @@ mappertbl:
 	.word 240,mapper240init
 	.word 245,mapper245init
 	.word 246,mapper246init
-	.word 249,mapper249init
 	.word 252,mapper252init
 	.word 253,mapper253init
 	.word 255,mapper255init
@@ -121,7 +123,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 @---------------------------------------------------------------------------------
 	stmfd sp!,{r4-r11,lr}
 
-	ldr globalptr,=globals		@ init ptr regs
+	ldr globalptr,=globals	@ init ptr regs
 	ldr m6502zpage,=NES_RAM
 
 	ldr_ r1,emuFlags
@@ -147,9 +149,9 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 
 	ldrb r4,[r3,#-11]		@ 8K CHR-ROM page count
 	movne r4, #0			@ nsf has none?
-	mov r1,r4			@ r1=vrom size
-	cmp r4,#2			@ round up
-	movhi r1,#4			@ needs to be power of 2 (stupid zelda2)
+	mov r1,r4				@ r1=vrom size
+	cmp r4,#2				@ round up
+	movhi r1,#4				@ needs to be power of 2 (stupid zelda2)
 	cmp r4,#4
 	movhi r1,#8
 	cmp r4,#8
@@ -160,7 +162,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	movhi r1,#64
 	cmp r4,#64
 	movhi r1,#128
-	rsbs r0,r2,r1,lsl#13		@ r0 = VROM page size * 8K - 1
+	rsbs r0,r2,r1,lsl#13	@ r0 = VROM page size * 8K - 1
 	str_ r0,vromMask		@ vromMask=vromSize-1
 	ldrmi r0,=NES_VRAM
 	strmi_ r0,vromBase		@ vromBase=NES VRAM if vromSize=0
@@ -172,7 +174,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	bl filler
 
 	stmfd sp!, {r3, r12}
-	mov r0, #0			@ init val, cal crc for prgrom
+	mov r0, #0				@ init val, cal crc for prgrom
 	ldr_ r1, romBase		@ src
 	ldr_ r2, prgSize8k		@ size
 	mov r2, r2, lsl#13
@@ -187,12 +189,12 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
 	bne 0f
-	mov r0,#0			@ default ROM mapping
-	bl map89AB_			@ 89AB=1st 16k
+	mov r0,#0				@ default ROM mapping
+	bl map89AB_				@ 89AB=1st 16k
 	mov r0,#-1
-	bl mapCDEF_			@ CDEF=last 16k
+	bl mapCDEF_				@ CDEF=last 16k
 0:
-	bl resetCHR			@ default CHR mapping
+	bl resetCHR				@ default CHR mapping
 
 	ldrb r0,[r3,#-10]		@ rom control byte #1
 	ldrb r1,[r3,#-9]		@ rom control byte #2
@@ -201,18 +203,18 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	strb_ r1,cartFlags		@ set cartFlags(upper 4-bits (<<8, ignored) + 0000(should be zero)(<<4) + vTsM)
 	@DEBUGINFO CARTFLAG, r1
 
-	ldr r0,=pcm_scanlinehook
-	str_ r0,scanlineHook		@ no mapper irq
+	ldr r0,=void
+	str_ r0,scanlineHook	@ no mapper irq
 
-	mov r0,#0x0			@ clear nes ram		reset value changed from 0xFFFFFFFF to 0x0
+	mov r0,#0x0				@ clear nes ram		reset value changed from 0xFFFFFFFF to 0x0
 	mov r1,m6502zpage		@ m6502zpage,=NES_RAM
-	mov r2,#0x800/4
-	bl filler			@ reset NES RAM
+	mov r2,#0x800/4			
+	bl filler				@ reset NES RAM
 	mov r0,#0				@ clear nes sram
-	add r1,m6502zpage,#0x800		@ save ram = SRAM
+	add r1,m6502zpage,#0x800	@ save ram = SRAM
 	mov r2,#0x2000/4
 	bl filler
-	ldr r1,=mapperstate		@ clear mapperData so we dont have to do that in every MapperInit.
+	adrl_ r1,mapperData		@ clear mapperData so we dont have to do that in every MapperInit.
 	mov r2,#96/4
 	bl filler
 
@@ -224,10 +226,6 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	mov r0,#0x7d
 	strb r0,[r1,r2]			@ for "Low G Man".
 
-	ldr r0,=joy0_W
-	ldr r1,=joypad_write_ptr	
-	str r0,[r1]			@reset 4016 write (mapper99 messes with it) 
-
 	ldr r1,=void
 	str_ r1, newFrameHook
 	str_ r1, endFrameHook
@@ -238,20 +236,51 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	mov r1, #0x8
 	strh r1, [r0]			@ disable hblank process.
 
-	ldr r1,=IO_R			@reset other writes..
-	str_ r1,m6502ReadTbl+8
-	ldr r1,=mem_R60			@reset other writes..
+	@ Setup read mem table
+	ldr r1,=ram_R
+	str_ r1,m6502ReadTbl+0
+	ldr r1,=PPU_R
+	str_ r1,m6502ReadTbl+4
+	ldr r1,=empty_R
+	str_ r1,rp2A03MemRead
+	ldr r1,=mem_R60
 	str_ r1,m6502ReadTbl+12
-	ldr r1,=IO_W			@reset other writes..
-	str_ r1,m6502WriteTbl+8
+	ldr r1,=rom_R80
+	str_ r1,m6502ReadTbl+16
+	ldr r1,=rom_RA0
+	str_ r1,m6502ReadTbl+20
+	ldr r1,=rom_RC0
+	str_ r1,m6502ReadTbl+24
+	ldr r1,=rom_RE0
+	str_ r1,m6502ReadTbl+28
+
+
+	@ Setup write mem table
+	ldr r1,=ram_W
+	str_ r1,m6502WriteTbl+0
+	ldr r1,=PPU_W
+	str_ r1,m6502WriteTbl+4
+	ldr r1,=empty_W
+	str_ r1,rp2A03MemWrite
 	ldr r1,=sram_W
 	str_ r1,m6502WriteTbl+12
-	ldr r1,=NES_RAM-0x5800		@ $6000 for mapper 40, 69 & 90 that has rom here.
-	str_ r1,m6502MemTbl+12
+	ldr r1,=rom_W
+	str_ r1,m6502WriteTbl+16
+	ldr r1,=rom_W
+	str_ r1,m6502WriteTbl+20
+	ldr r1,=rom_W
+	str_ r1,m6502WriteTbl+24
+	ldr r1,=rom_W
+	str_ r1,m6502WriteTbl+28
+
+	ldr r1,=NES_RAM
+	str_ r1,m6502MemTbl+0
 	ldr r1,=NES_XRAM-0x2000
 	str_ r1,m6502MemTbl+4
 	ldr r1,=NES_XRAM-0x4000
 	str_ r1,m6502MemTbl+8
+	ldr r1,=NES_RAM-0x5800	@ $6000 for mapper 40, 69 & 90 that has rom here.
+	str_ r1,m6502MemTbl+12
 
 	ldrb r1,[r3,#-10]		@ get mapper#
 	ldrb r2,[r3,#-9]
@@ -264,9 +293,9 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 
 	ldrb r1, [r3, #-16]		@ fds, for 'F'
 	cmp r1, #70
-	ldreqb r1, [r3, #-15]		@fds, for 'D'
+	ldreqb r1, [r3, #-15]	@ fds, for 'D'
 	cmpeq r1, #68
-	ldreqb r1, [r3, #-14]		@fds, for 'S'
+	ldreqb r1, [r3, #-14]	@ fds, for 'S'
 	cmpeq r1, #83
 	moveq r0, #20			@ this is a fds file...
 
@@ -282,7 +311,7 @@ lc0:	ldr r2,[r1],#8
 	teq r2,r0
 	beq lc1
 	bpl lc0
-lc1:				@ call mapperXXinit
+lc1:					@ call mapperXXinit
 	adr_ r5,m6502WriteTbl+16
 	ldr r0,[r1,#-4]		@ r0 = mapperxxxinit
 	ldmia r0!,{r1-r4}
@@ -295,7 +324,7 @@ lc1:				@ call mapperXXinit
 
 	bl NES_reset
 	bl recorder_reset	@ init rewind control stuff
-	
+
 	ldmfd sp!,{r4-r11,pc}
 @---------------------------------------------------------------------------------
 savestate:
@@ -336,10 +365,10 @@ savelst: .word NES_RAM,0x2800
 	.word agb_pal,96
 	.word vram_map,64
 	.word agb_nt_map,16
-	.word mapperstate,96
-	.word rommap,16
-	.word cpustate,44
-	.word ppustate,64
+	.word globals+mapperData,96
+	.word globals+m6502MemTbl+4*4,16
+	.word globals+m6502StateStart,44
+	.word globals+ppuState,64
 lstend:
 @c_defs: #define SAVESTATESIZE (0x2800+0x3000+96+64+16+96+16+44+64)
 
@@ -420,13 +449,12 @@ NES_reset:
 	ldr m6502zpage,=NES_RAM
 
 	bl PPU_reset
+	ldr r0,=rp2A03SetNMIPin
+	str_ r0,ppuIrqFunc
 	bl IO_reset
 	bl Sound_reset
 	bl CPU_reset
 	
-	mov r0, #0
-	str_ r0, af_state			@clear autofire state
-
 	bl nespatch
 
 	ldmfd sp!,{r4-r11,pc}
@@ -523,8 +551,7 @@ map89AB_:
 flush:		@update m6502pc & m6502LastBank
 	ldr_ r1,m6502LastBank
 	sub m6502pc,m6502pc,r1
-	encodePC
-	bx lr
+	b translate6502PCToOffset	;@ In=m6502pc, Out=m6502pc,r0=lastBank
 @---------------------------------------------------------------------------------
 mapCDEF_:
 @---------------------------------------------------------------------------------
@@ -560,3 +587,9 @@ map89ABCDEF_:
 	str_ r0,m6502MemTbl+28
 	b flush
 @---------------------------------------------------------------------------------
+
+.section .dtcm, "aw"
+globals:
+nesMachine:
+rp2A03:
+	.skip nesMachineSize

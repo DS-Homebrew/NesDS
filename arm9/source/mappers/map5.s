@@ -36,10 +36,10 @@ mapper5init:
 	.word void,void,void,void
 
 	adr r1,write0
-	str_ r1,m6502WriteTbl+8
+	str_ r1,rp2A03MemWrite
 
 	adr r1,mmc5_r
-	str_ r1,m6502ReadTbl+8
+	str_ r1,rp2A03MemRead
 
 	mov r0,#3
 	strb_ r0,prgsize
@@ -59,7 +59,7 @@ mapper5init:
 write0:
 @----------------------------------监视 char *-----------------------------------------------
 	cmp addy,#0x5000
-	blo IO_W
+	blo empty_W
 	cmp addy,#0x5100
 	blo map5Sound
 	cmp addy,#0x5c00
@@ -325,7 +325,9 @@ mmc5_200:
 setEnIrq:
 	and r0,r0,#0x80
 	strb_ r0,enable
-	bx lr
+	ldrb_ r1,mmc5irqr
+	and r0,r0,r1
+	b rp2A03SetIRQPin
 @---------------------------------------------------------------------------------
 mmc5_c00w:
 	@dup write, no need
@@ -346,7 +348,7 @@ mmc5_c00r:
 @---------------------------------------------------------------------------------
 mmc5_r:		@5204,5205,5206
 	cmp addy,#0x5200
-	blo IO_R
+	blo empty_R
 	cmp addy,#0x5C00
 	bge mmc5_c00r
 	and r2,addy,#0xff
@@ -361,10 +363,12 @@ mmc5_r:		@5204,5205,5206
 	bx lr
 
 MMC5IRQR:
+	stmfd sp!,{lr}
+	mov r0,#0
+	bl rp2A03SetIRQPin
+	ldmfd sp!,{lr}
 	ldrb_ r0,mmc5irqr
-	ldrb_ r1,enable
-	cmp r1,#0
-	andne r1,r0,#0x40
+	and r1,r0,#0x40
 	strb_ r1,mmc5irqr
 	bx lr
 
@@ -384,26 +388,29 @@ MMC5MulB:
 @---------------------------------------------------------------------------------
 hook:
 @---------------------------------------------------------------------------------
-	ldrb_ r0,counter
+	ldrb_ r2,counter
 	ldr_ r1,scanline
-	ldrb_ r2,mmc5irqr
-	cmp r1,#239
-	blt h2
-	orr r2,r2,#0x40
-h2:
-	cmp r1,#245
-	bge h1
+	ldrb_ r0,mmc5irqr
+	cmp r1,#0
+	orreq r0,#0x40
+	beq h1
 
-	cmp r1,r0
-	ble h1
+	cmp r1,#240
+	biceq r0,r0,#0xC0
+	beq h1
 
-	orr r2,r2,#0x80
-	strb_ r2,mmc5irqr
+	cmp r1,r2
+	orreq r0,r0,#0x80
+	strb_ r0,mmc5irqr
 
-	ldrb_ r0,enable
-	cmp r0,#0
+	ldrb_ r2,enable
+	ands r0,r0,r2
 	bne rp2A03SetIRQPin
+	bx lr
 h1:
-	strb_ r2,mmc5irqr
+	strb_ r0,mmc5irqr
+	ldrb_ r1,enable
+	ands r0,r0,r1
+	beq rp2A03SetIRQPin
 	bx lr
 @---------------------------------------------------------------------------------

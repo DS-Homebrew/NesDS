@@ -1,5 +1,6 @@
 #include <nds.h>
 #include "c_defs.h"
+#include "NesMachine.h"
 
 extern u16 font;
 extern u16 fontpal;

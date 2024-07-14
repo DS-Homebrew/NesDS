@@ -7,46 +7,49 @@
 #define	MMC3_IRQ_ROCKMAN3	5
 @---------------------------------------------------------------------------------
 	.global mapper4init
-	.global mapper119init
-	.global mapper249init
-	reg0 = mapperData
-	reg1 = mapperData+1
-	reg2 = mapperData+2
-	reg3 = mapperData+3
-	reg4 = mapperData+4
-	reg5 = mapperData+5
-	reg6 = mapperData+6
-	reg7 = mapperData+7
+	.global mmc3SetBankCpu
+	.global mmc3MappingW
+	.global mmc3MirrorW
+	.global mmc3CounterW
+	.global mmc3IrqEnableW
+	.global mmc3HSync
 
-	chr01 = mapperData+8
-	chr23 = mapperData+9
-	chr4  = mapperData+10
-	chr5  = mapperData+11
-	chr6  = mapperData+12
-	chr7  = mapperData+13
+	irq_latch	= mapperData+0
+	irq_enable	= mapperData+1
+	irq_reload	= mapperData+2
+	irq_counter	= mapperData+3
 
-	prg0  = mapperData+14
-	prg1  = mapperData+15
+	reg0 = mapperData+4
+	reg1 = mapperData+5
+	reg2 = mapperData+6
+	reg3 = mapperData+7
+	reg4 = mapperData+8
+	reg5 = mapperData+9
+	reg6 = mapperData+10
+	reg7 = mapperData+11
 
-	irq_enable	= mapperData+16
-	irq_counter	= mapperData+17
-	irq_latch	= mapperData+18
-	irq_request	= mapperData+19
+	chr01 = mapperData+12
+	chr23 = mapperData+13
+	chr4  = mapperData+14
+	chr5  = mapperData+15
+	chr6  = mapperData+16
+	chr7  = mapperData+17
+
+	prg0  = mapperData+18
+	prg1  = mapperData+19
+
 	vs_patch	= mapperData+20
 	vs_index	= mapperData+21
 	we_sram		= mapperData+22
 	irq_type	= mapperData+23
 
-	irq_preset	= mapperData+24
-	irq_preset_vbl	= mapperData+25
+	irq_request	= mapperData+24
 
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
 @ MMC3
 mapper4init:
-mapper119init:
-mapper249init:
 @---------------------------------------------------------------------------------
 	.word mmc3MappingW, mmc3MirrorW, mmc3CounterW, mmc3IrqEnableW
 	stmfd sp!, {lr}
@@ -59,7 +62,7 @@ mapper249init:
 	mov r0, #1
 	strb_ r0, prg1
 
-	bl setbank_cpu
+	bl mmc3SetBankCpu
 
 	mov r0, #0
 	strb_ r0, chr01
@@ -78,8 +81,7 @@ mapper249init:
 
 	mov r0, #0
 	str_ r0, irq_enable
-	strb_ r0, irq_preset
-	strb_ r0, irq_preset_vbl
+	strb_ r0, irq_reload
 	strb_ r0, irq_type
 	strb_ r0, vs_patch
 	strb_ r0, vs_index
@@ -87,16 +89,26 @@ mapper249init:
 	mov r0, #0xFF
 	strb_ r0, irq_latch
 
-	ldr r0,=hsync
+	ldr r0,=mmc3HSync
 	str_ r0,scanlineHook
 	adr r0, writel
-	str_ r0, m6502WriteTbl+8
+	str_ r0, rp2A03MemWrite
 	adr r0, readl
-	str_ r0, m6502ReadTbl+8
+	str_ r0, rp2A03MemRead
 
+	ldmfd sp!, {lr}
 	bx lr
 
 @patch for games...
+	@ldrb_ r0, irq_type
+	@cmp r0, #MMC3_IRQ_KLAX
+	@ldreq r2,=hSyncRAMBO1
+	@cmp r0, #MMC3_IRQ_ROCKMAN3
+	@ldreq r2,=hSyncRockman3
+	@cmp r2, #MMC3_IRQ_DAI2JISUPER
+	@ldreq r2,=mmc3HSync___
+	@str_ r2,scanlineHook
+
 	@mov r0, #0		@init val
 	@ldr_ r1, romBase	@src
 	@ldr_ r2, romSize8k	@size
@@ -112,10 +124,10 @@ mapper249init:
 	@bx lr
 
 @---------------------------------------------------------------------------------
-writel:		@($4100-$5FFF)
+writel:		@($4020-$5FFF)
 @---------------------------------------------------------------------------------
 	cmp addy, #0x5000
-	bcc IO_W
+	bcc empty_W
 	sub r2, addy, #0x4000
 	ldr r1, =NES_XRAM
 	strb r0, [r1, r2]
@@ -125,13 +137,13 @@ writel:		@($4100-$5FFF)
 readl:		@($4100-$5FFF)
 @---------------------------------------------------------------------------------
 	cmp addy, #0x5000
-	bcc IO_R
+	bcc empty_R
 	sub r2, addy, #0x4000
 	ldr r1, =NES_XRAM
 	ldrb r0, [r1, r2]
 	bx lr
 @-------------------------------------------------------------------
-setbank_cpu:
+mmc3SetBankCpu:
 @-------------------------------------------------------------------
 	stmfd sp!, {lr}
 	ldrb_ r0, prg1
@@ -217,7 +229,7 @@ mmc3MappingW:
 
 	strb_ r0, reg0
 	stmfd sp!, {lr}
-	bl setbank_cpu
+	bl mmc3SetBankCpu
 	ldmfd sp!, {lr}
 	b setbank_ppu
 
@@ -229,7 +241,7 @@ w8001:
 	strb r0, [r2, r1]
 	cmp r1, #6
 	bcc setbank_ppu
-	b setbank_cpu
+	b mmc3SetBankCpu
 
 @------------------------------------
 mmc3MirrorW:		@ A000-BFFF
@@ -252,74 +264,81 @@ wa001:				@ WRAM enable
 mmc3CounterW:		@ C000-DFFF
 @------------------------------------
 	tst addy, #1
-	bne wc001
 
-	strb_ r0, reg4
-	ldrb_ r1, irq_type
-	cmp r1, #MMC3_IRQ_KLAX
-	cmpne r1, #MMC3_IRQ_ROCKMAN3
-	streqb_ r0, irq_counter
-	strneb_ r0, irq_latch
-	cmp r1, #MMC3_IRQ_DBZ2
-	moveq r0, #7
-	streqb_ r0, irq_latch
-	bx lr
-
-wc001:
-	strb_ r0, reg5
-	ldrb_ r1, irq_type
-	cmp r1, #MMC3_IRQ_KLAX
-	cmpne r1, #MMC3_IRQ_ROCKMAN3
 	streqb_ r0, irq_latch
 	bxeq lr
 
-	ldrb_ r0, irq_counter
-	orr r0, r0, #0x80
-	strb_ r0, irq_counter
-
-	mov r2, #0xFF
-	ldr_ r0, scanline
-	cmp r0, #240
-	strccb_ r2, irq_preset
-	bxcc lr
-
-	cmp r1, #MMC3_IRQ_SHOUGIMEIKAN
-	streqb_ r2, irq_preset
-	bxeq lr
-
-	strb_ r2, irq_preset_vbl
-	mov r0, #0
-	strb_ r0, irq_preset
+	mov r0, #1
+	strb_ r0, irq_reload
 	bx lr
 
 @------------------------------------
 mmc3IrqEnableW:		@ E000-FFFF
 @------------------------------------
-	tst addy, #1
-	bne we001
-
-	strb_ r0, reg6
-	mov r0, #0
+	ands r0, addy, #1
 	strb_ r0, irq_enable
-	strb_ r0, irq_request
-	bx lr
-
-we001:
-	strb_ r0, reg7
-	mov r0, #1
-	strb_ r0, irq_enable
-	mov r0, #0
-	strb_ r0, irq_request
+	beq rp2A03SetIRQPin
 	bx lr
 
 @-------------------------------------------------------------------
-hsync:
+mmc3HSync:			@ Sharp version, IRQ as long as counter is 0
 @-------------------------------------------------------------------
 	ldr_ r0, scanline
 	ldrb_ r1, ppuCtrl1
-	ldrb_ r2, irq_type
-	cmp r2, #MMC3_IRQ_KLAX
-	bne skip1
+	cmp r0, #240
+	bxcs lr
+	tst r1, #0x18
+	bxeq lr
+
+	ldrb_ r0, irq_reload
+	mov r1,#0
+	strb_ r1, irq_reload
+	ldrb_ r2, irq_counter
+	cmp r2,#0				;@ Is counter 0?
+	cmpne r0,#1				;@ Or forced reload?
+	ldreqb_ r2, irq_latch	;@ Load latch to counter
+	subne r2, r2, #1
+	strb_ r2, irq_counter
+	cmp r2,#0				;@ Is counter 0?
+	bxne lr
+
+	ldrb_ r0, irq_enable
+	cmp r0,#0
+	bxeq lr
+	b rp2A03SetIRQPin
+@-------------------------------------------------------------------
+mmc3HSyncAlt:		@ NEC version, IRQ only on counter n->0 transition
+@-------------------------------------------------------------------
+	ldr_ r0, scanline
+	ldrb_ r1, ppuCtrl1
+	cmp r0, #240
+	bxcs lr
+	tst r1, #0x18
+	bxeq lr
+
+	ldrb_ r0, irq_reload
+	mov r1,#0
+	strb_ r1, irq_reload
+	ldrb_ r2, irq_counter
+	movs r1,r2				;@ Keep old counter in r1. Is counter 0?
+	cmpne r0,#1				;@ Or forced reload?
+	ldreqb_ r2, irq_latch	;@ Load latch to counter
+	subne r2, r2, #1
+	strb_ r2, irq_counter
+	cmp r2,r1				;@ Is old count == new count, no IRQ
+	bxeq lr
+	cmp r2,#0				;@ Is counter 0?
+	bxne lr
+
+	ldrb_ r0, irq_enable
+	cmp r0,#0
+	bxeq lr
+	b rp2A03SetIRQPin
+@-------------------------------------------------------------------
+hSyncRAMBO1:
+@-------------------------------------------------------------------
+	ldr_ r0, scanline
+	ldrb_ r1, ppuCtrl1
 
 	cmp r0, #240
 	bcs 0f
@@ -345,81 +364,5 @@ hsync:
 	strb_ r2, irq_counter
 0:
 	ldrb_ r0, irq_request
-	ands r0, r0, r0
-	bxeq lr
-
 	b rp2A03SetIRQPin
 @--------
-skip1:
-	cmp r2, #MMC3_IRQ_ROCKMAN3
-	bne skip2
-	cmp r0, #240
-	bcs 0f
-	tst r1, #0x18
-	beq 0f
-
-	ldrb_ r0, irq_enable
-	ands r0, r0, r0
-	beq 0f
-
-	ldrb_ r2, irq_counter
-	subs r2, r2, #1
-	strb_ r2, irq_counter
-	bne 0f
-
-	mov r0, #0xff
-	strb_ r0, irq_request
-	ldrb_ r0, irq_latch
-	strb_ r0, irq_counter
-
-0:
-	ldrb_ r0, irq_request
-	ands r0, r0, r0
-	bxeq lr
-	b rp2A03SetIRQPin
-@--------
-skip2:
-	cmp r0, #240
-	bxcs lr
-	tst r1, #0x18
-	bxeq lr
-
-	mov r2, #0
-	ldrb_ r1, irq_preset_vbl
-	ands r1, r1, r1
-	ldrneb_ r1, irq_latch
-	strneb_ r1, irq_counter
-	strneb_ r2, irq_preset_vbl
-
-	ldrb_ r1, irq_preset
-	ands r1, r1, r1
-	beq 0f
-
-	ldrb_ r1, irq_latch
-	strb_ r1, irq_counter
-	strb_ r2, irq_preset
-
-	ldrb_ r2, irq_type
-	cmp r2, #MMC3_IRQ_DAI2JISUPER
-	cmpeq r0, #0
-	subeq r1, r1, #1
-	@streqb_ r1, irq_counter
-	b 1f
-
-0:
-	ldrb_ r1, irq_counter
-	subs r1, r1, #1
-	movcc r1, #0
-1:
-	strb_ r1, irq_counter
-	ands r1, r1, r1
-	bxne lr
-
-	mov r2, #0xFF
-	strb_ r2, irq_preset
-
-	ldrb_ r0, irq_enable
-	ands r0, r0, r0
-	strneb_ r2, irq_request
-	bne rp2A03SetIRQPin
-	bx lr

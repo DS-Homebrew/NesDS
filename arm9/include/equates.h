@@ -1,6 +1,8 @@
 @		GBLL DEBUG
 @	VERSION_IN_ROM = 0  @out of pocketnes ??
 	#include "macro.h"
+	#include "RP2A03.i"
+	#include "RP2C02.i"
 DEBUG		= 1
 DEBUGSTEP	= 0
 @----------------------------------------------------------------------------
@@ -44,12 +46,9 @@ NES_VRAM		= NES_SRAM+0x2000
 NES_XRAM		= NES_VRAM+0x3000
 CHR_DECODE		= NES_XRAM+0x2000
 MAPPED_RGB		= CHR_DECODE+0x400	@mapped NES palette (for VS unisys)
-NES_SPRAM		= MAPPED_RGB+0x100
 @?			EQU MAPPED_RGB+64*3
 
-NDS_PALETTE		= 0x5000000
 NDS_VRAM		= 0x6000000
-NDS_SRAM		= 0xA000000
 NDS_OAM			= 0x7000000
 NDS_BG			= 0x607C000
 NDS_OBJVRAM		= 0x6400000
@@ -91,78 +90,13 @@ REG_WIN1V		= 0x46
 REG_BLDCNT		= 0x50
 REG_BLDALPHA		= 0x52
 
-		@r0,r1,r2=temp regs
-m6502_nz	.req r3 @bit 31=N, Z=1 if bits 0-7=0
-m6502_rmem	.req r4 @m6502ReadTbl
-m6502_a		.req r5 @bits 0-23=0, also used to clear bytes in memory
-m6502_x		.req r6 @bits 0-23=0
-m6502_y		.req r7 @bits 0-23=0
-cycles		.req r8 @also VDIC flags
-m6502pc		.req r9
-globalptr	.req r10 @=wram_globals* ptr
-m6502_optbl	.req r10
-m6502zpage	.req r11 @=CPU_RAM
-addy		.req r12 @keep this at r12 (scratch for APCS)
-		@r13=SP
-		@r14=LR
-		@r15=PC
-@----------------------------------------------------------------------------
-
-@start_map 0,m6502zpage
-@_m_ nes_ram,0x800
-@_m_ nes_sram,0x2000
-@_m_ chr_decode,0x400
-
 @everything in wram_globals* areas:
 
+globalptr	.req r10	@ =wram_globals* ptr
+
 start_map 0,globalptr	@6502.s
-_m_ opz,256*4
-_m_ m6502ReadTbl,8*4
-_m_ m6502WriteTbl,8*4
-_m_ m6502MemTbl,8*4
-_m_ cpuregs,6*4
-_m_ m6502RegPC,4
-_m_ m6502_s,4
-_m_ m6502LastBank,4
-_m_ nexttimeout,4
-_m_ scanline,4
-_m_ scanlineHook,4
-_m_ frame,4
-_m_ cyclesPerScanline,4
-_m_ lastScanline,4
-_m_ unused_align,4
-			@ppu.s
-_m_ fpsValue,4
-_m_ adjustBlend,4
- @ppustate:
-_m_ vramAddr,4
-_m_ vramAddr2,4
-_m_ scrollX,4
-_m_ scrollY,4
-_m_ scrollYTemp,4
-_m_ sprite0Y,4
-_m_ bg0Cnt,4
-_m_ readTemp,1
-_m_ ppuBusLatch,1
-_m_ sprite0X,1
-_m_ vramAddrInc,1
-_m_ ppuStat,1
-_m_ toggle,1
-_m_ ppuCtrl0,1
-_m_ ppuCtrl0Frame,1
-_m_ ppuCtrl1,1
-_m_ ppuOamAdr,1
-_m_ ppuUnusedAlign1,2
-_m_ nesChrMap,16
-
-_m_ vromMask,4
-_m_ vromBase,4
-
-			@cart.s
-_m_ newFrameHook,4
-_m_ endFrameHook,4
-_m_ hblankHook,4
-_m_ ppuChrLatch,4
+_m_ rp2A03struct,rp2A03Size
+_m_ rp2C02struct,rp2C02Size
 _m_ mapperData,96
 
 _m_ romBase,4
@@ -175,52 +109,13 @@ _m_ prgcrc,4
 
 _m_ lightY,4
 
-_m_ loopy_t,4
-_m_ loopy_x,4
-_m_ loopy_y,4
-_m_ loopy_v,4
-_m_ loopy_shift,4
-_m_ bglastline, 4
 _m_ renderCount, 4
 _m_ tempData, 20*4
 
-_m_ nsfid, 5
-_m_ nsfversion, 1
-_m_ nsftotalsong, 1
-_m_ nsfstartsong, 1
-_m_ nsfloadaddress, 2
-_m_ nsfinitaddress, 2
-_m_ nsfplayaddress, 2
-_m_ nsfsongname, 32
-_m_ nsfartistname, 32
-_m_ nsfcopyrightname, 32
-_m_ nsfspeedntsc, 2
-_m_ nsfbankswitch, 8
-_m_ nsfspeedpal, 2
-_m_ nsfntscpalbits, 1
-_m_ nsfextrachipselect, 1
-_m_ nsfexpansion, 4
-_m_ nsfplay, 4
-_m_ nsfinit, 4
-_m_ nsfsongno, 4
-_m_ nsfsongmode, 4
-
-_m_ pixStart, 4
-_m_ pixEnd, 4
-
-_m_ af_state, 4	@auto fire state
-_m_ af_start, 4 @auto fire start
-_m_ palSyncLine, 4
-
 _m_ cartFlags,1
-_m_ barcode, 1
-_m_ barcode_out, 1
-@_m_ ,1 @align   @ADDED
+_m_ padding,3 @align
+_m_ nesMachineSize,0
 
-@----------------------------------------------------------------------------
-IRQ_VECTOR		= 0xfffe @ IRQ/BRK interrupt vector address
-RES_VECTOR		= 0xfffc @ RESET interrupt vector address
-NMI_VECTOR		= 0xfffa @ NMI interrupt vector address
 @-----------------------joyflags
 P1_ENABLE		= 0x10000
 P2_ENABLE		= 0x20000
@@ -280,18 +175,6 @@ SCALED_SPRITES	= 3
 
 				@bits 16-31=sprite follow val
 
-@----------------------------------------------------------------------------
-CYC_SHIFT		= 8
-CYCLE			= 1<<CYC_SHIFT @one cycle (341*CYCLE cycles per scanline)
-
-@cycle flags- (stored in cycles reg for speed)
-
-CYC_C			= 0x01	@Carry bit
-BRANCH			= 0x02	@branch instruction encountered
-CYC_I			= 0x04	@IRQ mask
-CYC_D			= 0x08	@Decimal bit
-CYC_V			= 0x40	@Overflow bit
-CYC_MASK		= CYCLE-1	@Mask
 @------------------------------------------------------------------------------
 @ [ DEBUG
 @	IMPORT debuginfo

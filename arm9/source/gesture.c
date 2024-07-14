@@ -3,6 +3,7 @@
 #include <string.h>
 #include "c_defs.h"
 #include "menu.h"
+#include "NesMachine.h"
 
 #define GMARGIN 32
 

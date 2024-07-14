@@ -30,20 +30,6 @@ mapper71init:
 	.word map71w,void,map89AB_,map89AB_
 	adr r0, map71wl
 	str_ r0, m6502WriteTbl+12
-	
-	ldr_ r0, prgcrc
-	ldr r1, =0x11CF
-	cmp r0, r1
-	ldrne r1, =0x9F84
-	cmpne r0, r1
-	bxne lr
-
-	adr r0,m71irqhook
-	str_ r0,scanlineHook
-
-	adr r1,m71iow
-	str_ r1,m6502WriteTbl+8
-
 	bx lr
 @---------------------------------------------------------------------------------
 mapper180init:
@@ -56,34 +42,7 @@ map71w:
 	bxeq lr
 	tst r0,#0x10
 	b mirror1_
-@-------------------------------------
-@patch for bignose freak out..
-m71irqhook:
-	ldr_ r0, scanline
-	cmp r0, #179
-	bxne lr
 
-	ldr r0, irq_pend
-	ands r0, r0, r0
-	bxeq lr
-
-	mov r0, #0
-	str r0, irq_pend
-	mov r0,#1
-	b rp2A03SetIRQPin
-
-m71iow:
-	and r2, addy, #0xff
-	cmp r2, #0x15
-	bne IO_W
-
-	tst r0, #16
-	strne r0, irq_pend
-	bic r0, #16
-	b IO_W
-
-irq_pend:
-	.word 0
 @---------------------------------------------------------------------------------
 write0:
 @---------------------------------------------------------------------------------

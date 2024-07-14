@@ -112,6 +112,12 @@ w1:	strb_ r1,latch
 	@----
 	tst r0,#0x10
 	strne_ r1,counter	@#0
+
+	stmfd sp!, {r0,lr}
+	mov r0,#0
+	blne rp2A03SetIRQPin
+	ldmfd sp!, {r0,lr}
+
 	b romswitch
 @---------------------------------------------------------------------------------
 write3:		@($E000-$FFFF)
@@ -170,8 +176,6 @@ hook:
 	cmp r0,#0x3e000000
 	bxlo lr
 
-@	mov r1,#0
-@	str r1,counter
 	mov r0,#1
 	b rp2A03SetIRQPin
 @---------------------------------------------------------------------------------

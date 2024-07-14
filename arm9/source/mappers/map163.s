@@ -38,9 +38,9 @@ mapper163init:
 	bl map89ABCDEF_
 
 	adr r0, readl
-	str_ r0, m6502ReadTbl+8
+	str_ r0, rp2A03MemRead
 	adr r0, writel
-	str_ r0, m6502WriteTbl+8
+	str_ r0, rp2A03MemWrite
 	adr r0,hook
 	str_ r0,scanlineHook
 
@@ -50,7 +50,7 @@ mapper163init:
 readl:
 @---------------------------------------------------------------------------------
 	cmp addy, #0x5000
-	bcc IO_R
+	bcc empty_R
 	and r0, addy, #0x7700
 	cmp r0, #0x5100
 	cmpne r0, #0x5500
@@ -70,7 +70,7 @@ readl:
 writel:
 @---------------------------------------------------------------------------------
 	cmp addy, #0x5000
-	bcc IO_W
+	bcc empty_W
 
 	mov r1, addy, lsr#8
 	and r2, r1, #0x3
@@ -146,41 +146,38 @@ w53:
 @---------------------------------------------------------------------------------
 hook:
 @---------------------------------------------------------------------------------
-	stmfd sp!, {lr}
 	ldrb_ r0, reg1
 	tst r0, #0x80
-	beq hk
+	bxeq lr
 	ldrb_ r0, ppuCtrl1
 	tst r0, #0x18
-	beq hk
+	bxeq lr
 
 	ldr_ r0, scanline
 	cmp r0, #127
 	bne 0f
 	mov r0, #1
+	stmfd sp!, {r0,lr}
 	bl chr0123_
-	mov r0, #1
-	bl chr4567_
-	b hk
+	ldmfd sp!, {r0,lr}
+	b chr4567_
+
 0:
 	bhi 1f
 	ldrb_ r0, rom_type
 	eors r0, r0, #1
-	bne hk
-	mov r0, #0
+	bxne lr
+	@ r0 = 0
+	stmfd sp!, {r0,lr}
 	bl chr0123_
-	mov r0, #0
-	bl chr4567_
-	b hk
+	ldmfd sp!, {r0,lr}
+	b chr4567_
 
 1:
-	cmp r0, #239
-	bne hk
-	mov r0, #0
+	subs r0, r0, #239
+	bxne lr
+	@ r0 = 0
+	stmfd sp!, {r0,lr}
 	bl chr0123_
-	mov r0, #0
-	bl chr4567_
-
-hk:
-	ldmfd sp!, {lr}
-	bx lr
+	ldmfd sp!, {r0,lr}
+	b chr4567_

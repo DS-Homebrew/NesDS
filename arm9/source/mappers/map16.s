@@ -2,6 +2,9 @@
 	#include "equates.h"
 @---------------------------------------------------------------------------------
 	.global mapper16init
+	.global __barcode
+	.global __barcode_out
+
 	patch		= mapperData	@may never used
 	eeprom_type	= mapperData + 1
 	irq_enable	= mapperData + 2
@@ -126,7 +129,7 @@ readl:
 	bl x24c01_read
 	ands r0, r0, r0
 	movne r0, #0x10
-	ldrb_ r1, barcode_out
+	ldrb r1, barcode_out
 	orr r0, r0, r1
 	@mov r0, #0
 	ldmfd sp!, {pc}
@@ -138,7 +141,7 @@ readl:
 	bl x24c02_read
 	ands r0, r0, r0
 	movne r0, #0x10
-	ldrb_ r1, barcode_out
+	ldrb r1, barcode_out
 	orr r0, r0, r1
 	ldmfd sp!, {pc}
 
@@ -149,7 +152,7 @@ readl:
 	ldmfd sp!, {r1}
 	ands r0, r0, r1
 	movne r0, #0x10
-	ldrb_ r1, barcode_out
+	ldrb r1, barcode_out
 	orr r0, r0, r1
 	ldmfd sp!, {pc}
 	
@@ -228,7 +231,8 @@ a1:
 	strb_ r1, irq_enable
 	ldr_ r1, irq_latch
 	str_ r1, irq_counter
-	bx lr
+	mov r0,#0
+	b rp2A03SetIRQPin
 
 b1:
 	strb_ r0, irq_latch
@@ -268,7 +272,7 @@ d1:
 @--------------------------------------------------------------------------------
 hook:
 @--------------------------------------------------------------------------------
-	ldrb_ r0, barcode
+	ldrb r0, barcode
 	ands r0, r0, r0
 	beq 0f
 
@@ -284,11 +288,11 @@ hook:
 	ldrb r0, [r1, r2]
 	cmp r0, #0xFF
 	moveq r0, #0
-	streqb_ r0, barcode
-	streqb_ r0, barcode_out
+	streqb r0, barcode
+	streqb r0, barcode_out
 	streqb r0, barcode_ptr
 	streqb r0, barcode_cnt
-	strb_ r0, barcode_out
+	strb r0, barcode_out
 	addne r2, r2, #1
 	strneb r2, barcode_ptr
 
@@ -311,4 +315,10 @@ hook:
 barcode_ptr:
 	.byte 0
 barcode_cnt:
+	.byte 0
+__barcode:
+barcode:
+	.byte 0
+__barcode_out:
+barcode_out:
 	.byte 0

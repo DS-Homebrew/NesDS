@@ -50,7 +50,8 @@ write1:		@$A000
 
 irqen69:
 	strb_ r0,irqen
-	bx lr
+	mov r0,#0
+	b rp2A03SetIRQPin
 irqA69:
 	strb_ r0,countdown+2
 	bx lr
@@ -61,10 +62,8 @@ irqB69:
 mapJinx:
 @---------------------------------------------------------------------------------
 	tst r0,#0x40
-	ldr r1,=mem_R60			@Swap in mem at $6000-$7FFF.
-	str_ r1,m6502ReadTbl+12
-	ldreq r1,=empty_W		@ROM.
-	ldrne r1,=sram_W		@sram.
+	ldreq r1,=empty_W		@Swap in ROM at $6000-$7FFF.
+	ldrne r1,=sram_W		@Swap in sram at $6000-$7FFF.
 	str_ r1,m6502WriteTbl+12
 	beq map67_
 	ldr r1,=NES_RAM-0x5800		@sram at $6000.
@@ -81,10 +80,8 @@ hook:
 	ldrb_ r1,video			@ Number of cycles per scanline.
 	subs r0,r0,r1,lsl#16
 	str_ r0,countdown
-	bxhi lr
+	bxpl lr
 
-	mov r1,#0
-	strb_ r1,irqen
 	ands r0,r2,#1			@ IRQ enabled?
 	bne rp2A03SetIRQPin
 	bx lr

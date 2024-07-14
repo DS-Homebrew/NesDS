@@ -39,7 +39,7 @@ mapper198init:
 	mov r0, #1
 	strb_ r0, prg1
 
-	bl setbank_cpu
+	bl mmc3SetBankCpu
 
 	mov r0, #0
 	strb_ r0, chr01
@@ -57,9 +57,9 @@ mapper198init:
 	bl setbank_ppu
 
 	adr r0, readl
-	str_ r0, m6502ReadTbl+8
+	str_ r0, rp2A03MemRead
 	adr r0, writel
-	str_ r0, m6502WriteTbl+8
+	str_ r0, rp2A03MemWrite
 /*
 	adr r0, readh
 	str_ r0, m6502ReadTbl+12
@@ -71,9 +71,6 @@ mapper198init:
 @-------------------------------------------------------------------
 writel:
 @-------------------------------------------------------------------
-	ldr r2, =0x4019
-	cmp addy, r2
-	bcc IO_W
 	bic r1, addy, #0xE000
 	ldr r2, =NES_XRAM
 	strb r0, [r2, r1]
@@ -81,9 +78,6 @@ writel:
 @-------------------------------------------------------------------
 readl:
 @-------------------------------------------------------------------
-	ldr r2, =0x4019
-	cmp addy, r2
-	bcc IO_R
 	bic r1, addy, #0xE000
 	ldr r2, =NES_XRAM
 	ldrb r0, [r2, r1]
@@ -101,35 +95,6 @@ readh:
 	bic r2, addy, #0xE000
 	ldrb r0,[r1,r2]
 	bx lr
-@-------------------------------------------------------------------
-setbank_cpu:
-@-------------------------------------------------------------------
-	stmfd sp!, {lr}
-	ldrb_ r0, reg0
-	tst r0, #0x40
-	beq sbc1
-
-	mov r0, #-2
-	bl map89_
-	ldrb_ r0, prg1
-	bl mapAB_
-	ldrb_ r0, prg0
-	bl mapCD_
-	mov r0, #-1
-	bl mapEF_
-	b cend
-
-sbc1:
-	ldrb_ r0, prg0
-	bl map89_
-	ldrb_ r0, prg1
-	bl mapAB_
-	mov r0, #-1
-	bl mapCDEF_
-
-cend:
-	ldmfd sp!, {pc}
-
 @-------------------------------------------------------------------
 setbank_ppu:
 @-------------------------------------------------------------------
@@ -208,7 +173,7 @@ write0:
 
 	stmfd sp!, {lr}
 	strb_ r0, reg0
-	bl setbank_cpu
+	bl mmc3SetBankCpu
 	bl setbank_ppu
 	ldmfd sp!, {pc}
 
@@ -229,10 +194,10 @@ w8001:
 	cmp r0, #0x50
 	andcs r0, r0, #0x4f
 	strb_ r0, prg0
-	b setbank_cpu
+	b mmc3SetBankCpu
 7:
 	strb_ r0, prg1
-	b setbank_cpu
+	b mmc3SetBankCpu
 
 @------------------------------------
 writeABCDEF:

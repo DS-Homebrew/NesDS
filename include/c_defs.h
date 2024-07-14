@@ -179,20 +179,17 @@ void Sound_reset();
 #undef SRAM
 #define SRAM 0x02
 
-extern u32 __emuflags;		//cart.s
-extern u8 __cartflags;
+#define __emuflags globals.emuFlags
+#define __cartflags globals.cartFlags
 
 extern u32 joyflags;		//io.s
 extern u32 joystate;
-extern u32 romstart;
 
-extern u8 mapperstate[96];	//6502.s
-extern u32 __scanline;
+#define __scanline globals.ppu.scanline
 extern u8 __barcode;
 extern u8 __barcode_out;
 extern u32 __af_state;
 extern u32 __af_start;
-extern u32 __prgsize16k;
 extern u32 __nsfPlay;
 extern u32 __nsfInit;
 extern u32 __nsfSongNo;
@@ -219,22 +216,18 @@ extern struct nsfHeader
 } nsfHeader;
 
 void EMU_VBlank(void);
-void EMU_Run(void);
-void NSF_Run(void);
 void initcart(char *rom);//,int flags);
 void PPU_init(void);
 void rescale_nr(u32 scale, u32 start);
-void paletteinit(void);		//ppu.s
 void NES_reset(void);		//cart.s
 int savestate(u32);
 int loadstate(u32);
 void rescale(int a, int b);
 
 //render.s
-extern u32 __rendercount;	//6502.s
+#define __rendercount globals.renderCount
 extern void render_all();
 extern void render_sub();
-extern void ntsc_pal_reset();
 
 
 //multi.c
@@ -288,8 +281,8 @@ extern u8 nes_rgb[];
 extern u32 debuginfo[];
 
 //others...
-extern u32 all_pix_start;
-extern u32 all_pix_end;
+#define all_pix_start globals.ppu.pixStart
+#define all_pix_end globals.ppu.pixEnd
 
 //rompatch.c
 extern void crcinit();

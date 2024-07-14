@@ -1,15 +1,22 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
 @---------------------------------------------------------------------------------
-	.global mappernsfinit
-	.global wram
 
-	exchip		= mapperData+0
+	.global nsfHeader
+	.global __nsfPlay
+	.global __nsfInit
+	.global __nsfSongNo
+	.global __nsfSongMode
+	.global nsfExtraChipSelect
+
+	.global mappernsfinit
+
+	exChip		= mapperData+0
 	bankswitch	= mapperData+4
-	banksize	= mapperData+8
-	exaddr		= mapperData+12
-	songno		= mapperData+16
-	repcnt		= mapperData+20
+	bankSize	= mapperData+8
+	exAddr		= mapperData+12
+	songNo		= mapperData+16
+	repCnt		= mapperData+20
 	banks		= mapperData+24
 @---------------------------------------------------------------------------------
 .section .text,"ax"
@@ -20,10 +27,10 @@ mappernsfinit:	@play nsf files
 
 	stmfd sp!, {r3, r4, addy, lr}
 	movs r0, #0
-	str_ r0, songno
-	str_ r0, repcnt
-	str_ r0, exaddr
-	ldr r1, =exram
+	str_ r0, songNo
+	str_ r0, repCnt
+	str_ r0, exAddr
+	ldr r1,=exram
 	mov r2, #128/4
 	bl filler
 
@@ -32,7 +39,7 @@ mappernsfinit:	@play nsf files
 	ldr r1, =0xfff
 	add r0, r0, r1
 	mov r0, r0, lsr#12
-	str_ r0, banksize
+	str_ r0, bankSize
 
 	@skip pal reset
 	@remap the memtable
@@ -48,24 +55,21 @@ mappernsfinit:	@play nsf files
 	str_ r0, m6502MemTbl + 24
 	ldr r0, =wram + 0x8000 - 0xE000
 	str_ r0, m6502MemTbl + 28
+	
+	@read the exChip flag
+	ldrb r0, nsfExtraChipSelect
+	str_ r0, exChip
 
-	@read the exchip flag
-	adrl_ r0, nsfextrachipselect
-	ldrb r0, [r0]
-	str_ r0, exchip
-
-	@set the start songno
-	adrl_ r0, nsfstartsong
-	ldrb r0, [r0]
-	adrl_ r1, nsftotalsong
-	ldrb r1, [r1]
+	@set the start songNo
+	ldrb r0, nsfStartSong
+	ldrb r1, nsfTotalSong
 	cmp r0, r1
 	movhi r0, #1
 	sub r0, r0, #1
-	str_ r0, songno
+	str_ r0, songNo
 
 	mov r0, #0
-	adrl_ r1, nsfbankswitch
+	adr r1, nsfBankSwitch
 	ldrb r2, [r1], #1
 	orr r0, r0, r2
 		ldrb r2, [r1], #1
@@ -83,15 +87,16 @@ mappernsfinit:	@play nsf files
 		ldrb r2, [r1], #1
 		orrs r0, r0, r2
 	str_ r0, bankswitch
-	beq bankswitchoff
-bankswitchon:
-	ldrh_ r0, nsfloadaddress
+	beq bankswitchOff
+bankswitchOn:
+	ldr r0, =nsfLoadAddress
+	ldrh r0, [r0]
 	mov r0, r0, lsr#12
 	mov r1, #0
 0:
 	cmp r0, #8
 	bcs 1f
-	bl bankswitch_func
+	bl bankswitchFunc
 	add r1, r1, #1
 	add r0, r0, #1
 	b 0b
@@ -99,35 +104,36 @@ bankswitchon:
 1:
 	mov r2, #0
 
-	adrl_ r3, nsfbankswitch
+	adr r3, nsfBankSwitch
 2:
 	add r0, r2, #8
 	ldrb r1, [r3, r2]
-	bl bankswitch_func
+	bl bankswitchFunc
 	add r2, r2, #1
 	cmp r2, #8
 	bne 2b
 3:
-	ldr_ r0, exchip
+	ldr_ r0, exChip
 	tst r0, #4
-	beq bankswitchend
+	beq bankswitchEnd
 
 	mov r0, #6
 	ldrb r1, [r3, #6]
-	bl bankswitch_func
+	bl bankswitchFunc
 	mov r0, #7
 	ldrb r1, [r3, #7]
-	bl bankswitch_func
-	b bankswitchend
+	bl bankswitchFunc
+	b bankswitchEnd
 
-bankswitchoff:
+bankswitchOff:
 	ldr_ r0, romBase
-	ldr_ r1, banksize
+	ldr_ r1, bankSize
 	cmp r1, #8
 	movcs r1, #8
 
 	ldr r2, =wram
-	ldrh_ r3, nsfloadaddress
+	ldr r3, =nsfLoadAddress
+	ldrh r3, [r3]
 	sub r3, r3, #0x8000
 	add r2, r2, r3
 	add r2, r2, #0x2000
@@ -141,9 +147,9 @@ l3:
 	strb r3, [r2, r1]
 	bne l3
 
-bankswitchend:
+bankswitchEnd:
 4:
-	adr r3, initdata
+	adr r3, initData
 	ldrb r0, [r3], #1
 	ldr r2, =wram + 0xa700
 	strb r0, [r2]
@@ -154,7 +160,8 @@ bankswitchend:
 
 	ldrb r0, [r3], #1
 	strb r0, [r2, #0xe]!
-	ldrh_ r1, nsfinitaddress
+	ldr r1, =nsfInitAddress
+	ldrh r1, [r1]
 	and r4, r1, #0xff
 	strb r4, [r2, #1]!
 	mov r4, r1, lsr#8
@@ -169,7 +176,8 @@ bankswitchend:
 
 	ldrb r0, [r3], #1
 	strb r0, [r2, #0xb]!
-	ldrh_ r1, nsfplayaddress
+	ldr r1, =nsfPlayAddress
+	ldrh r1, [r1]
 	and r4, r1, #0xff
 	strb r4, [r2, #1]!
 	mov r4, r1, lsr#8
@@ -194,10 +202,10 @@ bankswitchend:
 	bl soundwrite
 
 
-	adr r0, exread
-	str_ r0, m6502ReadTbl + 8
-	adr r0, exwrite
-	str_ r0, m6502WriteTbl + 8
+	adr r0, exRead
+	str_ r0, rp2A03MemRead
+	adr r0, exWrite
+	str_ r0, rp2A03MemWrite
 
 	@pal/ntsc?
 
@@ -205,24 +213,24 @@ bankswitchend:
 
 
 @-------------------------------
-exread:
+exRead:
 @-------------------------------
 	ldr r1, =0x4800
 	cmp addy, r1
-	bne IO_R
+	bne empty_R
 
 	adr r1, exram
-	ldr_ r2, exaddr
+	ldr_ r2, exAddr
 	and r0, r2, #0x7f
 	ldrb r0, [r1, r0]
 	tst r2, #0x80
 	addne r2, r2, #1
 	orrne r2, r2, #0x80
-	strne_ r2, exaddr
+	strne_ r2, exAddr
 	bx lr
 
 @-------------------------------
-exwrite:
+exWrite:
 @-------------------------------
 	ldr r1, =0x5ff6
 	cmp addy, r1
@@ -232,32 +240,32 @@ exwrite:
 	cmp addy, r1
 	bxcs lr
 	cmp addy, #0x4800
-	bcc IO_W
+	bxcc lr
 	beq ew
 	cmp addy, #0x5000
 	bxcc lr
 ew:
 	adr r1, exram
-	ldr_ r2, exaddr
+	ldr_ r2, exAddr
 	and addy, r2, #0x7f
 	strb r0, [r1, addy]
 
 	tst r2, #0x80
 	addne r2, r2, #1
 	orrne r2, r2, #0x80
-	strne_ r2, exaddr
+	strne_ r2, exAddr
 	bx lr
 0:
-	and r2, addy, #0xf
 	mov r1, r0
+	and r2, addy, #0xf
 	mov r0, r2
-	b bankswitch_func
+	b bankswitchFunc
 
 
 @-------------------------------
 write:
 @-------------------------------
-	ldr_ r1, exchip
+	ldr_ r1, exChip
 	tst r1, #4
 	beq 0f
 
@@ -266,17 +274,17 @@ write:
 	strb r0, [r2, r1]
 0:
 	cmp addy, #0xf800
-	streq_ r0, exaddr
+	streq_ r0, exAddr
 	bx lr
 
 @-------------------------------
-bankswitch_func:
+bankswitchFunc:
 @-------------------------------
 	stmfd sp!, {r2-r6}
 	cmp r0, #6
-	bcc bankend
+	bcc bankEnd
 	cmp r0, #16
-	bcs bankend
+	bcs bankEnd
 
 	adrl_ r2, banks
 	strb r1, [r2, r0]
@@ -289,13 +297,13 @@ bankswitch_func:
 	add r2, r2, r0, lsl#12
 
 	mov r1, r1, lsl#12
-	ldrh_ r3, nsfloadaddress
+	ldrh r3, nsfLoadAddress
 	ldr r4, =0xfff
 	and r3, r3, r4
 	sub r1, r1, r3
 
 	ldr_ r3, romBase
-	ldr_ r4, banksize
+	ldr_ r4, bankSize
 	mov r4, r4, lsl#12
 
 	mov r5, #0x1000
@@ -314,11 +322,46 @@ flush:
 	subs r5, r5, #1
 	addne r1, r1, #1
 	bne loop
-bankend:
+bankEnd:
 	ldmfd sp!, {r2-r6}
 	bx lr
 
+
+@-------------------------------
+nsfHeader:
+
+nsfId:				.skip 5
+nsfVersion:			.byte 0
+nsfTotalSong:		.byte 0
+nsfStartSong:		.byte 0
+nsfLoadAddress: 	.short 0
+nsfInitAddress: 	.short 0
+nsfPlayAddress: 	.short 0
+nsfSongName:		.skip 32
+nsfArtistName:		.skip 32
+nsfCopyrightName:	.skip 32
+nsfSpeedNtsc:		.short 0
+nsfBankSwitch:		.skip 8
+nsfSpeedPal: 		.short 0
+nsfNtscPalBits:		.byte 0
+nsfExtraChipSelect:	.byte 0
+nsfExpansion:		.skip 4
+@-------------------------------
+__nsfPlay:
+nsfPlay:
+	.word 0
+__nsfInit:
+nsfInit:
+	.word 0
+__nsfSongNo:
+nsfSongNo:
+	.word 0
+__nsfSongMode:
+nsfSongMode:
+	.word 0
+
+@-------------------------------
 exram:
 	.skip 128
-initdata:
+initData:
 	.byte	0x4c, 0x00, 0x47, 0x20, 0x4c, 0x00, 0x47, 0x20, 0x4c, 0x00, 0x47

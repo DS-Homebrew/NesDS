@@ -1,0 +1,3 @@
+[submodule "arm9/source/RP2A03"]
+	path = arm9/source/RP2A03
+	url = https://github.com/FluBBaOfWard/N2A03.git

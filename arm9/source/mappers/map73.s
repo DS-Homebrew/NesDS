@@ -57,18 +57,18 @@ writeC000:
 	tst addy,#0x1000
 	bne writeD000
 	strb_ r0,irqen
-	tst r0,#2				;@ Timer enabled?
+	tst r0,#2			;@ Timer enabled?
 	ldrne_ r0,latch
 	strne_ r0,counter
-	// Ack IRQ
-	bx lr
-writeD000:
+	mov r0, #0
+	b rp2A03SetIRQPin
+writeD000:				;@ irqAck
 	ldrb_ r0,irqen
-	bic r0,r0,#2			;@ Disable Timer.
-	orr r0,r0,r0,lsl#1		;@ Move repeat bit to Enable bit
+	bic r0,r0,#2		;@ Disable Timer.
+	orr r0,r0,r0,lsl#1	;@ Move repeat bit to Enable bit
 	strb_ r0,irqen
-	// Ack IRQ
-	bx lr
+	mov r0, #0
+	b rp2A03SetIRQPin
 @---------------------------------------------------------------------------------
 writeE000:
 @---------------------------------------------------------------------------------
@@ -79,12 +79,12 @@ writeE000:
 hook:
 @---------------------------------------------------------------------------------
 	ldrb_ r0,irqen
-	tst r0,#2				;@ Timer active?
+	tst r0,#2			;@ Timer active?
 	bxeq lr
 
 	ldr_ r2,counter
-	ldr r1,=0x71aaab		;@ 113.66667 (Cycles per scanline)
-	tst r0,#4				;@ 8-bit timer?
+	ldr r1,=0x71aaab	;@ 113.66667 (Cycles per scanline)
+	tst r0,#4			;@ 8-bit timer?
 	bne timer8bit
 
 	adds r2,r2,r1

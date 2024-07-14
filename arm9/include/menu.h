@@ -84,8 +84,6 @@ void menu_display_start(void);
 void menu_display_br(void);
 void brightset(void);
 void palset(void);
-void paletteinit(void);		//ppu.s
-void PaletteTxAll(void);	//ppu.s
 void menu_display_adjust(void);
 void menu_adjust_start(void);
 void menu_nifi_start(void);

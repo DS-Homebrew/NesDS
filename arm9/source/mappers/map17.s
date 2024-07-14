@@ -13,7 +13,7 @@ mapper17init:
 	.word void,void,void,void
 
 	adr r1,write0
-	str_ r1,m6502WriteTbl+8
+	str_ r1,rp2A03MemWrite
 
 	adr r0,hook
 	str_ r0,scanlineHook
@@ -23,7 +23,7 @@ mapper17init:
 write0:
 @---------------------------------------------------------------------------------
 	cmp addy,#0x4100
-	blo IO_W
+	blo empty_W
 
 	and r2,addy,#0xff
 	cmp r2,#0xfe
@@ -47,17 +47,19 @@ _ff:
 	tst r0,#0x10
 	b mirror2V_
 _1:
-	and r0,r0,#1
+	mov r0,#0
 	strb_ r0,enable
-	bx lr
+	b rp2A03SetIRQPin
 _2:
 	strb_ r0,counter+2
-	bx lr
+	mov r0,#0
+	b rp2A03SetIRQPin
 _3:
 	strb_ r0,counter+3
 	mov r1,#1
 	strb_ r1,enable
-	bx lr
+	mov r0,#0
+	b rp2A03SetIRQPin
 @---------------------------------------------------------------------------------
 hook:
 @---------------------------------------------------------------------------------

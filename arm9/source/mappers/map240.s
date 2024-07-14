@@ -14,16 +14,12 @@ mapper240init:
 	.word void, void, void, void
 
 	adr r1,write0
-	str_ r1,m6502WriteTbl+8
+	str_ r1,rp2A03MemWrite
 
 	bx lr
 
 @----------------------------------------------
 write0:
-	ldr r1, =0x4020
-	cmp addy, r1
-	blo IO_W
-
 	str_ r0, tmp
 	stmfd sp!, {lr}
 	and r0, r0, #0xf0

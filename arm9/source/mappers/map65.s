@@ -48,11 +48,13 @@ w91:
 w93:
 	and r0,r0,#0x80
 	strb_ r0,irqen
-	bx lr
+	mov r0,#0
+	b rp2A03SetIRQPin
 w94:
 	ldr_ r2,latch
 	str_ r2,counter
-	bx lr
+	mov r0,#0
+	b rp2A03SetIRQPin
 w95:
 	strb_ r0,latch+1
 	bx lr

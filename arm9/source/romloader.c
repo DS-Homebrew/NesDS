@@ -7,6 +7,7 @@
 #include "c_defs.h"
 #include "minIni.h"
 #include "menu.h"
+#include "NesMachine.h"
 //#include "extlink_filestruct.h"
 
 extern int subscreen_stat;

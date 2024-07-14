@@ -2,20 +2,20 @@
 	#include "equates.h"
 @---------------------------------------------------------------------------------
 	.global mapper253init
-	.global debugwrite
-	reg	= mapperData+0
-	reg0	= mapperData+0
-	reg1	= mapperData+1
-	reg2	= mapperData+2
-	reg3	= mapperData+3
-	reg4	= mapperData+4
-	reg5	= mapperData+5
-	reg6	= mapperData+6
-	reg7	= mapperData+7
-	irq_enable = mapperData+16
-	irq_counter= mapperData+17
-	irq_latch = mapperData+18
-	irq_clock = mapperData+19
+
+	latch = mapperData+0
+	irqen = mapperData+1
+	k4irq = mapperData+2
+	counter = mapperData+3
+
+	reg0	= mapperData+4
+	reg1	= mapperData+5
+	reg2	= mapperData+6
+	reg3	= mapperData+7
+	reg4	= mapperData+8
+	reg5	= mapperData+9
+	reg6	= mapperData+10
+	reg7	= mapperData+11
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
@@ -27,24 +27,22 @@ mapper253init:
 	.word write89, writeAB, writeCD, writeEF
 
 	ldr r0, =0x0100
-	str_ r0, reg
+	str_ r0, reg0
 	ldr r0, =0x0302
-	str_ r0, reg + 4
+	str_ r0, reg4 + 4
 	ldr r0, =0x0504
-	str_ r0, reg + 8
+	str_ r0, reg0 + 8
 	ldr r0, =0x0706
-	str_ r0, reg + 12
-
-	adr r0, hook
-	str_ r0, scanlineHook
+	str_ r0, reg0 + 12
 
 	stmfd sp!, {lr}
+	bl Konami_Init
 
 	mov r0, #0
 	bl chr01234567_
 
-	ldr r0,=VRAM_chr			@ enable/disable chr write
-	ldr r1,=vram_write_tbl		@ set the first 8 function pointers to 'void'?
+	ldr r0,=VRAM_chr				@enable chr write
+	ldr r1,=vram_write_tbl
 	mov r2,#8
 	bl filler
 
@@ -107,53 +105,8 @@ writeEF:
 
 	and r1, addy, #0xc
 	ldr pc, [pc, r1]
-	mov r0, r0
-	.word f000, f0004, f0008, void
-f000:
-	ldrb_ r1, irq_latch
-	and r1, r1, #0xF0
-	and r0, r0, #0xF
-	orr r0, r1, r0
-	strb_ r0, irq_latch
-	bx lr
-f0004:
-	ldrb_ r1, irq_latch
-	and r1, r1, #0xF
-	orr r0, r1, r0, lsl#4
-	strb_ r0, irq_latch
-f0008:
-	strb_ r0, irq_enable
-	tst r0, #2
-	bxeq lr
-	ldrb_ r1, irq_latch
-	strb_ r1, irq_counter
-	mov r0, #0
-	strb_ r0, irq_clock
-	bx lr
-
-@---------------------------------------------------------------------------------
-hook:
-	ldrb_ r0,ppuCtrl1
-	orr r0, r0, #0x18
-	strb_ r0,ppuCtrl1		@NOT let bg or sp to hide...
-
-	ldrb_ r0, irq_enable
-	tst r0, #2
-	bxeq lr
-
-	ldrb_ r1, irq_counter
-	add r1, r1, #1
-	tst r1, #0xFF
-	strneb_ r1, irq_counter
-	bxne lr
-
-	tst r0, #1
-	moveq r0, #0
-	strb_ r0, irq_enable
-	ldrb_ r1, irq_latch
-	strb_ r1, irq_counter
-	mov r0,#1
-	b rp2A03SetIRQPin
+	nop
+	.word KoLatchLo, KoLatchHi, KoIRQEnable, KoIRQack
 
 @------------------------
 frameHook:

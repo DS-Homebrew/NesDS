@@ -2,6 +2,7 @@
 	#include "equates.h"
 @---------------------------------------------------------------------------------
 	.global mapper75init
+	.global mapper151init
 	map75ar0 = mapperData
 	map75ar1 = mapperData+1
 	map75sel = mapperData+2
@@ -19,6 +20,17 @@
 mapper75init:
 @---------------------------------------------------------------------------------
 	.word write8000,writeA000,writeC000,writeE000
+
+	bx lr
+@---------------------------------------------------------------------------------
+@ Mapper 75 but for VS system, missing mirror capability, allways 4 screen.
+mapper151init:
+@---------------------------------------------------------------------------------
+	.word write8000,writeA000,writeC000,writeE000
+
+	ldrb_ r0,cartFlags
+	orr r0,r0,#VS
+	strb_ r0,cartFlags
 
 	bx lr
 @---------------------------------------------------------------------------------
