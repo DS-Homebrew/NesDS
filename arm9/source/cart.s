@@ -46,6 +46,7 @@ mappertbl:
 	.word 32,mapper32init
 	.word 33,mapper33init
 	.word 34,mapper34init
+	.word 37,mapper37init
 	.word 40,mapper40init
 	.word 42,mapper42init
 	.word 47,mapper47init
@@ -201,7 +202,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	and r0,r0,#0x0f			@ exclude mapper
 	orr r1,r0,r1,lsl#4
 	strb_ r1,cartFlags		@ set cartFlags(upper 4-bits (<<8, ignored) + 0000(should be zero)(<<4) + vTsM)
-	@DEBUGINFO CARTFLAG, r1
+	@DEBUGINFO CARTFLAG r1
 
 	ldr r0,=void
 	str_ r0,scanlineHook	@ no mapper irq
@@ -284,11 +285,11 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 
 	ldrb r1,[r3,#-10]		@ get mapper#
 	ldrb r2,[r3,#-9]
-	tst r2,#0x0e			@ long live DiskDude!
-	and r1,r1,#0xf0
-	and r2,r2,#0xf0
-	orr r0,r2,r1,lsr#4
-	movne r0,r1,lsr#4		@ ignore high nibble if header looks bad
+	and r0,r2,#0x0C			@ long live DiskDude!
+	cmp r0,#0x04
+	moveq r2,#0				@ ignore high nibble if header looks bad
+	and r0,r2,#0xf0
+	orr r0,r0,r1,lsr#4
 					@lookup mapper*init
 
 	ldrb r1, [r3, #-16]		@ fds, for 'F'
@@ -307,7 +308,8 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 @---
 	DEBUGINFO MAPPER r0
 @---
-lc0:	ldr r2,[r1],#8
+lc0:
+	ldr r2,[r1],#8
 	teq r2,r0
 	beq lc1
 	bpl lc0
@@ -316,11 +318,7 @@ lc1:					@ call mapperXXinit
 	ldr r0,[r1,#-4]		@ r0 = mapperxxxinit
 	ldmia r0!,{r1-r4}
 	stmia r5,{r1-r4}	@ set default (write) operation for NES(0x8000 ~ 0xFFFF), maybe 'void', according to Mapper.
-	blx r0				@ go mapper_init
-
-	ldrb_ r1,cartFlags
-	tst r1,#MIRROR		@ set default mirror, horizontal mirroring
-	bl mirror2H_		@ (call after mapperinit to allow mappers to set up cartFlags first)
+	str_ r0,mapperInitPtr
 
 	bl NES_reset
 	bl recorder_reset	@ init rewind control stuff
@@ -445,8 +443,15 @@ NES_reset:
 @---------------------------------------------------------------------------------
 	stmfd sp!,{r4-r11,lr}
 
-	ldr globalptr,=globals		@need this?
+	ldr globalptr,=globals
 	ldr m6502zpage,=NES_RAM
+
+	ldr_ r0,mapperInitPtr
+	blx r0						@ Go mapper_init
+
+	ldrb_ r1,cartFlags
+	tst r1,#MIRROR		;@ Set default mirror, horizontal mirroring
+	bl mirror2H_		;@ (Call after mapperinit to allow mappers to set up cartFlags first)
 
 	bl PPU_reset
 	ldr r0,=rp2A03SetNMIPin

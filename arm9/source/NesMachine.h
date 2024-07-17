@@ -18,6 +18,7 @@ typedef struct {
 	u32 prgSize8k;
 	u32 prgSize16k;
 	u32 prgSize32k;
+	u32 mapperInitPtr;
 	u32 emuFlags;
 	u32 prgCrc;
 

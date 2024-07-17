@@ -9,7 +9,7 @@
 @ Namcot 108 on NAMCOT-3446 board
 @ Used in:
 @ Megami Tensei: Digital Devil Story
-@ Also see mapper 206
+@ Also see mapper 88, 206
 mapper76init:
 @---------------------------------------------------------------------------------
 	.word write0,write1,void,void

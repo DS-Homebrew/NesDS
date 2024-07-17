@@ -104,6 +104,7 @@ _m_ romMask,4
 _m_ prgSize8k,4
 _m_ prgSize16k,4
 _m_ prgSize32k,4
+_m_ mapperInitPtr,4
 _m_ emuFlags,4
 _m_ prgcrc,4
 

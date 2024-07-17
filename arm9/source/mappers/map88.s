@@ -10,7 +10,7 @@
 @ Quinty (J)
 @ Namcot Mahjong 3 - Mahjong Tengoku
 @ Dragon Spirit - Aratanaru Densetsu
-@ See also mapper 206
+@ See also mapper 76, 206
 mapper88init:
 @---------------------------------------------------------------------------------
 	.word write0,void,write1,void

@@ -1,74 +1,33 @@
-@---------------------------------------------------------------------------------
-	#include "equates.h"
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
+	#include "mmc3.i"
+;@----------------------------------------------------------------------------
 	.global mapper189init
 
-	irq_latch	= mapperData+0
-	irq_enable	= mapperData+1
-	irq_reload	= mapperData+2
-	irq_counter	= mapperData+3
+	.struct mmc3Extra
+patch:	.byte 0
+lwd:	.byte 0
 
-	reg0 = mapperData+4
-	reg1 = mapperData+5
-	reg2 = mapperData+6
-	reg3 = mapperData+7
-	reg4 = mapperData+8
-	reg5 = mapperData+9
-	reg6 = mapperData+10
-	reg7 = mapperData+11
-
-	chr01 = mapperData+12
-	chr23 = mapperData+13
-	chr4  = mapperData+14
-	chr5  = mapperData+15
-	chr6  = mapperData+16
-	chr7  = mapperData+17
-
-	patch		= mapperData+20
-	lwd		= mapperData+21
-
-	datar0		= mapperData+22
+datar0:	.byte 0
 	
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 .section .text,"ax"
-@---------------------------------------------------------------------------------
-@ This mapper is a modified MMC3.
-@ Everything operates just as it does on the MMC3, only the normal PRG regs
-@ (R:6,R:7) are ignored, and a new PRG Reg is used instead.
-@ Used in:
-@ Thunder Warrior
+;@----------------------------------------------------------------------------
+;@ This mapper is a modified MMC3.
+;@ Everything operates just as it does on the MMC3, only the normal PRG regs
+;@ (R:6,R:7) are ignored, and a new PRG Reg is used instead.
+;@ Used in:
+;@ Thunder Warrior
 mapper189init:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.word write0, write1, mmc3CounterW, mmc3IrqEnableW
 	stmfd sp!, {lr}
-	mov r0, #0
-	str_ r0, reg0
-	str_ r0, reg4
+
+	bl mmc3Init
 
 	mov r0, #-1
 	bl map89ABCDEF_
 
-	mov r0, #0
-	strb_ r0, chr01
-	mov r0, #2
-	strb_ r0, chr23
-	mov r0, #4
-	strb_ r0, chr4
-	mov r0, #5
-	strb_ r0, chr5
-	mov r0, #6
-	strb_ r0, chr6
-	mov r0, #7
-	strb_ r0, chr7
-
 	bl setbank_ppu
-
-	mov r0, #0
-	str_ r0, irq_enable
-	strb_ r0, patch
-
-	ldr r0,=mmc3HSync
-	str_ r0,scanlineHook
 
 	adr r0, writel
 	str_ r0, rp2A03MemWrite
@@ -77,11 +36,12 @@ mapper189init:
 	ldr_ r0, prgcrc
 	ldr r1, =0x2A9E
 	cmp r0, r1
-	streqb_ r1, patch
+	movne r1, #0
+	strb_ r1, patch
 
 	ldmfd sp!, {pc}
 
-@-------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 writel:
 	cmp addy, #0x4100
 	bcc empty_W
@@ -95,19 +55,18 @@ writel:
 	and r0, r0, #0x30
 	mov r0, r0, lsr#4
 	bl map89ABCDEF_
-	b chpatch
+	b chPatch
 
 0:
 	cmp r1, #0x61
-	bne chpatch
+	bne chPatch
 	and r0, r0, #0x3
 	bl map89ABCDEF_
 
-chpatch:
-
+chPatch:
 	ldrb_ r0, patch
 	ands r0, r0, r0
-	beq chend
+	beq chEnd
 
 	cmp addy, #0x4800
 	bcc 0f
@@ -122,7 +81,7 @@ chpatch:
 	ldrb_ r0, datar0
 	tst r0, #0x20
 	bl mirror2V_
-	b chend
+	b chEnd
 0:
 	cmp addy, #0x5000
 	bcc 0f
@@ -130,12 +89,12 @@ chpatch:
 	bcs 0f
 	ldrb_ r0, datar0
 	strb_ r0, lwd
-	b chend
+	b chEnd
 0:
 	cmp addy, #0x5800
-	bcc chend
+	bcc chEnd
 	cmp addy, #0x6000
-	bcs chend
+	bcs chEnd
 
 	adr r2, a5000xordat
 	ldrb_ r1, lwd
@@ -146,47 +105,18 @@ chpatch:
 	add r1, r1, #0x1800
 	ldr r0, =NES_XRAM
 	strb r2, [r0, r1]
-chend:
+chEnd:
 	ldmfd sp!, {pc}
 
-@-------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 setbank_ppu:
-@-------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	stmfd sp!, {lr}
 
 	ldrb_ r0, patch
 	ands r0, r0, r0
-	beq 0f
+	bne 0f
 
-	mov r1, #0
-	ldrb_ r0, chr01
-	bl chr1k
-	mov r1, #1
-	ldrb_ r0, chr01
-	add r0, r0, #1
-	bl chr1k
-	mov r1, #2
-	ldrb_ r0, chr23
-	bl chr1k
-	mov r1, #3
-	ldrb_ r0, chr23
-	add r0, r0, #1
-	bl chr1k
-	mov r1, #4
-	ldrb_ r0, chr4
-	bl chr1k
-	mov r1, #5
-	ldrb_ r0, chr5
-	bl chr1k
-	mov r1, #6
-	ldrb_ r0, chr6
-	bl chr1k
-	mov r1, #7
-	ldrb_ r0, chr7
-	bl chr1k
-	ldmfd sp!, {pc}
-
-0:
 	ldrb_ r0, reg0
 	tst r0, #0x80
 	beq 0f
@@ -214,10 +144,10 @@ setbank_ppu:
 	mov r1, #2
 	ldrb_ r0, chr6
 	bl chr1k
+	ldmfd sp!, {lr}
 	mov r1, #3
 	ldrb_ r0, chr7
-	bl chr1k
-	ldmfd sp!, {pc}
+	b chr1k
 
 0:
 	mov r1, #0
@@ -243,14 +173,14 @@ setbank_ppu:
 	mov r1, #6
 	ldrb_ r0, chr6
 	bl chr1k
+	ldmfd sp!, {lr}
 	mov r1, #7
 	ldrb_ r0, chr7
-	bl chr1k
-	ldmfd sp!, {pc}
+	b chr1k
 
-@------------------------------------
+;@----------------------------------------------------------------------------
 write0:
-@------------------------------------
+;@----------------------------------------------------------------------------
 	tst addy, #1
 	bne w8001
 
@@ -268,13 +198,13 @@ w8001:
 	strccb r0, [r2, r1]
 
 	b setbank_ppu
-@------------------------------------
+;@----------------------------------------------------------------------------
 write1:
-@------------------------------------
+;@----------------------------------------------------------------------------
 	tst r0, #1
 	b mirror2V_
 	
-@------------------------------------
+;@----------------------------------------------------------------------------
 a5000xordat:
 .byte 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x49, 0x19, 0x09, 0x59, 0x49, 0x19, 0x09
 .byte 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x59, 0x51, 0x41, 0x11, 0x01, 0x51, 0x41, 0x11, 0x01
