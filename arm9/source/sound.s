@@ -4,8 +4,6 @@
 	.global updatesound
 	.global soundwrite
 	.global _4015r
-pcmirqbakup = mapperData+24
-pcmirqcount = mapperData+28
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
