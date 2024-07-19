@@ -59,7 +59,7 @@
 	.global agb_bg_map
 	.global agb_obj_map
 	.global nes_palette
-	.global vromnt1k
+	.global vromNT1k
 
 ;@-----------------------------------------------------------------------------
 .section .text,"ax"
@@ -2276,7 +2276,7 @@ spflick_table16:
 	.word 0xFFFF
 
 ;@-----------------------------------------------------------------------------
-vromnt1k:	;@ r1=nt0...3
+vromNT1k:	;@ r1=nt0...3
 ;@-----------------------------------------------------------------------------
 	adr r2, bankCache
 	add r2, r2, r1, lsl#1		;@ Two bytes...

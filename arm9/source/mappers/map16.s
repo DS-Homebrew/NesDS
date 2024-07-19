@@ -19,7 +19,7 @@ irqLatch:	.word 0
 .section .text,"ax"
 ;@----------------------------------------------------------------------------
 ;@ Bandai FCG boards with the FCG-1 that supports no EEPROM, and the LZ93D50 with no or 256 bytes of EEPROM.
-;@ See also mapper 159
+;@ See also mapper 153, 157 & 159
 mapper16init:
 ;@----------------------------------------------------------------------------
 	.word write, write, write, write
@@ -56,31 +56,31 @@ mapper16init:
 	cmp r1, r0
 	moveq r0, #0
 
-	ldrne r1, =0x4E30		@ Dragon Ball Z2
+	ldr r1, =0x4E30		@ Dragon Ball Z2
+	cmp r1, r0
+
+	ldrne r1, =0x5E48	@ Dragon Ball Z3
 	cmpne r1, r0
 
-	ldrne r1, =0x5E48		@ Dragon Ball Z3
+	ldrne r1, =0x492c	@ Datach - Dragon Ball Z Gaiden
 	cmpne r1, r0
 
-	ldrne r1, =0x492c		@ Datach - Dragon Ball Z Gaiden
+	ldrne r1, =0xE158	@ Datach - Dragon Ball Z Gaiden
 	cmpne r1, r0
 
-	ldrne r1, =0xE158		@ Datach - Dragon Ball Z Gaiden
+	ldrne r1, =0xC0E3	@ Datach - SD Gundam - Gundam Wars(J)
 	cmpne r1, r0
 
-	ldrne r1, =0xC0E3		@ Datach - SD Gundam - Gundam Wars(J)
+	ldrne r1, =0x4D9A	@ Datach - Ultraman Club - Supokon Fight!(J)
 	cmpne r1, r0
 
-	ldrne r1, =0x4D9A		@ Datach - Ultraman Club - Supokon Fight!(J)
+	ldrne r1, =0x01CC	@ Datach - Yuu Yuu Hakusho - Bakutou Ankoku Bujutsu Kai (J)
 	cmpne r1, r0
 
-	ldrne r1, =0x01CC		@ Datach - Yuu Yuu Hakusho - Bakutou Ankoku Bujutsu Kai (J)
+	ldrne r1, =0xEF42	@ Datach - Battle Rush - Build Up Robot Tournament(J)
 	cmpne r1, r0
 
-	ldrne r1, =0xEF42		@ Datach - Battle Rush - Build Up Robot Tournament(J)
-	cmpne r1, r0
-
-	ldrne r1, =0x027D		@ Datach - J League Super Top Players(J)
+	ldrne r1, =0x027D	@ Datach - J League Super Top Players(J)
 	cmpne r1, r0
 
 	moveq r0, #1

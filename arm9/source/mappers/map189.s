@@ -27,8 +27,6 @@ mapper189init:
 	mov r0, #-1
 	bl map89ABCDEF_
 
-	bl setbank_ppu
-
 	adr r0, writel
 	str_ r0, rp2A03MemWrite
 	str_ r0, m6502WriteTbl+12
@@ -109,61 +107,22 @@ chEnd:
 	ldmfd sp!, {pc}
 
 ;@----------------------------------------------------------------------------
-setbank_ppu:
+setBankPPU:
 ;@----------------------------------------------------------------------------
-	stmfd sp!, {lr}
 
 	ldrb_ r0, patch
 	ands r0, r0, r0
-	bne 0f
+	beq mmc3SetBankPpu
 
-	ldrb_ r0, reg0
-	tst r0, #0x80
-	beq 0f
-
-	mov r1, #4
-	ldrb_ r0, chr01
-	bl chr1k
-	mov r1, #5
-	ldrb_ r0, chr01
-	add r0, r0, #1
-	bl chr1k
-	mov r1, #6
-	ldrb_ r0, chr23
-	bl chr1k
-	mov r1, #7
-	ldrb_ r0, chr23
-	add r0, r0, #1
-	bl chr1k
-	mov r1, #0
-	ldrb_ r0, chr4
-	bl chr1k
-	mov r1, #1
-	ldrb_ r0, chr5
-	bl chr1k
-	mov r1, #2
-	ldrb_ r0, chr6
-	bl chr1k
-	ldmfd sp!, {lr}
-	mov r1, #3
-	ldrb_ r0, chr7
-	b chr1k
-
-0:
+	stmfd sp!, {lr}
 	mov r1, #0
 	ldrb_ r0, chr01
-	bl chr1k
-	mov r1, #1
-	ldrb_ r0, chr01
-	add r0, r0, #1
-	bl chr1k
+	mov r0,r0,lsr#1
+	bl chr2k
 	mov r1, #2
 	ldrb_ r0, chr23
-	bl chr1k
-	mov r1, #3
-	ldrb_ r0, chr23
-	add r0, r0, #1
-	bl chr1k
+	mov r0,r0,lsr#1
+	bl chr2k
 	mov r1, #4
 	ldrb_ r0, chr4
 	bl chr1k
@@ -185,19 +144,17 @@ write0:
 	bne w8001
 
 	strb_ r0, reg0
-	b setbank_ppu
+	b setBankPPU
 
 w8001:
 	strb_ r0, reg1
 	ldrb_ r1, reg0
 	and r1, r1, #0x7
 	adrl_ r2, chr01
-	cmp r1, #0x02
-	andcc r0, r0, #0xFE
 	cmp r1, #0x06
 	strccb r0, [r2, r1]
 
-	b setbank_ppu
+	b setBankPPU
 ;@----------------------------------------------------------------------------
 write1:
 ;@----------------------------------------------------------------------------
