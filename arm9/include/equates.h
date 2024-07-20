@@ -17,7 +17,7 @@ IPC_TOUCH_Y		= IPC+4
 IPC_KEYS		= IPC+8
 IPC_MEMTBL		= IPC+16
 IPC_REG4015		= IPC+32
-IPC_APUIRQ		= IPC+33	//not implemented yet.
+IPC_APUIRQ		= IPC+33	// Not implemented yet.
 
 KEY_A			= 1
 KEY_B			= 2
@@ -33,51 +33,51 @@ KEY_X			= 1024
 KEY_Y			= 2048
 KEY_TOUCH		= 4096
 
-		@DMA buffers go in high RAM - stay below 27ffc00 (firmware settings)
+		;@ DMA buffers go in high RAM - stay below 27ffc00 (firmware settings)
 DISPCNTBUFF		= ct_buffer
-BGCNTBUFF		= DISPCNTBUFF + 512*4			@size is 240*16
+BGCNTBUFF		= DISPCNTBUFF + 512*4	;@ Size is 240*16
 BGCNTBUFFB		= BGCNTBUFF + 256 * 16
 
-		@miscellaneous stuff
+		;@ Miscellaneous stuff
 
-NES_RAM			= nes_region	@keep $400 byte aligned for 6502 stack
-NES_SRAM		= NES_RAM+0x0800	@***!!! also in c_defs.h
+NES_RAM			= nes_region		;@ Keep $400 byte aligned for 6502 stack
+NES_SRAM		= NES_RAM+0x0800	;@ ***!!! also in c_defs.h
 NES_VRAM		= NES_SRAM+0x2000
 NES_XRAM		= NES_VRAM+0x3000
 CHR_DECODE		= NES_XRAM+0x2000
-MAPPED_RGB		= CHR_DECODE+0x400	@mapped NES palette (for VS unisys)
-@?			EQU MAPPED_RGB+64*3
+MAPPED_RGB		= CHR_DECODE+0x400	;@ Mapped NES palette (for VS unisys)
+;@?			EQU MAPPED_RGB+64*3
 
 NDS_VRAM		= 0x6000000
 NDS_OAM			= 0x7000000
 NDS_BG			= 0x607C000
 NDS_OBJVRAM		= 0x6400000
-@-----------
+;@-----------
 
 REG_BASE		= 0x4000000
 REG_DISPCNT		= 0x00
-REG_DISPSTAT		= 0x04
+REG_DISPSTAT	= 0x04
 REG_BG0CNT		= 0x08
 REG_BG0HOFS		= 0x10
-@REG_BG0VOFS		EQU 0x12
-@REG_BG1HOFS		EQU 0x14
-@REG_BG1VOFS		EQU= 0x16
+REG_BG0VOFS		= 0x12
+REG_BG1HOFS		= 0x14
+REG_BG1VOFS		= 0x16
 REG_DM0SAD		= 0xB0
 REG_DM0DAD		= 0xB4
-REG_DM0CNT_L		= 0xB8
-REG_DM0CNT_H		= 0xBA
+REG_DM0CNT_L	= 0xB8
+REG_DM0CNT_H	= 0xBA
 REG_DM1SAD		= 0xBC
 REG_DM1DAD		= 0xC0
-REG_DM1CNT_L		= 0xC4
-REG_DM1CNT_H		= 0xC6
+REG_DM1CNT_L	= 0xC4
+REG_DM1CNT_H	= 0xC6
 REG_DM2SAD		= 0xC8
 REG_DM2DAD		= 0xCC
-REG_DM2CNT_L		= 0xD0
-REG_DM2CNT_H		= 0xD2
+REG_DM2CNT_L	= 0xD0
+REG_DM2CNT_H	= 0xD2
 REG_DM3SAD		= 0xD4
 REG_DM3DAD		= 0xD8
-REG_DM3CNT_L		= 0xDC
-REG_DM3CNT_H		= 0xDE
+REG_DM3CNT_L	= 0xDC
+REG_DM3CNT_H	= 0xDE
 REG_IME			= 0x208
 REG_IE			= 0x210
 REG_IF			= 0x214
@@ -88,53 +88,53 @@ REG_WIN0V		= 0x44
 REG_WIN1H		= 0x42
 REG_WIN1V		= 0x46
 REG_BLDCNT		= 0x50
-REG_BLDALPHA		= 0x52
+REG_BLDALPHA	= 0x52
 
-@everything in wram_globals* areas:
+;@ Everything in wram_globals* areas:
 
-globalptr	.req r10	@ =wram_globals* ptr
+globalptr	.req r10	;@ =wram_globals* ptr
 
-start_map 0,globalptr	@6502.s
-_m_ rp2A03struct,rp2A03Size
-_m_ rp2C02struct,rp2C02Size
-_m_ mapperData,96
+	.struct 0					;@ M6502.s
+rp2A03struct:	.space rp2A03Size
+rp2C02struct:	.space rp2C02Size
+mapperData:		.space 96
 
-_m_ romBase,4
-_m_ romMask,4
-_m_ prgSize8k,4
-_m_ prgSize16k,4
-_m_ prgSize32k,4
-_m_ mapperInitPtr,4
-_m_ emuFlags,4
-_m_ prgcrc,4
+romBase:		.word 0
+romMask:		.word 0
+prgSize8k:		.word 0
+prgSize16k:		.word 0
+prgSize32k:		.word 0
+mapperInitPtr:	.word 0
+emuFlags:		.word 0
+prgcrc:			.word 0
 
-_m_ lightY,4
+lightY:			.word 0
 
-_m_ renderCount, 4
-_m_ tempData, 20*4
+renderCount:	.word 0
+tempData:		.space 20*4
 
-_m_ cartFlags,1
-_m_ padding,3 @align
-_m_ nesMachineSize,0
+cartFlags:		.byte 0
+padding:		.skip 3 ;@ Align
+nesMachineSize:
 
-@-----------------------joyflags
+;@-----------------------joyflags
 P1_ENABLE		= 0x10000
 P2_ENABLE		= 0x20000
 B_A_SWAP		= 0x80000
 L_R_DISABLE		= 0x100000
 AUTOFIRE		= 0x1000000
-@-----------------------cartFlags
-MIRROR			= 0x01 @horizontal mirroring
-SRAM			= 0x02 @save SRAM
-TRAINER			= 0x04 @trainer present
-SCREEN4			= 0x08 @4way screen layout
-VS			= 0x10 @VS unisystem
-@-----------------------emuFlags (keep c_defs.h updated)
+;@-----------------------cartFlags
+MIRROR			= 0x01 ;@ horizontal mirroring
+SRAM			= 0x02 ;@ save SRAM
+TRAINER			= 0x04 ;@ trainer present
+SCREEN4			= 0x08 ;@ 4way screen layout
+VS				= 0x10 ;@ VS unisystem
+;@-----------------------emuFlags (keep c_defs.h updated)
 
-NOFLICKER		= 1	@flags&3:  0=flicker 1=noflicker 2=alphalerp
+NOFLICKER		= 1		;@ Flags&3:  0=flicker 1=noflicker 2=alphalerp
 ALPHALERP		= 2
-PALTIMING		= 4	@0=NTSC 1=PAL
-FOLLOWMEM		= 32  @0=follow sprite, 1=follow mem
+PALTIMING		= 4		;@ 0=NTSC 1=PAL
+FOLLOWMEM		= 32  	;@ 0=follow sprite, 1=follow mem
 SPLINE			= 64
 SOFTRENDER		= 128
 ALLPIXEL		= 256
@@ -154,41 +154,41 @@ NSFFILE			= 0x100000
 DISKBIOS		= 0x200000
 
 
-@------------------------multi-players
-@in every frame, 64bit should be transfered. 32bit = IPC_KEYS, 32bit = CONTROL_BIT
+;@------------------------multi-players
+;@ In every frame, 64bit should be transfered. 32bit = IPC_KEYS, 32bit = CONTROL_BIT
 
-MP_KEY_MSK		= 0x0CFF			@not all the keys can be transfered.
-MP_HOST			= (1 << 31)			@whether I am a host.
-MP_CONN			= (1 << 30)			@when communicating, kill this bit HIGH.
-MP_RESET		= (1 << 29)			@means that someone want to reset the game.
-MP_NFEN			= (1 << 28)			@nifi is enabled.
+MP_KEY_MSK		= 0x0CFF		;@ Not all the keys can be transfered.
+MP_HOST			= (1 << 31)		;@ Whether I am a host.
+MP_CONN			= (1 << 30)		;@ When communicating, kill this bit HIGH.
+MP_RESET		= (1 << 29)		;@ Means that someone want to reset the game.
+MP_NFEN			= (1 << 28)		;@ nifi is enabled.
 
-MP_TIME_MSK		= 0xFFFF			@to sync the time.
-MP_TIME			= 16				@16 bits. counting the frames past.					
+MP_TIME_MSK		= 0xFFFF		;@ To sync the time.
+MP_TIME			= 16			;@ 16 bits. counting the frames past.
 
 
-				@bits 8-15=scale type
+				;@ Bits 8-15=scale type
 
 UNSCALED_NOAUTO	= 0	@display types
 UNSCALED_AUTO	= 1
-SCALED		= 2
+SCALED			= 2
 SCALED_SPRITES	= 3
 
-				@bits 16-31=sprite follow val
+				;@ Bits 16-31=sprite follow val
 
-@------------------------------------------------------------------------------
-@ [ DEBUG
-@	IMPORT debuginfo
-@ ]
+;@------------------------------------------------------------------------------
+;@ [ DEBUG
+;@	IMPORT debuginfo
+;@ ]
 
 ERR0	= 0
 ERR1	= 1
 READ	= 2
 WRITE	= 3
-BRK	= 4
+BRK		= 4
 BADOP	= 5
 VBLS	= 6
-FPS	= 7
+FPS		= 7
 BGMISS	= 8
 CARTFLAG= 9
 
@@ -201,7 +201,7 @@ GAMEID	= 20
 
 
 
-@not sure about stuff below, instructions???
+;@ Not sure about stuff below, instructions???
 .macro DEBUGINFO index,reg
 	.if DEBUG
 		stmfd sp!,{r9}
@@ -237,5 +237,5 @@ GAMEID	= 20
 	.endif
 .endm
 
-@----------------
-@	END
+;@----------------
+;@	END

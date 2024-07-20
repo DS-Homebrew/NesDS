@@ -1,6 +1,6 @@
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	#include "equates.h"
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 
 	.global nsfHeader
 	.global __nsfPlay
@@ -11,18 +11,19 @@
 
 	.global mappernsfinit
 
-	exChip		= mapperData+0
-	bankswitch	= mapperData+4
-	bankSize	= mapperData+8
-	exAddr		= mapperData+12
-	songNo		= mapperData+16
-	repCnt		= mapperData+20
-	banks		= mapperData+24
-@---------------------------------------------------------------------------------
+	.struct mapperData
+exChip:		.word
+bankswitch:	.word
+bankSize:	.word
+exAddr:		.word
+songNo:		.word
+repCnt:		.word
+banks:		.word
+;@----------------------------------------------------------------------------
 .section .text,"ax"
-@---------------------------------------------------------------------------------
-mappernsfinit:	@play nsf files
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
+mappernsfinit:	;@ Play nsf files
+;@----------------------------------------------------------------------------
 	.word write, write, write, write
 
 	stmfd sp!, {r3, r4, addy, lr}
@@ -41,8 +42,8 @@ mappernsfinit:	@play nsf files
 	mov r0, r0, lsr#12
 	str_ r0, bankSize
 
-	@skip pal reset
-	@remap the memtable
+	;@ Skip pal reset
+	;@ Remap the memtable
 	ldr r0, =wram + 0xa000 - 0x4000
 	str_ r0, m6502MemTbl + 8
 	ldr r0, =wram + 0x0000 - 0x6000
@@ -56,11 +57,11 @@ mappernsfinit:	@play nsf files
 	ldr r0, =wram + 0x8000 - 0xE000
 	str_ r0, m6502MemTbl + 28
 	
-	@read the exChip flag
+	;@ Read the exChip flag
 	ldrb r0, nsfExtraChipSelect
 	str_ r0, exChip
 
-	@set the start songNo
+	;@ Set the start songNo
 	ldrb r0, nsfStartSong
 	ldrb r1, nsfTotalSong
 	cmp r0, r1
@@ -137,7 +138,7 @@ bankswitchOff:
 	sub r3, r3, #0x8000
 	add r2, r2, r3
 	add r2, r2, #0x2000
-	rsb r3, r3, #0x8000	@r3 = 8000 - (load - 8000)
+	rsb r3, r3, #0x8000	;@ r3 = 8000 - (load - 8000)
 	mov r1, r1, lsl#12
 	cmp r1, r3
 	movcs r1, r3
@@ -207,14 +208,14 @@ bankswitchEnd:
 	adr r0, exWrite
 	str_ r0, rp2A03MemWrite
 
-	@pal/ntsc?
+	;@ PAL/NTSC?
 
 	ldmfd sp!, {r3, r4, addy, pc}
 
 
-@-------------------------------
+;@-------------------------------
 exRead:
-@-------------------------------
+;@-------------------------------
 	ldr r1, =0x4800
 	cmp addy, r1
 	bne empty_R
@@ -229,9 +230,9 @@ exRead:
 	strne_ r2, exAddr
 	bx lr
 
-@-------------------------------
+;@-------------------------------
 exWrite:
-@-------------------------------
+;@-------------------------------
 	ldr r1, =0x5ff6
 	cmp addy, r1
 	bcs 0f
@@ -262,9 +263,9 @@ ew:
 	b bankswitchFunc
 
 
-@-------------------------------
+;@-------------------------------
 write:
-@-------------------------------
+;@-------------------------------
 	ldr_ r1, exChip
 	tst r1, #4
 	beq 0f
@@ -277,9 +278,9 @@ write:
 	streq_ r0, exAddr
 	bx lr
 
-@-------------------------------
+;@-------------------------------
 bankswitchFunc:
-@-------------------------------
+;@-------------------------------
 	stmfd sp!, {r2-r6}
 	cmp r0, #6
 	bcc bankEnd
@@ -327,7 +328,7 @@ bankEnd:
 	bx lr
 
 
-@-------------------------------
+;@-------------------------------
 nsfHeader:
 
 nsfId:				.skip 5
@@ -346,7 +347,7 @@ nsfSpeedPal: 		.short 0
 nsfNtscPalBits:		.byte 0
 nsfExtraChipSelect:	.byte 0
 nsfExpansion:		.skip 4
-@-------------------------------
+;@-------------------------------
 __nsfPlay:
 nsfPlay:
 	.word 0
@@ -360,7 +361,7 @@ __nsfSongMode:
 nsfSongMode:
 	.word 0
 
-@-------------------------------
+;@-------------------------------
 exram:
 	.skip 128
 initData:

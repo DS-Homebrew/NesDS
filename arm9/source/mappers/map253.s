@@ -1,35 +1,28 @@
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	#include "equates.h"
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.global mapper253init
 
-	latch = mapperData+0
-	irqen = mapperData+1
-	k4irq = mapperData+2
-	counter = mapperData+3
-
-	reg0	= mapperData+4
-	reg1	= mapperData+5
-	reg2	= mapperData+6
-	reg3	= mapperData+7
-	reg4	= mapperData+8
-	reg5	= mapperData+9
-	reg6	= mapperData+10
-	reg7	= mapperData+11
-@---------------------------------------------------------------------------------
+	.struct mapperData
+latch:		.byte
+irqen:		.byte
+k4irq:		.byte
+counter:	.byte
+reg0:		.space 16
+;@----------------------------------------------------------------------------
 .section .text,"ax"
-@---------------------------------------------------------------------------------
-@ Waixing VRC4 clone
-@ Used in: Dragon Ball Z: 強襲! サイヤ人 (Dragon Ball Z: Kyōshū! Saiya-jin)
-@ See also mapper 252
+;@----------------------------------------------------------------------------
+;@ Waixing VRC4 clone
+;@ Used in: Dragon Ball Z: 強襲! サイヤ人 (Dragon Ball Z: Kyōshū! Saiya-jin)
+;@ See also mapper 252
 mapper253init:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.word write89, writeAB, writeCD, writeEF
 
 	ldr r0, =0x0100
 	str_ r0, reg0
 	ldr r0, =0x0302
-	str_ r0, reg4 + 4
+	str_ r0, reg0 + 4
 	ldr r0, =0x0504
 	str_ r0, reg0 + 8
 	ldr r0, =0x0706
@@ -41,7 +34,7 @@ mapper253init:
 	mov r0, #0
 	bl chr01234567_
 
-	ldr r0,=VRAM_chr				@enable chr write
+	ldr r0,=VRAM_chr				;@ Enable chr write
 	ldr r1,=vram_write_tbl
 	mov r2,#8
 	bl filler
@@ -51,7 +44,7 @@ mapper253init:
 
 	ldmfd sp!, {pc}
 
-@--------------
+;@----------------------------------------------------------------------------
 write89:
 	ldr r1, =0x8010
 	cmp addy, r1
@@ -68,7 +61,7 @@ write89:
 	tst r0, #1
 	b mirror2V_
 
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 writeAB:
 	ldr r1, =0xa010
 	cmp r1, addy
@@ -76,7 +69,7 @@ writeAB:
 	tst addy, #0x1000
 	bxeq lr
 
-writeppu:
+writePPU:
 	mov r2, addy, lsr#12
 	sub r2, r2, #0xb
 	mov r2, r2, lsl#1
@@ -95,20 +88,20 @@ writeppu:
 	mov r1, r2
 	b chr1k
 
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 writeCD:
-	b writeppu
-@---------------------------------------------------------------------------------
+	b writePPU
+;@----------------------------------------------------------------------------
 writeEF:
-	tst addy, #0x1000	@ addy=0xF***
-	beq writeppu
+	tst addy, #0x1000	;@ addy=0xF***
+	beq writePPU
 
 	and r1, addy, #0xc
 	ldr pc, [pc, r1]
 	nop
 	.word KoLatchLo, KoLatchHi, KoIRQEnable, KoIRQack
 
-@------------------------
+;@----------------------------------------------------------------------------
 frameHook:
 	mov r0,#-1
 	ldr r1,=agb_obj_map
@@ -117,7 +110,8 @@ frameHook:
 	str r0,[r1],#4
 	str r0,[r1],#4
 
-	mov r0,#-1		@code from resetCHR
+	mov r0,#-1		;@ Code from resetCHR
 	ldr r1,=agb_bg_map
 	mov r2,#16 * 2
 	b filler
+;@----------------------------------------------------------------------------
