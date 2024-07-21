@@ -12,7 +12,7 @@
 	.global ppuOamDataW
 	.global updateINTPin
 	.global ppuDoScanline
-	.global ntsc_pal_reset
+	.global rp2C02SetRevision
 	.global agb_nt_map
 	.global vram_map
 	.global vram_write_tbl
@@ -58,7 +58,6 @@
 	.global currentBG
 	.global agb_bg_map
 	.global agb_obj_map
-	.global nes_palette
 	.global vromNT1k
 
 ;@-----------------------------------------------------------------------------
@@ -151,7 +150,7 @@ PaletteTxAll:
 
 	mov r2,#0x1F
 pxall:
-	adr_ r1,nes_palette
+	adrl_ r1,paletteMem
 	ldrb r0,[r1,r2]			;@ Load from nes palette
 	;@ Monochrome test
 	tst r4,#1
@@ -307,7 +306,10 @@ PPU_reset:
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{lr}
 
-	bl ntsc_pal_reset
+	ldrb_ r0,emuFlags
+	ands r0,#PALTIMING
+	movne r0,#REV_RP2C07
+	bl rp2C02SetRevision
 
 	ldr r2,=PPULineStateTable
 	ldr r1,[r2],#4
@@ -344,25 +346,20 @@ PPU_reset:
 	bl renderInit
 
 	ldmfd sp!,{pc}
-;@-----------------------------------------------------------------------------
-ntsc_pal_reset:
-;@-----------------------------------------------------------------------------
-;@---NTSC/PAL
-	mov r1, globalptr
-	ldr globalptr,=globals
+;@----------------------------------------------------------------------------
+rp2C02SetRevision:			;@ rp2a03ptr = r10
+;@----------------------------------------------------------------------------
+	cmp r0,#REV_RP2A07
+	movne r0,#REV_RP2A03
+	strb r0,[rp2c02ptr,#rp2C02Revision]
 
-	ldr_ r0,emuFlags
-	tst r0,#PALTIMING
-
-	ldreq r0,=341			;@ NTSC		(113+2/3)*3
-	ldrne r0,=320			;@ PAL		(106+9/16)*3
+	ldrne r0,=341			;@ NTSC		(113+2/3)*3
+	ldreq r0,=320			;@ PAL		(106+9/16)*3
 	str_ r0,cyclesPerScanline
-	ldreq r0,=262			;@ NTSC
-	ldrne r0,=312			;@ PAL
+	ldrne r0,=262			;@ NTSC
+	ldreq r0,=312			;@ PAL
 	str_ r0,lastScanline
 	str r0,ppuTotalLines
-
-	mov globalptr, r1
 	bx lr
 ;@-----------------------------------------------------------------------------
 EMU_VBlank:	;@ Call every vblank
@@ -885,7 +882,7 @@ oamAddrW:		;@ (2003)
 ppuOamDataR:	;@ (2004)
 ;@-----------------------------------------------------------------------------
 	ldrb_ r1,ppuOamAdr
-	adrl_ r2,ppuOAMMem
+	adr_ r2,ppuOAMMem
 	ldrb r0,[r2,r1]
 //	bic r0,r0,#0x1C			;@ Actualy only when reading attribute (2).
 	strb_ r0,ppuBusLatch
@@ -894,7 +891,7 @@ ppuOamDataR:	;@ (2004)
 ppuOamDataW:	;@ (2004)
 ;@-----------------------------------------------------------------------------
 	ldrb_ r1,ppuOamAdr
-	adrl_ r2,ppuOAMMem
+	adr_ r2,ppuOAMMem
 	strb r0,[r2,r1]
 	add r1,r1,#1
 	strb_ r1,ppuOamAdr
@@ -1005,7 +1002,9 @@ vmdata_R:	;@ (2007)
 palRead:
 	strb_ r1,readTemp
 	and r0,r0,#0x1f
-	adr r1,nes_palette
+	tst r0,#0x03
+	biceq r0,r0,#0x10		;@ $10,$14,$18,$1C mirror to $00,$04,$08,$0C
+	adr_ r1,paletteMem
 	ldrb r0,[r1,r0]
 	ldrb_ r1,ppuBusLatch
 	and r1,r1,#0xC0
@@ -1128,7 +1127,7 @@ VRAM_pal:	;@ ($3F00-$3F1F)
 	and addy,addy,#0x1f
 		tst addy,#0x03
 		biceq addy,#0x10	;@ $10,$14,$18,$1C mirror to $00,$04,$08,$0C
-	adr r1,nes_palette
+	adr_ r1,paletteMem
 	strb r0,[r1,addy]!		;@ Store in nes palette
 	streqb r0,[r1, #16]
 
@@ -1233,7 +1232,6 @@ nfsoft:
 .ltorg
 ;@-----------------------------------------------------------------------------
 agb_pal:		.skip 32*2	;@ Copy this to real AGB palette every frame
-nes_palette:	.skip 32	;@ NES $3F00-$3F1F
 
 vram_write_tbl:	;@ For vmdata_W, r0=data, addy=vram addr
 	.word 0
@@ -1689,7 +1687,7 @@ PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 	bxne lr
 	stmfd sp!,{r3-r9,lr}
 
-	adrl_ addy,ppuOAMMem
+	adr_ addy,ppuOAMMem
 	ldr_ r0,emuFlags			;@ r7,8=priority flags for scaling type
 	tst r0,#ALPHALERP
 	moveq r7,#0x00200000
@@ -1894,7 +1892,7 @@ spchr_update:
 	@r5  = ppu_decode
 	@r4  = pdatabase
 
-	adrl_ r9,ppuOAMMem		;@ r9 = sp
+	adr_ r9,ppuOAMMem		;@ r9 = sp
 
 	ldr_ r3, scanline
 	cmp r3, #0
@@ -1947,7 +1945,7 @@ msplp:
 	bxeq lr
 
 hidesp:
-	adrl_ r3,ppuOAMMem
+	adr_ r3,ppuOAMMem
 	ldr r2, =0x7000008
 	mov r4, #0x200
 	mov r1, #64

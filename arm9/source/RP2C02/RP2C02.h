@@ -5,6 +5,26 @@
 extern "C" {
 #endif
 
+/** Revision of PPU chip */
+typedef enum {
+	/** NTSC first revision(s) */
+	REV_RP2C02		= 0x00,
+	/** PAL revision */
+	REV_RP2C07		= 0x01,
+	/** NTSC RGB revision */
+	REV_RP2C03		= 0x02,
+	/** NTSC RGB revision */
+	REV_RP2C04		= 0x02,
+	/** NTSC RGB revision */
+	REV_RP2C05		= 0x02,
+	/** UMC UA6528P, Argentina Famiclone */
+	REV_UA6528P		= 0x03,
+	/** UMC UA6538, aka Dendy */
+	REV_UA6538		= 0x04,
+	/** UMC UA6548, Brazil Famiclone */
+	REV_UA6548		= 0x05,
+} RP2C03REV;
+
 typedef struct {
 	u32 scanline;
 	u32 nextLineChange;
@@ -35,9 +55,8 @@ typedef struct {
 	u8 ppuStat;
 	u8 ppuOamAdr;
 	u8 ppuCtrl0Frame;
-	u8 unusedAlign[3];
-	u8 unusedAlign2[8];
-	u16 nesChrMap[8];
+	u8 rp2C02Revision;
+	u8 unusedAlign[2];
 
 	u32 loopy_t;
 	u32 loopy_x;
@@ -56,12 +75,14 @@ typedef struct {
 	u32 endFrameHook;
 	u32 hblankHook;
 	u32 ppuChrLatch;
+	u16 nesChrMap[8];
 	u32 ppuOAMMem[64];
+	u8 paletteMem[32];
 
 	void (*ppuIrqFunc)(bool);
+	u8 unusedAlign2[8];
 } RP2C02;
 
-extern void ntsc_pal_reset();
 void paletteinit(void);
 void PaletteTxAll(void);
 

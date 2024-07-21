@@ -173,7 +173,7 @@ dummy_render:
 	stmfd sp!, {r3-r6}
 	mov r3, #0
 	mov r6, #0
-	adrl_ r4,ppuOAMMem
+	adr_ r4,ppuOAMMem
 	ldrb_ r5, scanline
 	sub r5, r5, #1
 
@@ -217,7 +217,7 @@ sp_render:
 
 	mov r12, #0				;@ spmax = 0
 					;@ r11 = spraddr, r9 = sp_y, r8 = sp_h, r7 = chr_h, r6 = chr_l, r5 = sp, r4 = i
-	adrl_ r5,ppuOAMMem		;@ r5 = sp
+	adr_ r5,ppuOAMMem		;@ r5 = sp
 	ldrb_ r1, ppuCtrl0
 	tst r1, #0x20
 	movne r8, #15			;@ r8 = sp_h = (PPUREG[0]&PPU_SP16_BIT)?15:7
@@ -374,7 +374,7 @@ sp_attr:
 	stmfd sp!, {r4, r8-r9}
 	ldrb r3, [r5, #2]
 	and r0, r3, #3
-	ldr r1, =nes_palette + 16
+	adr_ r1,paletteMem + 16
 	add r8, r1, r0, lsl#2	;@ r8 = pSPPAL = &SPPAL[(sp->attr&SP_COLOR_BIT)<<2]
 	ldrb r0, [r5, #3]
 	ldr_ r1, pScn
@@ -450,7 +450,7 @@ bg_render:
 
 	ldr r1, =renderData
 	add r1, r1, r0, lsl#8
-	ldr r0, =nes_palette
+	adr_ r0,paletteMem
 	ldrb r0, [r0]
 	orr r0, r0, r0, lsl#8
 	orr r0, r0, r0, lsl#16
@@ -577,7 +577,7 @@ bgnocache:
 	ldr_ r1, BGwrite
 	strb r0, [r1, r8]
 
-	ldr r5, =nes_palette
+	adr_ r5,paletteMem
 	add r5, r5, r6			;@ r5 = pBGPAL
 	and r0, r11, #0xAA
 	and r1, r12, #0xAA
@@ -693,7 +693,7 @@ bg_render_bottom:
 ;@--------------------------------------------
 	stmfd sp!,{r0-r2, lr}
 	ldr r1,=renderbgdata
-	ldr r2,=nes_palette
+	adr_ r2,paletteMem
 	ldrb r2, [r2]			;@ Get bg color #0
 	orr r2, r2, r2, lsl#8
 	orr r2, r2, r2, lsl#16
