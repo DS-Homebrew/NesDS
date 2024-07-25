@@ -29,13 +29,9 @@ typedef struct {
 	u32 scanline;
 	u32 nextLineChange;
 	u32 lineState;
-	u32 scanlineHook;
 	u32 frame;
 	u32 cyclesPerScanline;
 	u32 lastScanline;
-
-	u32 fpsValue;
-	u32 adjustBlend;
 
 // PPU State
 	u32 vramAddr;
@@ -44,7 +40,6 @@ typedef struct {
 	u32 scrollY;
 	u32 scrollYTemp;
 	u32 sprite0Y;
-	u32 readTemp;
 	u32 bg0Cnt;
 	u8 ppuBusLatch;
 	u8 sprite0X;
@@ -55,14 +50,14 @@ typedef struct {
 	u8 ppuStat;
 	u8 ppuOamAdr;
 	u8 ppuCtrl0Frame;
+	u8 readTemp;
 	u8 rp2C02Revision;
-	u8 unusedAlign[2];
+	u8 unusedAlign[1];
 
 	u32 loopy_t;
 	u32 loopy_x;
 	u32 loopy_y;
 	u32 loopy_v;
-	u32 loopy_shift;
 
 	u32 vromMask;
 	u32 vromBase;
@@ -70,21 +65,25 @@ typedef struct {
 
 	u32 pixStart;
 	u32 pixEnd;
+	u32 unused;
 
-	u32 newFrameHook;
-	u32 endFrameHook;
-	u32 hblankHook;
-	u32 ppuChrLatch;
 	u16 nesChrMap[8];
 	u32 ppuOAMMem[64];
 	u8 paletteMem[32];
 
 	void (*ppuIrqFunc)(bool);
+	void (*newFrameHook)(void);
+	void (*endFrameHook)(void);
+	void (*scanlineHook)(void);
+	void (*ppuChrLatch)(int tileNr);
 	u8 unusedAlign2[8];
 } RP2C02;
 
+void PPU_init(void);
+void EMU_VBlank(void);
 void paletteinit(void);
 void PaletteTxAll(void);
+void rescale_nr(u32 scale, u32 start);
 
 #ifdef __cplusplus
 }

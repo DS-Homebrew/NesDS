@@ -11,18 +11,19 @@
 	.global rev_data
 @renderData = 0x6040000 - 4
 
-tileOfs 	= tempData
-ntblAdr 	= tileOfs + 4
-attrAdr 	= ntblAdr + 4
-ntbl_x  	= attrAdr + 4
-attrsft 	= ntbl_x + 4
-pNTBL 		= attrsft + 4
-pScn		= pNTBL + 4
-pBGw		= pScn + 4
-attr		= pBGw + 4
-BGwrite		= attr + 4
-SPwrite		= BGwrite + 4
-Bit2Rev		= SPwrite + 4
+	.struct tempData
+tileOfs:	.word 0
+ntblAdr:	.word 0
+attrAdr:	.word 0
+ntbl_x:		.word 0
+attrsft:	.word 0
+pNTBL: 		.word 0
+pScn:		.word 0
+pBGw:		.word 0
+attr:		.word 0
+BGwrite:	.word 0
+SPwrite:	.word 0
+Bit2Rev:	.word 0
 
 	.section .text
 ;@-----------------------------------------------------------------------------
@@ -54,8 +55,6 @@ scanlinestart:
 	and r2, r2, #0x7000
 	mov r2, r2, lsr#12
 	str_ r2, loopy_y		;@ loopy_y = (loopy_v&0x7000)>>12
-	ldr_ r0, loopy_x
-	str_ r0, loopy_shift	;@ loopy_shift = loopy_x
 	bx lr
 
 ;@-----------------------------------------------------------------------------
@@ -304,11 +303,11 @@ sp_noh:
 hitCheck:
 	ldrb r0, [r5, #3]		;@ r0 = sp->x
 	stmfd sp!, {r6-r7}
-	ldr_ r1, loopy_shift	;@ r1 = loopy_shift
+	ldr_ r1, loopy_x		;@ r1 = loopy_x
 	add r2, r0, r1
-	mov r6, r2, lsr#3		;@ r6 = BGpos = ((sp->x&0xF8)+((loopy_shift+(sp->x&7))&8))>>3
+	mov r6, r2, lsr#3		;@ r6 = BGpos = ((sp->x&0xF8)+((loopy_x+(sp->x&7))&8))>>3
 	and r2, r2, #7
-	rsb r7, r2, #8			;@ r7 = BGsft = 8-((loopy_shift+sp->x)&7)
+	rsb r7, r2, #8			;@ r7 = BGsft = 8-((loopy_x+sp->x)&7)
 
 	ldr_ r2, BGwrite
 	ldrb r0, [r2, r6]!
@@ -355,11 +354,11 @@ sp_mask:
 ;@ BG > SP priority
 	ldrb r0, [r5, #3]		;@ r0 = sp->x
 	stmfd sp!, {r6-r7}
-	ldr_ r1, loopy_shift	;@ r1 = loopy_shift
+	ldr_ r1, loopy_x		;@ r1 = loopy_x
 	add r2, r0, r1
-	mov r6, r2, lsr#3		;@ r6 = BGpos = ((sp->x&0xF8)+((loopy_shift+(sp->x&7))&8))>>3
+	mov r6, r2, lsr#3		;@ r6 = BGpos = ((sp->x&0xF8)+((loopy_x+(sp->x&7))&8))>>3
 	and r2, r2, #7
-	rsb r7, r2, #8			;@ r7 = BGsft = 8-((loopy_shift+sp->x)&7)
+	rsb r7, r2, #8			;@ r7 = BGsft = 8-((loopy_x+sp->x)&7)
 
 	ldr_ r2, BGwrite
 	ldrb r0, [r2, r6]!
@@ -466,9 +465,9 @@ bg_normal:
 
 	ldr r1, =renderData
 	add r1, r1, r0, lsl#8	;@ r1 = renderData
-	ldr_ r2, loopy_shift	;@ r2 = loopy_shift
+	ldr_ r2, loopy_x		;@ r2 = loopy_x
 	@rsb r2, r2, #8
-	sub r1, r1, r2			;@ r1 = pScn = lpScanline+(8-loopy_shift)
+	sub r1, r1, r2			;@ r1 = pScn = lpScanline+(8-loopy_x)
 	str_ r1, pScn			;@ Store pScn
 
 	ldrb_ r1, ppuCtrl0
@@ -591,7 +590,7 @@ bgnocache:
 	cmp r8, #0
 	bne 0f					;@ normal
 
-	ldrb_ r11, loopy_shift
+	ldrb_ r11, loopy_x
 	cmp r11, #1
 
 	ldrccb r0, [r5, r3, lsr#6]	;@ r0 = pBGPAL[(c1>>6)]

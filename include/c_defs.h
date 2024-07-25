@@ -51,7 +51,8 @@
 
 #ifdef ARM9
 
-typedef struct {	//rom info from builder
+/** Rom info from builder */
+typedef struct {
 	char name[32];
 	u32 filesize;
 	u32 flags;
@@ -62,12 +63,13 @@ typedef struct {	//rom info from builder
 #define SAVESTATESIZE (0x2800+0x3000+96+64+16+96+16+44+64)
 
 
-//nesmain.c
+//arm9main.c
 extern int soft_frameskip;
 extern int palette_value;
 extern int global_playcount;
 extern int subscreen_stat;
 void showversion();
+/** Run 1 NES frame with FF/REW control */
 void play(void);
 void recorder_reset(void);
 
@@ -109,8 +111,6 @@ int debugdump(void);
 #define MAKEID 19
 #define GAMEID 20
 #define EMUFLAG 21
-
-int debugdump(void);
 
 //romloader.c
 extern int romsize;
@@ -215,10 +215,7 @@ extern struct nsfHeader
 	char	Expansion[4];		// must be 0
 } nsfHeader;
 
-void EMU_VBlank(void);
 void initcart(char *rom);//,int flags);
-void PPU_init(void);
-void rescale_nr(u32 scale, u32 start);
 void NES_reset(void);		//cart.s
 int savestate(u32);
 int loadstate(u32);
@@ -278,7 +275,7 @@ extern int autofire_fps;
 extern u8 nes_rgb[];
 
 //subscreen.c
-extern u32 debuginfo[];
+extern u32 debuginfo[48];
 
 //others...
 #define all_pix_start globals.ppu.pixStart
@@ -332,8 +329,8 @@ int do_decompression(const char *inname, const char *outname);
 #define ALLPIXELON 0x80000 //on or off state of all_pix_show
 #define NSFFILE 0x100000 //on or off state of all_pix_show
 #define DISKBIOS 0x200000 // if diskbios was loaded
-#else
+#else // ARM9
 extern int ipc_region;
-#endif
+#endif // ARM9
 
 #endif

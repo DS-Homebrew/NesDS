@@ -150,7 +150,7 @@ PaletteTxAll:
 
 	mov r2,#0x1F
 pxall:
-	adrl_ r1,paletteMem
+	adr_ r1,paletteMem
 	ldrb r0,[r1,r2]			;@ Load from nes palette
 	;@ Monochrome test
 	tst r4,#1
@@ -884,7 +884,9 @@ ppuOamDataR:	;@ (2004)
 	ldrb_ r1,ppuOamAdr
 	adr_ r2,ppuOAMMem
 	ldrb r0,[r2,r1]
-//	bic r0,r0,#0x1C			;@ Actualy only when reading attribute (2).
+	and r2,r2,#3
+	cmp r2,#2
+	biceq r0,r0,#0x1C			;@ Only when reading attribute (2).
 	strb_ r0,ppuBusLatch
 	bx lr
 ;@-----------------------------------------------------------------------------
@@ -909,7 +911,6 @@ bgScrollX:
 
 	and r1, r0, #7
 	str_ r1, loopy_x	;@ loopy_x = data & 0x07
-	str_ r1, loopy_shift
 	ldr_ r1, loopy_t
 	bic r1, r1, #0x1F
 	orr r1, r1, r0, lsr#3
@@ -952,8 +953,6 @@ low:
 	strb_ r0, loopy_t
 	ldr_ r1, loopy_t
 	str_ r1, loopy_v
-	ldr_ r1, loopy_x
-	str_ r1, loopy_shift
 
 	strb_ r0,vramAddr2
 	ldr_ r1,vramAddr2
@@ -1002,8 +1001,6 @@ vmdata_R:	;@ (2007)
 palRead:
 	strb_ r1,readTemp
 	and r0,r0,#0x1f
-	tst r0,#0x03
-	biceq r0,r0,#0x10		;@ $10,$14,$18,$1C mirror to $00,$04,$08,$0C
 	adr_ r1,paletteMem
 	ldrb r0,[r1,r0]
 	ldrb_ r1,ppuBusLatch
@@ -1123,20 +1120,20 @@ VRAM_pal:	;@ ($3F00-$3F1F)
 	cmp addy,#0x3f00
 	bmi VRAM_name3
 
-	and r0,r0,#0x3f		;@ (only colors 0-63 are valid)
-	and addy,addy,#0x1f
-		tst addy,#0x03
-		biceq addy,#0x10	;@ $10,$14,$18,$1C mirror to $00,$04,$08,$0C
+	and r0,r0,#0x3f			;@ (only colors 0-63 are valid)
+	and r2,addy,#0x1f
+	tst r2,#0x03
+	biceq r2,r2,#0x10		;@ $10,$14,$18,$1C mirror to $00,$04,$08,$0C
 	adr_ r1,paletteMem
-	strb r0,[r1,addy]!		;@ Store in nes palette
-	streqb r0,[r1, #16]
+	strb r0,[r1,r2]!		;@ Store in nes palette
+	streqb r0,[r1,#0x10]
 
 	add r0,r0,r0
 	ldr r1,=MAPPED_RGB
 	ldrh r0,[r1,r0]			;@ Lookup RGB
 	adr r1,agb_pal
-	add addy,addy,addy		;@ lsl#1
-	strh r0,[r1,addy]		;@ Store in agb palette
+	add r2,r2,r2		;@ lsl#1
+	strh r0,[r1,r2]		;@ Store in agb palette
 
 	ldr_ r1, scanline
 	add r1, r1, #2
@@ -1162,8 +1159,6 @@ newframe:	;@ Called at NES scanline 0
 	mov r0, r0, lsr#12
 	and r0, r0, #7
 	str_ r0, loopy_y
-	ldr_ r0, loopy_x
-	str_ r0, loopy_shift
 	ldr_ r0,scrollYTemp
 	str_ r0,scrollY
 

@@ -21,13 +21,9 @@ rp2C02Start:
 scanline:		.long 0			;@ These 3 must be first in state.
 nextLineChange:	.long 0
 lineState:		.long 0
-scanlineHook:	.long 0
 frame:			.long 0
 cyclesPerScanline:	 .long 0
 lastScanline:	.long 0
-
-fpsValue:		.long 0
-adjustBlend:	.long 0
 
 ppuState:
 vramAddr:		.long 0
@@ -36,7 +32,6 @@ scrollX:		.long 0
 scrollY:		.long 0
 scrollYTemp:	.long 0
 sprite0Y:		.long 0
-readTemp:		.long 0
 bg0Cnt:			.long 0
 ppuBusLatch:	.byte 0
 sprite0X:		.byte 0
@@ -47,14 +42,14 @@ ppuCtrl1:		.byte 0
 ppuStat:		.byte 0
 ppuOamAdr:		.byte 0
 ppuCtrl0Frame:	.byte 0
+readTemp:		.byte 0
 rp2C02Revision:	.byte 0
-unusedAlign:	.skip 2
+unusedAlign:	.skip 1
 
 loopy_t:		.long 0
 loopy_x:		.long 0
 loopy_y:		.long 0
 loopy_v:		.long 0
-loopy_shift:	.long 0
 
 vromMask:		.long 0
 vromBase:		.long 0
@@ -62,16 +57,17 @@ palSyncLine:	.long 0
 
 pixStart:		.long 0
 pixEnd:			.long 0
+unused:			.long 0
 
-newFrameHook:	.long 0
-endFrameHook:	.long 0
-hblankHook:		.long 0
-ppuChrLatch:	.long 0
 nesChrMap:		.space 8*2
 ppuOAMMem:		.space 64*4
 paletteMem:		.space 32	;@ NES $3F00-$3F1F
 
 ppuIrqFunc:		.long 0
+newFrameHook:	.long 0
+endFrameHook:	.long 0
+scanlineHook:	.long 0
+ppuChrLatch:	.long 0
 unusedAlign2:	.skip 8
 rp2C02End:
 
