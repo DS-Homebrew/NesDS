@@ -275,7 +275,8 @@ spChrB:
 
 
 ;@------------------------
-chrLatch2:
+chrLatch2:			;@ r0 = tile#
+;@------------------------
 	ldr r1, =0x1FF0
 	and r0, r0, r1
 	ldrb_ r1, latchA

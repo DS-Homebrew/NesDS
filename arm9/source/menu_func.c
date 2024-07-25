@@ -21,7 +21,7 @@
 #include "3dsvc_pal.h"
 #include "nespvm_pal.h"
 #include "NesMachine.h"
-#include "RP2C02.h"
+#include "cpu.h"
 
 extern u32 agb_bg_map[];
 
@@ -110,7 +110,7 @@ void menu_game_pal(void)
 {
 	menu_stat = 3;
 	__emuflags |= PALTIMING;
-	ntsc_pal_reset();
+	ntsc_pal_reset(__emuflags);
 	consoletext(64*11 + 48, "PAL ", 0x1000);
 }
 
@@ -118,7 +118,7 @@ void menu_game_ntsc(void)
 {
 	menu_stat = 3;
 	__emuflags &= ~PALTIMING;
-	ntsc_pal_reset();
+	ntsc_pal_reset(__emuflags);
 	consoletext(64*11 + 48, "NTSC", 0x1000);
 }
 

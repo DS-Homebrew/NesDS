@@ -160,7 +160,7 @@ void do_gesture(void)
 	last_pos = gesture_pos;
 }
 
-//get a gesture, shonw at *out*.
+//get a gesture, shown at *out*.
 int get_gesture(int out)
 {
 	if(!(IPC_KEYS & KEY_TOUCH) && touchstate != 4) {

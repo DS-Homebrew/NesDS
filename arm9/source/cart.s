@@ -205,7 +205,10 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	@DEBUGINFO CARTFLAG r1
 
 	ldr r0,=void
+	str_ r0,newFrameHook
+	str_ r0,endFrameHook
 	str_ r0,scanlineHook	@ no mapper irq
+	str_ r0,ppuChrLatch
 
 	mov r0,#0x0				@ clear nes ram		reset value changed from 0xFFFFFFFF to 0x0
 	mov r1,m6502zpage		@ m6502zpage,=NES_RAM
@@ -226,12 +229,6 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	add r2,r2,#0x100
 	mov r0,#0x7d
 	strb r0,[r1,r2]			@ for "Low G Man".
-
-	ldr r1,=void
-	str_ r1, newFrameHook
-	str_ r1, endFrameHook
-	@str_ r1, hblankHook
-	str_ r1, ppuChrLatch
 
 	ldr r0, =0x4000004
 	mov r1, #0x8

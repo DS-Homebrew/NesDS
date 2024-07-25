@@ -30,7 +30,7 @@ void setbarcodedata(char *code, int len) {
 		return;
 	}*/
 
-	int	i, j, count = 0;
+	int i, j, count = 0;
 
 	for (i = 0; i < len; i++) {
 		code[i] = code[i]-'0';
@@ -44,7 +44,7 @@ void setbarcodedata(char *code, int len) {
 	barcode_data[count++] = 0x08;
 	barcode_data[count++] = 0x00;
 
-	int	sum = 0;
+	int sum = 0;
 
 	switch (len) {
 		case 13:

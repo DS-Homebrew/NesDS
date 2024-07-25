@@ -11,18 +11,19 @@
 	.global rev_data
 @renderData = 0x6040000 - 4
 
-tileOfs 	= tempData
-ntblAdr 	= tileOfs + 4
-attrAdr 	= ntblAdr + 4
-ntbl_x  	= attrAdr + 4
-attrsft 	= ntbl_x + 4
-pNTBL 		= attrsft + 4
-pScn		= pNTBL + 4
-pBGw		= pScn + 4
-attr		= pBGw + 4
-BGwrite		= attr + 4
-SPwrite		= BGwrite + 4
-Bit2Rev		= SPwrite + 4
+	.struct tempData
+tileOfs:	.word 0
+ntblAdr:	.word 0
+attrAdr:	.word 0
+ntbl_x:		.word 0
+attrsft:	.word 0
+pNTBL: 		.word 0
+pScn:		.word 0
+pBGw:		.word 0
+attr:		.word 0
+BGwrite:	.word 0
+SPwrite:	.word 0
+Bit2Rev:	.word 0
 
 	.section .text
 ;@-----------------------------------------------------------------------------
@@ -54,8 +55,6 @@ scanlinestart:
 	and r2, r2, #0x7000
 	mov r2, r2, lsr#12
 	str_ r2, loopy_y		;@ loopy_y = (loopy_v&0x7000)>>12
-	ldr_ r0, loopy_x
-	str_ r0, loopy_shift	;@ loopy_shift = loopy_x
 	bx lr
 
 ;@-----------------------------------------------------------------------------
@@ -173,7 +172,7 @@ dummy_render:
 	stmfd sp!, {r3-r6}
 	mov r3, #0
 	mov r6, #0
-	adrl_ r4,ppuOAMMem
+	adr_ r4,ppuOAMMem
 	ldrb_ r5, scanline
 	sub r5, r5, #1
 
@@ -217,7 +216,7 @@ sp_render:
 
 	mov r12, #0				;@ spmax = 0
 					;@ r11 = spraddr, r9 = sp_y, r8 = sp_h, r7 = chr_h, r6 = chr_l, r5 = sp, r4 = i
-	adrl_ r5,ppuOAMMem		;@ r5 = sp
+	adr_ r5,ppuOAMMem		;@ r5 = sp
 	ldrb_ r1, ppuCtrl0
 	tst r1, #0x20
 	movne r8, #15			;@ r8 = sp_h = (PPUREG[0]&PPU_SP16_BIT)?15:7
@@ -304,11 +303,11 @@ sp_noh:
 hitCheck:
 	ldrb r0, [r5, #3]		;@ r0 = sp->x
 	stmfd sp!, {r6-r7}
-	ldr_ r1, loopy_shift	;@ r1 = loopy_shift
+	ldr_ r1, loopy_x		;@ r1 = loopy_x
 	add r2, r0, r1
-	mov r6, r2, lsr#3		;@ r6 = BGpos = ((sp->x&0xF8)+((loopy_shift+(sp->x&7))&8))>>3
+	mov r6, r2, lsr#3		;@ r6 = BGpos = ((sp->x&0xF8)+((loopy_x+(sp->x&7))&8))>>3
 	and r2, r2, #7
-	rsb r7, r2, #8			;@ r7 = BGsft = 8-((loopy_shift+sp->x)&7)
+	rsb r7, r2, #8			;@ r7 = BGsft = 8-((loopy_x+sp->x)&7)
 
 	ldr_ r2, BGwrite
 	ldrb r0, [r2, r6]!
@@ -355,11 +354,11 @@ sp_mask:
 ;@ BG > SP priority
 	ldrb r0, [r5, #3]		;@ r0 = sp->x
 	stmfd sp!, {r6-r7}
-	ldr_ r1, loopy_shift	;@ r1 = loopy_shift
+	ldr_ r1, loopy_x		;@ r1 = loopy_x
 	add r2, r0, r1
-	mov r6, r2, lsr#3		;@ r6 = BGpos = ((sp->x&0xF8)+((loopy_shift+(sp->x&7))&8))>>3
+	mov r6, r2, lsr#3		;@ r6 = BGpos = ((sp->x&0xF8)+((loopy_x+(sp->x&7))&8))>>3
 	and r2, r2, #7
-	rsb r7, r2, #8			;@ r7 = BGsft = 8-((loopy_shift+sp->x)&7)
+	rsb r7, r2, #8			;@ r7 = BGsft = 8-((loopy_x+sp->x)&7)
 
 	ldr_ r2, BGwrite
 	ldrb r0, [r2, r6]!
@@ -374,7 +373,7 @@ sp_attr:
 	stmfd sp!, {r4, r8-r9}
 	ldrb r3, [r5, #2]
 	and r0, r3, #3
-	ldr r1, =nes_palette + 16
+	adr_ r1,paletteMem + 16
 	add r8, r1, r0, lsl#2	;@ r8 = pSPPAL = &SPPAL[(sp->attr&SP_COLOR_BIT)<<2]
 	ldrb r0, [r5, #3]
 	ldr_ r1, pScn
@@ -450,7 +449,7 @@ bg_render:
 
 	ldr r1, =renderData
 	add r1, r1, r0, lsl#8
-	ldr r0, =nes_palette
+	adr_ r0,paletteMem
 	ldrb r0, [r0]
 	orr r0, r0, r0, lsl#8
 	orr r0, r0, r0, lsl#16
@@ -466,9 +465,9 @@ bg_normal:
 
 	ldr r1, =renderData
 	add r1, r1, r0, lsl#8	;@ r1 = renderData
-	ldr_ r2, loopy_shift	;@ r2 = loopy_shift
+	ldr_ r2, loopy_x		;@ r2 = loopy_x
 	@rsb r2, r2, #8
-	sub r1, r1, r2			;@ r1 = pScn = lpScanline+(8-loopy_shift)
+	sub r1, r1, r2			;@ r1 = pScn = lpScanline+(8-loopy_x)
 	str_ r1, pScn			;@ Store pScn
 
 	ldrb_ r1, ppuCtrl0
@@ -577,7 +576,7 @@ bgnocache:
 	ldr_ r1, BGwrite
 	strb r0, [r1, r8]
 
-	ldr r5, =nes_palette
+	adr_ r5,paletteMem
 	add r5, r5, r6			;@ r5 = pBGPAL
 	and r0, r11, #0xAA
 	and r1, r12, #0xAA
@@ -591,7 +590,7 @@ bgnocache:
 	cmp r8, #0
 	bne 0f					;@ normal
 
-	ldrb_ r11, loopy_shift
+	ldrb_ r11, loopy_x
 	cmp r11, #1
 
 	ldrccb r0, [r5, r3, lsr#6]	;@ r0 = pBGPAL[(c1>>6)]
@@ -693,7 +692,7 @@ bg_render_bottom:
 ;@--------------------------------------------
 	stmfd sp!,{r0-r2, lr}
 	ldr r1,=renderbgdata
-	ldr r2,=nes_palette
+	adr_ r2,paletteMem
 	ldrb r2, [r2]			;@ Get bg color #0
 	orr r2, r2, r2, lsl#8
 	orr r2, r2, r2, lsl#16
