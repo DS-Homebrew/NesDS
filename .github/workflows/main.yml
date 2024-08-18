@@ -2,15 +2,9 @@ name: Build nesDS
 
 on:
   push:
-    branches: ["*"]
-    paths-ignore:
-      - 'README.md'
+    branches: ["master"]
   pull_request:
-    branches: ["*"]
-    paths-ignore:
-      - 'README.md'
-  release:
-    types: [created]
+    branches: ["master"]
 
 jobs:
   build:
@@ -22,10 +16,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Install tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install p7zip-full python -y
       - name: Setup environment
         run: git config --global safe.directory '*'
       - name: Build & Package nesDS
@@ -37,12 +27,8 @@ jobs:
           mkdir nesDS/
           cp nesDS.nds nesDS/
           cp nesDS.cia nesDS/
-          7z a nesDS.7z nesDS/
-
-          mkdir -p ~/artifacts
-          cp nesDS.7z ~/artifacts
       - name: Publish build to GH Actions
         uses: actions/upload-artifact@v4
         with:
-          path: ~/artifacts/*
+          path: nesDS
           name: build
