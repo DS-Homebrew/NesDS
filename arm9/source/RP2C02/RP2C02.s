@@ -1046,6 +1046,8 @@ writeBG:		;@ loadcart jumps here
 	and r1,r1,#0xf000
 	orr r1,r0,r1
 	strh r1,[r2,addy]	;@ Write tile#
+		cmp r0,#0xfd	@mapper 9 shit..
+		bhs mapper9BGcheck
 	bx lr
 writeAttrib:
 	stmfd sp!,{r3,r4,lr}
