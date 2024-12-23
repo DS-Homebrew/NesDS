@@ -348,17 +348,17 @@ void menu_preset_func(void) {
 	}
 	else if(lastbutton_cnt == 1) {
 	ad_scale=0x10000;
-	ad_ypos=-0x00280000;
+	ad_ypos=-0x00290000;
 	rescale(ad_scale,ad_ypos);
 	}
 	else if(lastbutton_cnt == 2) {
 	ad_scale=0x10000;
-	ad_ypos=-0x00180000;
+	ad_ypos=-0x00190000;
 	rescale(ad_scale,ad_ypos);
 	}
 	else if(lastbutton_cnt == 3) {
 	ad_scale=0x10000;
-	ad_ypos=-0x00200000;
+	ad_ypos=-0x00210000;
 	rescale(ad_scale,ad_ypos);
 	}
 	else if(lastbutton_cnt == 4) {
@@ -373,12 +373,12 @@ void menu_preset_func(void) {
 	}
 	else if(lastbutton_cnt == 6) {
 	ad_scale=0xf000;
-	ad_ypos=-0x000f0000;
+	ad_ypos=-0x000d0000;
 	rescale(ad_scale,ad_ypos);
 	}
 	else if(lastbutton_cnt == 7) {
 	ad_scale=0xf000;
-	ad_ypos=-0x00170000;
+	ad_ypos=-0x00110000;
 	rescale(ad_scale,ad_ypos);
 	}
 	else if(lastbutton_cnt == 8) {
@@ -390,6 +390,16 @@ void menu_preset_func(void) {
 	ad_scale=0xe000;
 	ad_ypos=-0x000c0000;
 	rescale(ad_scale,ad_ypos);
+	}
+	else if(lastbutton_cnt == 10) {
+	ad_scale=0xf000;
+	ad_ypos=-0x00150000;
+	rescale(ad_scale,ad_ypos);
+	}	
+	else if(lastbutton_cnt == 11) {
+	ad_scale=0xf000;
+	ad_ypos=-0x00190000;
+	rescale(ad_scale,ad_ypos);
 	}	menu_stat = 3;
 }
 
@@ -400,15 +410,17 @@ struct menu_item menu_preset_items[] = {
 	{.name = "+24\rNo\rScale", .type = 1, .x = 24, .y = 6, .w = 6, .h = 3, .func = menu_preset_func},
 	{.name = "Pocket\rNES\rFull", .type = 1, .x = 0, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
 	{.name = "All\r \rScaled", .type = 1, .x = 8, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
-	{.name = "Middle\rMedium\rScale", .type = 1, .x = 16, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
-	{.name = "Bottom\rMedium\rScale", .type = 1, .x = 24, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
-	{.name = "Default\r Scale", .type = 1, .x = 7, .y = 18, .w = 7, .h = 2, .func = menu_preset_func},
-	{.name = "Default\r Lower", .type = 1, .x = 16, .y = 18, .w = 7, .h = 2, .func = menu_preset_func},
+	{.name = "+4:-12\rMedium\rScale", .type = 1, .x = 16, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "+8:-8\rMedium\rScale", .type = 1, .x = 24, .y = 12, .w = 6, .h = 3, .func = menu_preset_func},
+	{.name = "Default\r Scale", .type = 1, .x = 0, .y = 18, .w = 7, .h = 2, .func = menu_preset_func},
+	{.name = "Default\r Lower", .type = 1, .x = 9, .y = 18, .w = 7, .h = 2, .func = menu_preset_func},
+	{.name = "+12\rMed", .type = 1, .x = 19, .y = 18, .w = 3, .h = 2, .func = menu_preset_func},
+	{.name = "+16\rMed", .type = 1, .x = 24, .y = 18, .w = 3, .h = 2, .func = menu_preset_func},
 };
 
 struct menu_unit menu_preset = {
 	.top = "Preset",
-	.subcnt = 10,
+	.subcnt = 12,
 	.item = menu_preset_items,
 };
 
