@@ -9,7 +9,7 @@ export TARGET := nesDS
 export TOPDIR := $(CURDIR)
 
 # GAME_ICON is the image used to create the game icon, leave blank to use default rule
-GAME_ICON :=
+GAME_ICON := icon.bmp
 
 # specify a directory which contains the nitro filesystem
 # this is relative to the Makefile
