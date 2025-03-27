@@ -693,5 +693,5 @@ void nesmain()
 
 	fifoSetValue32Handler(FIFO_USER_08, fifointerrupt, 0);		//use the last IPC channel to comm..
 	irqSet(IRQ_TIMER1, soundinterrupt);
-	//irqSet(IRQ_LID, lidinterrupt);
+	irqSet(IRQ_LID, lidinterrupt);
 }
