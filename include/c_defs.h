@@ -1,3 +1,4 @@
+#pragma once
 #ifndef C_DEFS_H
 #define C_DEFS_H
 
@@ -10,30 +11,31 @@
 #define NES_RAM nes_region
 #define NES_SRAM NES_RAM + 0x800
 //nes_region
-#define MAX_IPS_SIZE 0x80000		//actually, the ips file won't be larger than 512kB.
-#define ROM_MAX_SIZE 0x2b0000		//2,7MB free rom space
-#define MAXFILES 1024
+#define MAX_IPS_SIZE 		0x80000		//actually, the ips file won't be larger than 512kB.
+#define ROM_MAX_SIZE 		0x2b0000		//2,7MB free rom space
+#define MAXFILES 			1024
 
-#define VRAM_ABCD (*(vu32*)0x4000240)
-#define VRAM_EFG (*(vu32*)0x4000244)
-#define VRAM_HI (*(vu16*)0x4000248)
+#define VRAM_ABCD 			(*(vu32*)0x4000240)
+#define VRAM_EFG 			(*(vu32*)0x4000244)
+#define VRAM_HI 			(*(vu16*)0x4000248)
 
-#undef IPC		//IPC_* also in equates.h, keep both updated
-#define IPC ((u8 *)ipc_region)
-#define IPC_TOUCH_X	(*(vu32*)(IPC+0))
-#define IPC_TOUCH_Y	(*(vu32*)(IPC+4))
-#define IPC_KEYS	(*(vu32*)(IPC+8))
-#define IPC_ALIVE	(*(vu32*)(IPC+12))			//unused anymore
-#define IPC_MEMTBL  ((char **)(IPC+16))
-#define IPC_REG4015 (*(char *)(IPC+32))			//arm7 should not write this value but to use fifo. channel 5
-#define IPC_APUIRQ  (*(char *)(IPC+33))			//not supported.
-#define IPC_RAWPCMEN (*(char *)(IPC+34))			//not supported.
-#define IPC_APUW (*(volatile int *)(IPC+40))		//apu write start
-#define IPC_APUR (*(volatile int *)(IPC+44))		//apu write start
-#define IPC_MAPPER (*(volatile int *)(IPC+48))		//nes rom mapper
-#define IPC_PCMDATA		(unsigned char *)(IPC+128)	//used for raw pcm.
-#define IPC_APUWRITE ((unsigned int *)(IPC+512))		//apu write start
-#define IPC_AUDIODATA ((unsigned int *)(IPC+4096 + 512))	//audio data...
+//IPC_* also in equates.h, KEEP BOTH UPDATED
+#undef IPC
+#define IPC 				((u8 *)ipc_region)
+#define IPC_TOUCH_X			(*(vu32*)(IPC+0))
+#define IPC_TOUCH_Y			(*(vu32*)(IPC+4))
+#define IPC_KEYS			(*(vu32*)(IPC+8))
+#define IPC_ALIVE			(*(vu32*)(IPC+12))					//unused anymore
+#define IPC_MEMTBL  		((char **)(IPC+16))
+#define IPC_REG4015 		(*(char *)(IPC+32))					//arm7 should not write this value but to use fifo. channel 5
+#define IPC_APUIRQ  		(*(char *)(IPC+33))					//not supported.
+#define IPC_RAWPCMEN 		(*(char *)(IPC+34))					//not supported.
+#define IPC_APUW 			(*(volatile int *)(IPC+40))			//apu write start
+#define IPC_APUR 			(*(volatile int *)(IPC+44))			//apu write start
+#define IPC_MAPPER 			(*(volatile int *)(IPC+48))			//nes rom mapper
+#define IPC_PCMDATA			(u8 *)(IPC+128)						//used for raw pcm.
+#define IPC_APUWRITE 		((unsigned int *)(IPC+512))			//apu write start
+#define IPC_AUDIODATA 		((unsigned int *)(IPC+4096 + 512))	//audio data...
 
 //not implemented yet.
 
@@ -41,13 +43,17 @@
 #define KEY_TOUCH 0x1000
 #define KEY_CLOSED 0x2000
 
-#define FIFO_WRITEPM 1
-#define FIFO_APU_PAUSE 2
-#define FIFO_UNPAUSE 3
-#define FIFO_SETVOLUME 4
-#define FIFO_APU_RESET 5
-#define FIFO_HIBERNATE 6
-#define FIFO_SOUND_RESET 7
+// #define FIFO_WRITEPM 		1
+// #define FIFO_APU_PAUSE 		2
+// #define FIFO_UNPAUSE 		3
+// #define FIFO_APU_RESET 		4
+// #define FIFO_SOUND_RESET 	5
+// #define FIFO_APU_PAL 	 	6
+// #define FIFO_APU_NTSC     	7
+// #define FIFO_APU_SWAP 		8
+// #define FIFO_APU_NORM 		9
+// #define FIFO_SOUND_UPDATE	10
+// #define FIFO_AUDIO_FILTER 	11
 
 #ifdef ARM9
 
@@ -82,11 +88,18 @@ void consoleinit(void);
 #define hex24(a,b) hex(a,b,5)
 #define hex32(a,b) hex(a,b,7)
 void hex(int offset,int d,int n);
+#define dec1(a,b) dec(a,b,1)
+#define dec10(a,b) dec(a,b,2)
+#define dec100(a,b) dec(a,b,3)
+#define dec1000(a,b) dec(a,b,4)
+void dec(int offset, int d, int n);
 void consoletext(int offset,char *s,int color);
 void menutext(int line,char *s,int selected);
 void clearconsole(void);
 void hideconsole(void);
 void showconsole(void);
+void soundHardReset();
+void SoundUpdate();
 
 //subscreen.c
 int debugdump(void);
@@ -162,7 +175,7 @@ int do_touchstrings(touchstring*,int pushstate);
 void load_sram(void);
 void save_sram(void);
 void write_savestate(int num);
-void read_savestate(int num);
+u32 read_savestate(u32 num);
 void ARM9sleep(void);
 void reg4015interrupt(u32 msg, void *none);
 void fdscmdwrite(u8 diskno);
@@ -195,26 +208,58 @@ extern u32 __nsfInit;
 extern u32 __nsfSongNo;
 extern u32 __nsfSongMode;
 
+// NTSC/PAL bits definitions (NTSC_PALbits)
+#define NTSC_TUNE           0x00 // If clear, this is an NTSC tune
+#define PAL_TUNE            0x01 // If set, this is a PAL tune
+#define DUAL_NTSC_PAL_TUNE  0x02 // If set, this is a dual PAL/NTSC tune
+// Bits 3-7 are reserved and must be 0
+
+// Extra sound chip select definitions (ExtraChipSelect)
+#define NO_EXTRA_CHIP       0x00
+#define VRC6_AUDIO          0x01
+#define VRC7_AUDIO          0x02
+#define FDS_AUDIO           0x04
+#define MMC5_AUDIO          0x08
+#define NAMCO_163_AUDIO     0x10
+#define SUNSOFT_5B_AUDIO    0x20
+#define VT02P_AUDIO         0x40
+
 extern struct nsfHeader
 {
-	char	ID[5];
-	char	Version;
-	char	TotalSong;
-	char	StartSong;
-	unsigned short	LoadAddress;
-	unsigned short	InitAddress;
-	unsigned short	PlayAddress;
-	char	SongName[32];
-	char	ArtistName[32];
-	char	CopyrightName[32];
-	unsigned short	SpeedNTSC;
-	char	BankSwitch[8];
-	unsigned short	SpeedPAL;
-	char	NTSC_PALbits;
-	char	ExtraChipSelect;
-	char	Expansion[4];		// must be 0
+    char ID[5];                     // 'N','E','S','M',$1A (denotes an NES sound format file)
+    char Version;                   // Version number $01 (or $02 for NSF2)
+    char TotalSong;                 // Total songs (1=1 song, 2=2 songs, etc)
+    char StartSong;                 // Starting song (1=1st song, 2=2nd song, etc)
+    unsigned short LoadAddress;     // (lo, hi) load address of data ($8000-FFFF)
+    unsigned short InitAddress;     // (lo, hi) init address of data ($8000-FFFF)
+    unsigned short PlayAddress;     // (lo, hi) play address of data ($8000-FFFF)
+    char SongName[32];              // The name of the song, null terminated
+    char ArtistName[32];            // The artist, if known, null terminated
+    char CopyrightName[32];         // The copyright holder, null terminated
+    unsigned short SpeedNTSC;       // (lo, hi) Play speed, in 1/1000000th sec ticks, NTSC (see text)
+    char BankSwitch[8];             // Bankswitch init values (see text, and FDS section)
+    unsigned short SpeedPAL;        // (lo, hi) Play speed, in 1/1000000th sec ticks, PAL (see text)
+    char NTSC_PALbits;              // PAL/NTSC bits
+                                     // bit 0: if clear, this is an NTSC tune
+                                     // bit 1: if set, this is a PAL tune
+                                     // bit 2: if set, this is a dual PAL/NTSC tune
+                                     // bits 3-7: reserved, must be 0
+    unsigned char ExtraChipSelect;  // Extra Sound Chip Support
+                                     // bit 0: if set, this song uses VRC6 audio
+                                     // bit 1: if set, this song uses VRC7 audio
+                                     // bit 2: if set, this song uses FDS audio
+                                     // bit 3: if set, this song uses MMC5 audio
+                                     // bit 4: if set, this song uses Namco 163 audio
+                                     // bit 5: if set, this song uses Sunsoft 5B audio
+                                     // bit 6: if set, this song uses VT02+ audio
+                                     // bit 7: reserved, must be zero
+    char Expansion[4];              // Reserved for NSF2 (must be 0)
 } nsfHeader;
 
+
+void EMU_VBlank(void);
+void EMU_Run(void);
+void NSF_Run(void);
 void initcart(char *rom);//,int flags);
 void NES_reset(void);		//cart.s
 int savestate(u32);

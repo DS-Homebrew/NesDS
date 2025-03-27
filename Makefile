@@ -5,22 +5,19 @@ ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
-export TARGET := nesDS
+include $(DEVKITARM)/ds_rules
+export TARGET := NesDS+
 export TOPDIR := $(CURDIR)
+export LIBFAT := $(DEVKITARM)/libfat
+export LIBFILESYSTEM := $(DEVKITARM)/libfilesystem
 
 # GAME_ICON is the image used to create the game icon, leave blank to use default rule
-GAME_ICON := icon.bmp
-
-# specify a directory which contains the nitro filesystem
-# this is relative to the Makefile
-NITRO_FILES :=
+GAME_ICON := $(CURDIR)/icon.bmp
 
 # These set the information text in the nds file
-GAME_TITLE	:=	nesDS
+GAME_TITLE	:=	NesDS+
 GAME_SUBTITLE1	:=	Version 2.0
-GAME_SUBTITLE2	:=	Enjoy yourself!
-
-include $(DEVKITARM)/ds_rules
+GAME_SUBTITLE2	:=	Better Sound!
 
 .PHONY: checkarm7 checkarm9 clean
 

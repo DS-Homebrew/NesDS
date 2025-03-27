@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "c_defs.h"
+#include "SoundIPC.h"
 #include "cpu.h"
 #include "NesMachine.h"
 
@@ -188,13 +189,14 @@ int main(int _argc, char **_argv) {
 					__nsfSongNo = 0;
 				}
 			}		
-			if(keydown & KEY_UP) {
+			if(keydown & KEY_A) {
 				__nsfPlay = 1;
 				__nsfInit = 1;
+				soundHardReset();
 			}		
-			if(keydown & KEY_DOWN) {
+			if(keydown & KEY_B) {
 				__nsfPlay = 0;
-				Sound_reset();
+				soundHardReset();
 			}
 		}
 			
@@ -269,7 +271,13 @@ void play() {
 					lastsave = maxsaves - 1;
 				loadstate(freemem_start + SAVESTATESIZE * lastsave);
 				EMU_Run();
+			    fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+					//if(is_FF_RW_Muted()) // TODO: Add optional mute for rewind 
+				//fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
+					// Rewind_Anim();
 			}
+			//fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+			fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 		}
 	} else {
 		if (__emuflags & SOFTRENDER) {

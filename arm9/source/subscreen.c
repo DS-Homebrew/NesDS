@@ -25,6 +25,39 @@ char *fdsdbg[]={
 "diskno", "makerid", "gameid",
 };
 
+// Function to get the sound mode string based on ExtraChipSelect value
+const char* getSoundModeString(unsigned char extraChipSelect) 
+{
+    if (extraChipSelect == NO_EXTRA_CHIP) 
+	{
+        return "  None";
+    } else {
+        // Check each individual bit to determine the sound mode
+        if (extraChipSelect & VRC6_AUDIO) {
+            return " VRC6";
+        } else if (extraChipSelect & VRC7_AUDIO) {
+            return " VRC7";
+        } else if (extraChipSelect & FDS_AUDIO) {
+            return " FDS";
+        } else if (extraChipSelect & MMC5_AUDIO) {
+            return " MMC5";
+        } else if (extraChipSelect & NAMCO_163_AUDIO) {
+            return " Namco 163";
+        } else if (extraChipSelect & SUNSOFT_5B_AUDIO) {
+            return " Sunsoft 5B";
+        } else if (extraChipSelect & VT02P_AUDIO) {
+            return " VT02+";
+        } else {
+            return " Unknown";
+        }
+    }
+}
+
+// TODO: ADD Graphical Objects
+const char* getPlayStatusIcon(unsigned char playingFlag) {
+    return playingFlag == 0x01 ? ">" : "  ";
+}
+
 int debugdump() {
 /*
 	int i;
@@ -66,30 +99,42 @@ int debugdump() {
 #endif
 	if(1 && (__emuflags & NSFFILE)) {
 		u32 *ip=(u32*)&globals.mapperData;
-		consoletext	(64 * 4 + 0 * 32, "version", 0);
+		consoletext	(64 * 4 + 0 * 32, "Version:", 0);
 		hex8		(64 * 4 + 0 * 32 + 18, nsfHeader.Version);
 		consoletext	(64 * 4 + 1 * 32, "startson", 0);
 		hex8		(64 * 4 + 1 * 32 + 18, nsfHeader.StartSong);
 		consoletext	(64 * 4 + 2 * 32, "totalsong", 0);
-		hex8		(64 * 4 + 2 * 32 + 18, nsfHeader.TotalSong);
+		dec		(64 * 4 + 2 * 32 + 18, (nsfHeader.TotalSong),2);
 		consoletext	(64 * 4 + 3 * 32, "LoadAddr", 0);
 		hex16		(64 * 4 + 3 * 32 + 18, nsfHeader.LoadAddress);
 		consoletext	(64 * 4 + 4 * 32, "InitAddr", 0);
 		hex16		(64 * 4 + 4 * 32 + 18, nsfHeader.InitAddress);
 		consoletext	(64 * 4 + 5 * 32, "PlayAddr", 0);
 		hex16		(64 * 4 + 5 * 32 + 18, nsfHeader.PlayAddress);
-		for(i=0;i<10;i++) {
-			hex32(64*7+i*32,ip[i]);
-		}
+
+		// NSF Info
+		consoletext	(64 * 4 + 8 * 32, "Name:", 0);
+		consoletext	(63 * 4 + 8 * 32 + 18, nsfHeader.SongName, 0);
+		consoletext	(64 * 4 + 10 * 32, "Artist:", 0);
+		consoletext	(63 * 4 + 10 * 32 + 20, nsfHeader.ArtistName, 0);
+		consoletext	(64 * 4 + 12 * 32, "CopyRight:", 0);
+		consoletext	(63 * 4 + 12 * 32 + 25, nsfHeader.CopyrightName, 0);
+		consoletext	(64 * 4 + 14 * 32, "XtraChip:", 0);
+		consoletext	(63 * 4 + 14 * 32 + 22, (char*)getSoundModeString(nsfHeader.ExtraChipSelect), 0);
+
+		// consoletext	(64 * 4 + 14 * 32, "Expansion:", 0);
+		// consoletext	(63 * 4 + 14 * 32 + 18, nsfHeader.Expansion, 0);
 		
-		consoletext	(64 * 16 + 0 * 32, "songno", 0);
-		hex16		(64 * 16 + 0 * 32 + 18, __nsfSongNo);
-		consoletext	(64 * 16 + 1 * 32, "songmode", 0);
-		hex16		(64 * 16 + 1 * 32 + 18, __nsfSongMode);
-		consoletext	(64 * 16 + 2 * 32, "play", 0);
-		hex16		(64 * 16 + 2 * 32 + 18, __nsfPlay);
-		consoletext	(64 * 16 + 3 * 32, "init", 0);
-		hex16		(64 * 16 + 3 * 32 + 18, __nsfInit);
+		// //for debugging
+		// for(i=0;i<15;i++) {
+		// 	hex32(64*7+i*32,ip[i]);
+		// }
+		consoletext	(64 * 16 + 0 * 32, "Song No:", 0);
+		dec		(64 * 16 + 0 * 32 + 18, (__nsfSongNo + 1),2);
+		consoletext	(64 * 16 + 1 * 32, "Mode:", 0);
+		hex8		(64 * 16 + 1 * 32 + 18, __nsfSongMode);
+		consoletext	(64 * 16 + 2 * 32, "Playing:", 0);
+		consoletext		(64 * 16 + 2 * 32 + 18, (char*)getPlayStatusIcon(__nsfPlay), 0);
 
 		
 		for(i = 0; i < 4; i++) {

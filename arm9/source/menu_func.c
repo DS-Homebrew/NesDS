@@ -20,6 +20,7 @@
 #include "nesclassic_pal.h"
 #include "3dsvc_pal.h"
 #include "nespvm_pal.h"
+#include "SoundIPC.h"
 #include "NesMachine.h"
 #include "cpu.h"
 
@@ -58,19 +59,28 @@ void menu_file_loadrom(void)
 void menu_file_savestate(void)
 {
 	menu_stat = 3;
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
 	write_savestate(slots_num);
+	fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 }
 
 void menu_file_loadstate(void)
 {
 	menu_stat = 3;
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
 	read_savestate(slots_num);
+	fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 }
 
 void menu_file_savesram(void)
 {
 	menu_stat = 3;
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
 	save_sram();
+	fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 }
 
 void menu_file_slot(void)
@@ -100,26 +110,7 @@ void menu_file_start(void)
 
 void menu_game_start(void)
 {
-	consoletext(64*11 + 34, "TIMING:", 0);
-	consoletext(64*11 + 48, (__emuflags&PALTIMING)? "PAL ":"NTSC", 0x1000);
-	consoletext(64*18 + 24, "ALL:", 0);
-	consoletext(64*18 + 32, (__emuflags&ALLPIXELON)? "YES":"NO ", 0x1000);
-}
-
-void menu_game_pal(void)
-{
-	menu_stat = 3;
-	__emuflags |= PALTIMING;
-	ntsc_pal_reset(__emuflags);
-	consoletext(64*11 + 48, "PAL ", 0x1000);
-}
-
-void menu_game_ntsc(void)
-{
-	menu_stat = 3;
-	__emuflags &= ~PALTIMING;
-	ntsc_pal_reset(__emuflags);
-	consoletext(64*11 + 48, "NTSC", 0x1000);
+ return;
 }
 
 void show_all_pixel(void)
@@ -308,13 +299,12 @@ void menu_input_start(void)
 	lastbutton = NULL;
 }
 
-
 char *blendnames[] = {
-	"Flicker", "None   ", "","\x7F-lerp ",
+	"Flicker", "  No   ", "","\x7F-lerp ",
 };
 
 char *rendernames[] = {
-	"SP-Perframe", "SP-Pertile ", "Pure-Soft   "
+	"Per Frame", "Per Tile  ", " Software "
 };
 
 char *brightxt[] = {
@@ -322,22 +312,42 @@ char *brightxt[] = {
 };
 
 char *paltxt[] = {
-	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","FireBrandX ","FBXDigiPrim","FBX NES PVM","Wii NES VC ","NES Classic","3DS NES VC "
+	"Loopy's Original","AsquireReal","ChrisCovell",
+	"CrashMan","MattConte","MESS Pal","PasoFami/99",
+	"Quor's Pal ","FireBrandX ","FBX DigPrime",
+	"FBX NES PVM","NES VC","NES Classic Mini","3DS VirtualC"
 };
 
+
+// Console text labels for the Display Settings Page
 void menu_display_start(void)
 {
-	consoletext(64*12 + 4, "Blend:", 0);
-	consoletext(64*12 + 16, blendnames[__emuflags&3], 0x1000);
-	consoletext(64*19 + 4, "Render Type:", 0);
-	consoletext(64*19 + 28, rendernames[(__emuflags >> 6)&3], 0x1000);
-	consoletext(64*4 + 42, "Frame-skip\rPureSoft:", 0);
-	hex8(64*5 + 30*2, soft_frameskip - 1);
-	consoletext(64*11 + 23*2, "Palette\rsync:", 0);
-	consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000);
 	consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
 	hex8(64*8 + 36, palette_value);
 	consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
+	consoletext(64*18 + 24, "ALL:", 0);
+	consoletext(64*18 + 32, (__emuflags&ALLPIXELON)? "YES":"NO ", 0x1000);
+}
+
+// Console text labels for the Emulation Settings Page
+void menu_emu_start(void)
+{   // consoletext(*y + x,)
+	// Shows current setting for Regional timing
+	consoletext(64*4 + 2, "    <Region>", 0);
+	consoletext(64*6 + 13, (__emuflags&PALTIMING)? " PAL":" NTSC", 0x1000);
+	
+	//Screen Filtering Label
+	consoletext(64*9 + 2, "<        Filter>", 0);
+	consoletext(64*9 + 5, blendnames[__emuflags&3], 0x1000);
+	// Render Type Label
+	consoletext(64*17 + 1, "<          Render>", 0);
+	consoletext(64*17 + 3, rendernames[(__emuflags >> 6)&3], 0x1000);
+	// SoftRender FrameSkip
+	consoletext(64*22 + 37, "Frameskip", 0);
+	hex8(64*22 + 26, soft_frameskip - 1);
+
+	consoletext(64*6 + 38, __emuflags&PALSYNC ? "Pltte Sync\r    On" : "Pltte Sync\r    Off", 0x1000);
+
 }
 
 void menu_preset_func(void) {
@@ -509,7 +519,77 @@ void menu_display_adjust(void) {
 	}
 }
 
+// TODO: Refactor everything in this code with cases, 
+// lastbutton_cnt only needs to match a consecutive integer...
 void menu_display_br(void)
+{
+	switch (lastbutton_cnt)
+	{
+	// Gamma Setting	
+	case 0: // button count starts from zero
+			gammavalue++;
+		if (gammavalue > 4) 
+		{
+			gammavalue = 0;
+		}
+		consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
+		brightset();
+		break;
+	// Palette Selector	
+	case 1: // button count starts from zero
+		palette_value++;
+		if (palette_value > 0xd) 
+		{
+			palette_value = 0;
+		}
+		hex8(64*8 + 36, palette_value);
+		consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
+		palset();
+		brightset();
+		break;	
+	case 2: //On top
+		__emuflags &=~SCREENSWAP;
+		break;
+	case 3: //On sub
+		__emuflags |= SCREENSWAP;
+		break;
+	case 4:
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_SWAP);
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);	
+		break;
+	case 5: 
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_NORM);
+		fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+		break;
+	}	
+	menu_stat = 3;
+}
+
+// TODO: ARRANGE ALL FUNCTIONS AND MACROS IN THE SAME ORDER AS THE IN-APP MENU
+void menu_emu_pal(void)
+{
+	menu_stat = 3;
+	__emuflags |= PALTIMING;
+	ntsc_pal_reset();
+	consoletext(64*6 + 12, " PAL ", 0x1000);
+
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAL);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+}
+
+void menu_emu_ntsc(void)
+{
+	menu_stat = 3;
+	__emuflags &= ~PALTIMING;
+	ntsc_pal_reset();
+	consoletext(64*6 + 12, " NTSC", 0x1000);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_NTSC);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
+}
+
+// TODO: Refactor everything in this code with cases, 
+// lastbutton_cnt only needs to match a consecutive integer...
+void menu_emu_br(void)
 {
 	if(lastbutton_cnt > 0 && lastbutton_cnt <= 6) {
 		if(lastbutton_cnt <= 3) {
@@ -574,9 +654,9 @@ void menu_display_br(void)
 			}
 		}
 		//consoletext(64*12 + 4, "Blend Type:", 0);
-		consoletext(64*12 + 16, blendnames[__emuflags&3], 0x1000);
+		consoletext(64*9 + 4, blendnames[__emuflags&3], 0x1000);
 		//consoletext(64*19 + 4, "Render Type:", 0);
-		consoletext(64*19 + 28, rendernames[(__emuflags >> 6)&3], 0x1000);
+		consoletext(64*17 + 3, rendernames[(__emuflags >> 6)&3], 0x1000);
 	} else if(lastbutton_cnt < 9) {
 		if(lastbutton_cnt & 1) {
 			if(soft_frameskip > 1)
@@ -586,32 +666,15 @@ void menu_display_br(void)
 			if(soft_frameskip < 0xf)
 				soft_frameskip++;
 		}
-		hex8(64*5 + 30*2, soft_frameskip - 1);
+		hex8(64*22 + 26, soft_frameskip - 1);
 	}
 	else if(lastbutton_cnt == 9) {
 		__emuflags ^= PALSYNC;
 		if(__emuflags & (SOFTRENDER | PALTIMING))
 			__emuflags &= ~PALSYNC;
-		consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000);
-	}
-	else if(lastbutton_cnt == 10) {
-		gammavalue++;
-		if (gammavalue > 4) {
-			gammavalue = 0;
-		}
-		consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
-		brightset();
-	}
-	else if(lastbutton_cnt == 11) {
-		palette_value++;
-			if (palette_value > 0xd) {
-				palette_value = 0;
-		}
-		hex8(64*8 + 36, palette_value);
-		consoletext(64*10 + 20, paltxt[palette_value], 0x1000);
-		palset();
-		brightset();
-	}	menu_stat = 3;
+		consoletext(64*6 + 38, __emuflags&PALSYNC ? "\r    On  " : "\r    Off", 0x1000);
+	}	
+	menu_stat = 3;
 }
 
 
@@ -623,48 +686,67 @@ void brightset(void) {
 //PPU_init();
 }
 
-void palset(void) {
-	if(palette_value == 0) {
-	memcpy(nes_rgb,nes_rgb_0,192);
-	}
-	else if(palette_value == 1) {
-	memcpy(nes_rgb,nes_rgb_1,192);
-	}
-	else if(palette_value == 2) {
-	memcpy(nes_rgb,nes_rgb_2,192);
-	}
-	else if(palette_value == 3) {
-	memcpy(nes_rgb,nes_rgb_3,192);
-	}
-	else if(palette_value == 4) {
-	memcpy(nes_rgb,nes_rgb_4,192);
-	}
-	else if(palette_value == 5) {
-	memcpy(nes_rgb,nes_rgb_5,192);
-	}
-	else if(palette_value == 6) {
-	memcpy(nes_rgb,nes_rgb_6,192);
-	}
-	else if(palette_value == 7) {
-	memcpy(nes_rgb,nes_rgb_7,192);
-	}
-	else if(palette_value == 8) {
-	memcpy(nes_rgb,nes_rgb_8,192);
-	}
-	else if(palette_value == 9) {
-	memcpy(nes_rgb,nes_rgb_9,192);
-	}
-	else if(palette_value == 10) {
-	memcpy(nes_rgb,nes_rgb_10,192);
-	}
-	else if(palette_value == 11) {
-	memcpy(nes_rgb,nes_rgb_11,192);
-	}
-	else if(palette_value == 12) {
-	memcpy(nes_rgb,nes_rgb_12,192);
-	}
-	else if(palette_value == 13) {
-	memcpy(nes_rgb,nes_rgb_13,192);
+// Palette sets. Refactored to cases
+void palset(void)
+{
+	switch (palette_value)
+	{
+	// Loopy's Original
+	case 0:
+		memcpy(nes_rgb,nes_rgb_0,192);
+		break;	
+	// AsquireReal
+	case 1:
+		memcpy(nes_rgb,nes_rgb_1,192);
+		break;
+	// ChrisCovell
+	case 2:
+		memcpy(nes_rgb,nes_rgb_2,192);
+		break;	
+	//CrashMan
+	case 3:
+		memcpy(nes_rgb,nes_rgb_3,192);
+		break;
+	//MAttConte
+	case 4:
+		memcpy(nes_rgb,nes_rgb_4,192);
+		break;
+	// MESS Pal
+	case 5:
+		memcpy(nes_rgb,nes_rgb_5,192);
+		break;
+	// PascFami/99
+	case 6:
+		memcpy(nes_rgb,nes_rgb_6,192);
+		break;
+	// Quor's Pal
+	case 7:
+		memcpy(nes_rgb,nes_rgb_7,192);
+		break;
+	// FirebrandX
+	case 8:
+		memcpy(nes_rgb,nes_rgb_8,192);
+		break;
+	// FBX Dig Prime
+	case 9:
+		memcpy(nes_rgb,nes_rgb_9,192);
+		break;
+	// FBX NES PVM
+	case 10:
+		memcpy(nes_rgb,nes_rgb_10,192);
+		break;
+	// NES VC
+	case 11:
+		memcpy(nes_rgb,nes_rgb_11,192);
+		break;
+	// NES Classic
+	case 12:
+		memcpy(nes_rgb,nes_rgb_12,192);
+		break;
+	// 3DS VC
+	case 13:
+		memcpy(nes_rgb,nes_rgb_13,192);
+		break;
 	}
 };
 
@@ -1108,6 +1190,57 @@ void menu_config_start(void)
 	consoletext(64*17 + (use_saves_dir ? 58 : 25), " ", 0x1000);
 }
 
+void menu_sound_start(void)
+{
+	//Pulse Channel 1
+	consoletext(64*7 + 1, "Pulse Channel 1", 0);
+	consoletext(64*7 + ((__emuflags & AUTOSRAM) ? 25 : 58), "*", 0x1000);
+	consoletext(64*7 + ((__emuflags & AUTOSRAM) ? 58 : 25), " ", 0x1000);
+    //Pulse Channel 2
+	consoletext(64*12 + 1, "Pulse Channel 2", 0);
+	consoletext(64*12 + ((__emuflags & SCREENSWAP) ? 58 : 25), "*", 0x1000);
+	consoletext(64*12 + ((__emuflags & SCREENSWAP) ? 25 : 58), " ", 0x1000);
+    //Pulse Channel 2
+	consoletext(64*17 + 1, "Saves dir", 0);
+	consoletext(64*17 + (use_saves_dir ? 25 : 58), "*", 0x1000);
+	consoletext(64*17 + (use_saves_dir ? 58 : 25), " ", 0x1000);
+}
+
+void dummy_sound_function1(void)
+{
+	return printf("Volume Options");
+}
+
+void dummy_sound_function2(void)
+{
+	return printf( "Panning Options");
+}
+
+void dummy_sound_function3(void)
+{
+	return printf("Enable Stereo Sound");
+}
+
+void dummy_sound_function4(void)
+{
+	return printf("Enable Reververation");
+}
+
+void dummy_sound_function5(void)
+{
+	return printf("Swap Duty Cycles");
+}
+
+void dummy_sound_function6(void)
+{
+	return printf("Sound Filters");
+}
+
+// bool is_FF_RW_Muted(void)
+// {
+// 	fread()
+// }
+
 void menu_config_func(void)
 {
 	menu_stat = 3;
@@ -1118,19 +1251,13 @@ void menu_config_func(void)
 	case 1: //manual
 		__emuflags &= ~AUTOSRAM;
 		break;
-	case 2: //On top
-		__emuflags &=~SCREENSWAP;
-		break;
-	case 3: //On sub
-		__emuflags |= SCREENSWAP;
-		break;
-	case 4: //Use Saves Subdir
+	case 2: //Use Saves Subdir
 		use_saves_dir = true;
 		break;
-	case 5: // No Saves Subdir
+	case 3: // No Saves Subdir
 		use_saves_dir = false;
 		break;
-	case 6: //Sound reset
+	case 4: //Sound reset
 		fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
 		break;
 	}
@@ -1161,12 +1288,15 @@ char nesdsini[1024];
 
 void menu_saveini(void)
 {
+	//Avoid sound screech during .ini writes
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
 	int pos = 0;
 	int i, j, k;
 
 	menu_stat = 3;
 
-	if (!active_interface) return;
+	if(!active_interface) return;
 
 	inibuf[0] = 0;
 	getcwd(inibuf, 512);
@@ -1184,7 +1314,7 @@ void menu_saveini(void)
 	if(joyflags & B_A_SWAP)	i = 1;
 	else i = 0;
 	ini_putl("nesDSrev2", "BASwap", i, ininame);
-
+	
 	i = __emuflags& 3;
 	ini_putl("nesDSrev2", "Blend", i, ininame);
 
@@ -1227,4 +1357,5 @@ void menu_saveini(void)
 			ini_putl("nesDSrev2", ishortcuts[i], 0, ininame);
 		ini_puts("nesDSrev2", igestures[i], gestures_tbl[i], ininame);
 	}
+	fifoSendValue32(FIFO_USER_08, FIFO_UNPAUSE);
 }

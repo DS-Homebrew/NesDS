@@ -2,6 +2,13 @@
 #include "c_defs.h"
 #include "NesMachine.h"
 
+#define TOP_SCREEN_BRIGHT_ON       (REG_MASTER_BRIGHT = 0x8000 | 0)
+#define TOP_SCREEN_BRIGHT_OFF      (REG_MASTER_BRIGHT = 0x8000 | 16)
+#define SUB_SCREEN_BRIGHT_ON       (REG_MASTER_BRIGHT_SUB = 0x8000 | 0)
+#define SUB_SCREEN_BRIGHT_OFF  	   (REG_MASTER_BRIGHT_SUB = 0x8000 | 16)
+
+#define TOP_SCREEN_BRIGHT_DIM       (REG_MASTER_BRIGHT = 0x8000 | 8)
+
 extern u16 font;
 extern u16 fontpal;
 char cusfont[] = {
@@ -73,6 +80,7 @@ void showconsole() {
 		videoSetModeSub(MODE_0_2D);
 		videoBgDisableSub(3);
 		dmaFillWords(0, BG_GFX_SUB , 192 * 256);		//clear the sub screen
+		SUB_SCREEN_BRIGHT_ON;
 		dmaCopyHalfWords(3,&font,(u16*)(SUB_CHR+0x400),1024*4);
 		dmaCopyHalfWords(3,cusfont,(u16*)(SUB_CHR+0x1400),6*32);
 		dmaCopyHalfWords(3,&fontpal,(u16*)BG_PALETTE_SUB,128);
@@ -81,6 +89,8 @@ void showconsole() {
 
 	powerOn(POWER_2D_B);
 	powerOn(PM_BACKLIGHT_BOTTOM | PM_BACKLIGHT_TOP);
+	SUB_SCREEN_BRIGHT_ON;
+	TOP_SCREEN_BRIGHT_DIM;
 	lcdMainOnTop();
 	screen_swap = 0;
 	REG_DISPCNT_SUB=MODE_0_2D|DISPLAY_BG0_ACTIVE|DISPLAY_BG1_ACTIVE|DISPLAY_WIN0_ON;
@@ -109,16 +119,22 @@ void showconsole() {
 * argument:		none
 * description:		hide the screen. Called when you click 'exit'.
 ******************************/
+
 void hideconsole() {
 	swiWaitForVBlank();
 	//powerOff(POWER_2D_B);
 	if((!(__emuflags & ALLPIXELON))) {
 		__emuflags &= ~ALLPIXEL;
 		if(!(__emuflags & SCREENSWAP)) {
+			TOP_SCREEN_BRIGHT_ON;
+			SUB_SCREEN_BRIGHT_OFF;
 			powerOff(PM_BACKLIGHT_BOTTOM);			//This cannot be accessed directly.
 			powerOn(PM_BACKLIGHT_TOP);
 			lcdMainOnTop();
+
 		} else {
+			TOP_SCREEN_BRIGHT_ON;
+			SUB_SCREEN_BRIGHT_OFF;
 			powerOn(PM_BACKLIGHT_BOTTOM);
 			powerOff(PM_BACKLIGHT_TOP);
 			lcdMainOnBottom();
@@ -131,6 +147,8 @@ void hideconsole() {
 		dmaCopy(BG_PALETTE, BG_PALETTE_SUB, 0x400);		//copy the palette
 		powerOn(PM_BACKLIGHT_BOTTOM);
 		powerOn(PM_BACKLIGHT_TOP);
+		SUB_SCREEN_BRIGHT_ON;
+		TOP_SCREEN_BRIGHT_ON;
 
 		if(pos < -(240 - 192)/2) {
 			__emuflags |= SCREENSWAP;
@@ -262,4 +280,24 @@ void hex(int offset,int d,int n) {
 		d>>=4;
 		p[n--] = c;
 	} while(n >= 0);
+}
+
+/*****************************
+* name:         dec
+* function:     to show a decimal number.
+* argument:     offset: offset to the left-top. One line (row) for 64.
+                d: the number.
+                n: amount of characters
+* description:  none
+******************************/
+void dec(int offset, int d, int n) {
+    u16 *p;
+    u16 c;
+    p = (u16*)(SUB_BG + offset);
+    char buffer[12];
+    snprintf(buffer, sizeof(buffer), "%*d", n, d);
+    for (int i = 0; i < n; i++) {
+        c = buffer[i];
+        p[i] = c;
+    }
 }

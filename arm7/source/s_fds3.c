@@ -10,7 +10,7 @@
 #define FDS_DYNAMIC_BIAS 1
 
 
-#define FM_DEPTH 0 /* 0,1,2 */
+#define FM_DEPTH 1 /* 0,1,2 */
 #define NES_BASECYCLES (21477270)
 #define PGCPS_BITS (32-16-6)
 #define EGCPS_BITS (12)
@@ -85,7 +85,7 @@ static void FDSSoundEGStep(FDS_EG *peg)
 		peg->volume -= (peg->volume > 0);
 }
 
-static Int32 __fastcall FDSSoundRender(void)
+Int32 __fastcall FDSSoundRender(void)
 {
 	Int32 output;
 	
@@ -133,10 +133,10 @@ static Int32 __fastcall FDSSoundRender(void)
 	return (fdssound.op[0].pg.freq != 0) ? output : 0;
 }
 
-Int32 FDSSoundRender3(void)
-{
-	return FDSSoundRender();
-}
+// Int32 FDSSoundRender3(void)
+// {
+// 	return FDSSoundRender();
+// }
 
 
 static NES_AUDIO_HANDLER s_fds_audio_handler[] =
@@ -147,12 +147,12 @@ static NES_AUDIO_HANDLER s_fds_audio_handler[] =
 
 static void __fastcall FDSSoundVolume(Uint volume)
 {
-	volume += 196;
-	fdssound.mastervolume = (volume << (LOG_BITS - 8)) << 1;/*
-	fdssound.mastervolumel[0] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 2;
-	fdssound.mastervolumel[1] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 4 / 3;
-	fdssound.mastervolumel[2] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 2 / 2;
-	fdssound.mastervolumel[3] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 8 / 10;*/
+	volume += 127;
+	// fdssound.mastervolume = (volume << (LOG_BITS - 8)) << 1;/*
+	// fdssound.mastervolumel[0] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 2;
+	// fdssound.mastervolumel[1] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 4 / 3;
+	// fdssound.mastervolumel[2] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 2 / 2;
+	// fdssound.mastervolumel[3] = LogToLinear(fdssound.mastervolume, LOG_LIN_BITS - LIN_BITS - VOL_BITS) * 8 / 10;*/
 }
 
 static NES_VOLUME_HANDLER s_fds_volume_handler[] = {
@@ -280,11 +280,13 @@ static NES_READ_HANDLER s_fds_read_handler[] =
 	{ 0,      0,      0, },
 };*/
 
+//TODO: MOVE DIVFIX to a common code file
 static Uint32 DivFix(Uint32 p1, Uint32 p2, Uint32 fix)
 {
 	Uint32 ret;
 	ret = p1 / p2;
-	p1  = p1 % p2;/* p1 = p1 - p2 * ret; */
+	//p1  = p1 % p2;
+	p1 = p1 - p2 * ret;
 	while (fix--)
 	{
 		p1 += p1;
@@ -298,15 +300,30 @@ static Uint32 DivFix(Uint32 p1, Uint32 p2, Uint32 fix)
 	return ret;
 }
 
-static void __fastcall FDSSoundReset(void)
+static void __fastcall FDSSoundReset(FDSSOUND *ch)
 {
 	Uint32 i;
 	XMEMSET(&fdssound, 0, sizeof(FDSSOUND));
-	fdssound.srate = NESAudioFrequencyGet();
-	fdssound.envcps = DivFix(NES_BASECYCLES, 12 * fdssound.srate, EGCPS_BITS + 5 - 9 + 1);
+		if(getApuCurrentRegion() == PAL)
+	{
+		fdssound.srate = NESAudioFrequencyGet() << 1;
+		fdssound.envcps = DivFix(NES_BASECYCLES, 13 * fdssound.srate, EGCPS_BITS + 5 - 9 + 1);
+	}
+	else
+	{
+		fdssound.srate = NESAudioFrequencyGet();
+		fdssound.envcps = DivFix(NES_BASECYCLES, 12 * fdssound.srate, EGCPS_BITS + 5 - 9 + 1);
+	}
 	fdssound.envspd = 0xe8 << EGCPS_BITS;
 	fdssound.envdisable = 1;
-	fdssound.phasecps = DivFix(NES_BASECYCLES, 12 * fdssound.srate, PGCPS_BITS);
+	if(getApuCurrentRegion() == PAL)
+	{
+		fdssound.phasecps = DivFix(NES_BASECYCLES, 13 * fdssound.srate, PGCPS_BITS);
+	}
+	else
+	{
+		fdssound.phasecps = DivFix(NES_BASECYCLES, 12 * fdssound.srate, PGCPS_BITS);
+	}
 	for (i = 0; i < 0x40; i++)
 	{
 		fdssound.op[0].wg.wave[i] = (i < 0x20) ? 0x1f : -0x20;
@@ -320,7 +337,7 @@ static NES_RESET_HANDLER s_fds_reset_handler[] =
 	{ 0,                   0, }, 
 };
 
-void FDSSoundInstall3(void)
+extern void FDSSoundInstall(void)
 {
 	//LogTableInitialize();
 	NESAudioHandlerInstall(s_fds_audio_handler);

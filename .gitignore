@@ -46,6 +46,12 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+#VSC folder
+.vscode/*
+.vscode/settings.json
+
+#git files
+log.txt
 
 *.elf
 *.nds
