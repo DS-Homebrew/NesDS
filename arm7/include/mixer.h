@@ -43,21 +43,21 @@ enum AudioFilterType
 
 
 //Pulse Channels 1 and 2
-int32_t NESAPUSoundSquareRender1();
-int32_t NESAPUSoundSquareRender2();
+int32 NESAPUSoundSquareRender1();
+int32 NESAPUSoundSquareRender2();
 
 //Triangle/Noise/DMC Channels
-int32_t NESAPUSoundTriangleRender1();
-int32_t NESAPUSoundNoiseRender1();
-int32_t NESAPUSoundDpcmRender1();
+int32 NESAPUSoundTriangleRender1();
+int32 NESAPUSoundNoiseRender1();
+int32 NESAPUSoundDpcmRender1();
 
 //FDS Channels
-int32_t FDSSoundRender();
+int32 FDSSoundRender();
 
 //VRC Channels
-int32_t VRC6SoundRender1();
-int32_t VRC6SoundRender2();
-int32_t VRC6SoundRender3();
+int32 VRC6SoundRender1();
+int32 VRC6SoundRender2();
+int32 VRC6SoundRender3();
 
 //VRC must be inited to get raw pcm data from ARM9
 void VRC6SoundInstall_24();

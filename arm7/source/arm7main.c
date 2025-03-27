@@ -70,10 +70,10 @@ static inline short adjust_samples(short sample, int freq_shift, int volume)
 }
 
 // Adjust alignment for proper volume and frequency
-static inline short adjust_vrc(short sample, int freq_shift)
-{
-	return sample << freq_shift;
-}
+// static inline short adjust_vrc(short sample, int freq_shift)
+// {
+// 	return sample << freq_shift;
+// }
 
 
 // NES APU Reg $4011, RAW PCM
@@ -369,9 +369,9 @@ void __fastcall mix(int chan)
 {
     int mapper = IPC_MAPPER;
 
-	int32_t (*VRC6SoundRender1)();
-    int32_t (*VRC6SoundRender2)();
-    int32_t (*VRC6SoundRender3)();
+	int32 (*VRC6SoundRender1)();
+    int32 (*VRC6SoundRender2)();
+    int32 (*VRC6SoundRender3)();
 
     if (mapper == 24) {
         VRC6SoundRender1 = VRC6SoundRender1_24;
@@ -394,7 +394,7 @@ void __fastcall mix(int chan)
 
         for (i = 0; i < MIXBUFSIZE; i++)
 		{			
-			int32_t output = adjust_samples(NESAPUSoundSquareRender1(), 6, 4);
+			int32 output = adjust_samples(NESAPUSoundSquareRender1(), 6, 4);
 			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
@@ -402,7 +402,7 @@ void __fastcall mix(int chan)
 		pcmBuffer+=MIXBUFSIZE;
   		for (i = 0; i < MIXBUFSIZE; i++)
  		{
-            int32_t output = adjust_samples(NESAPUSoundSquareRender2(), 6, 4);
+            int32 output = adjust_samples(NESAPUSoundSquareRender2(), 6, 4);
 			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
@@ -410,7 +410,7 @@ void __fastcall mix(int chan)
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++)
 		{
-            int32_t output = adjust_samples(NESAPUSoundTriangleRender1(), 7, 4);
+            int32 output = adjust_samples(NESAPUSoundTriangleRender1(), 7, 5);
 			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
@@ -418,7 +418,7 @@ void __fastcall mix(int chan)
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            int32_t output = adjust_samples(NESAPUSoundNoiseRender1(), 0, 7);
+            int32 output = adjust_samples(NESAPUSoundNoiseRender1(), 6, 3);
 			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
@@ -426,7 +426,7 @@ void __fastcall mix(int chan)
 		pcmBuffer+=MIXBUFSIZE;
         for (i = 0; i < MIXBUFSIZE; i++) 
 		{
-            int32_t output = adjust_samples(NESAPUSoundDpcmRender1(), 4, 5);
+            int32 output = adjust_samples(NESAPUSoundDpcmRender1(), 4, 5);
 			//short int output = lowpass(input);
 			*pcmBuffer++ = output;
         }
@@ -436,7 +436,7 @@ void __fastcall mix(int chan)
 		{
             for (i = 0; i < MIXBUFSIZE; i++) 
 			{
-                int32_t output = adjust_samples(FDSSoundRender(), 0, 4);
+                int32 output = adjust_samples(FDSSoundRender(), 0, 4);
 				//short int output = lowpass(input);
 				*pcmBuffer++ = output;
             }
@@ -452,7 +452,7 @@ void __fastcall mix(int chan)
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++)
 			{
-				int32_t output = (adjust_vrc(VRC6SoundRender1(), 5)) << 6;
+				int32 output = VRC6SoundRender1() << 11;
 				//short int output = lowpass(input);
 				*pcmBuffer++ = output;
             }
@@ -460,7 +460,7 @@ void __fastcall mix(int chan)
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++) 
 			{
-				int32_t output = (adjust_vrc(VRC6SoundRender2(), 5)) << 6;
+				int32 output = VRC6SoundRender2() << 11;
 				//short int output = lowpass(input);
 				*pcmBuffer++ = output;
             }
@@ -468,12 +468,11 @@ void __fastcall mix(int chan)
 			pcmBuffer+=MIXBUFSIZE;
             for (i = 0; i < MIXBUFSIZE; i++)
 			{
-				int32_t output = (adjust_vrc(VRC6SoundRender3(), 5)) << 6;
+				int32 output = VRC6SoundRender3() << 11;
 				//short int output = lowpass(input);
 				*pcmBuffer++ = output;
             }
         }	
-		// Mix everything, including RAW PCM channels.	
 		Raw_PCM_Channel((u8 *)&buffer[chan * (MIXBUFSIZE / 2) + MIXBUFSIZE * 18]);
     }
     readAPU();
