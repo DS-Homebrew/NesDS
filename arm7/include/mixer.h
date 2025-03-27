@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 // Buffer for PCM samples
-#define MIXBUFSIZE                      512
+#define MIXBUFSIZE                      256
 
 // DS output Frequency after mixing is 32.768 kHz 10 bits, this should be equal or below.
 #define MIXFREQ                        (32768) //32700 // 32000
