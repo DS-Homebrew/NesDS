@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include "c_defs.h"
 #include "SoundIPC.h"
+#include "cpu.h"
+#include "NesMachine.h"
+
 //frameskip min = 1, max = xxxxxx....
 int palette_value = 0;
 int soft_frameskip = 3;
@@ -26,7 +29,7 @@ void do_romebd()
 void showversion()
 {
 	memset((void *)(SUB_BG),0,64*3);
-	consoletext(64*2-32,"    NesDS+ 1.5.0________________________________",0);
+	consoletext(64*2-32,"       nesDS 2.0________________________________",0);
 }
 
 /*****************************
@@ -92,6 +95,7 @@ void DS_init() {
 * description:	none
 ******************************/
 void EMU_Init() {
+	cpuInit();
 	PPU_init();
 	rescale(0xe000,-0x00060000);
 	REG_DISPCNT=0x38810000;

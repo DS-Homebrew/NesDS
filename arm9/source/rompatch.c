@@ -1,5 +1,6 @@
 #include <nds.h>
 #include "c_defs.h"
+#include "NesMachine.h"
 
 unsigned int romdb[] = {
 0x0021ed29, 0x0021ed29, 0x00010010,
@@ -3316,8 +3317,8 @@ void romcorrect(char *s)
 				if(oldmapper == newmapper) {
 					rom[6] = tmp & 0xff;			
 					rom[7] = (tmp >> 8) & 0xff;	
-					__emuflags &= ~PALTIMING;		
-					if(! (tmp & (1 << 16)))		
+					__emuflags &= ~PALTIMING;
+					if(! (tmp & (1 << 16)))
 						__emuflags |= PALTIMING;
 				}
 				break;

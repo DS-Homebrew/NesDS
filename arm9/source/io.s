@@ -2,104 +2,29 @@
 	#include "equates.h"
 @---------------------------------------------------------------------------------
 	.global IO_reset
-	.global IO_R
-	.global IO_W
-	.global joypad_write_ptr
 	.global joy0_W
 	.global joyflags
 	.global refreshNESjoypads
-	.global spriteY_lookup
-	.global spriteY_lookup2
 	.global joystate
 	.global nifi_keys
-	.global ad_scale
+	.global __af_state
+	.global __af_start
 @---------------------------------------------------------------------------------
 .section .text,"ax"
 @---------------------------------------------------------------------------------
 IO_reset:
 @---------------------------------------------------------------------------------
-	bx lr
-@---------------------------------------------------------------------------------
-IO_R:		@I/O read
-@read a IO register for NES
-@---------------------------------------------------------------------------------
-	sub r2,addy,#0x4000	@minus basic io address 0x4000
-	subs r2,r2,#0x15	
-	bmi empty_R		@no readable io register lower than 0x4015
-	cmp r2,#3
-	ldrmi pc,[pc,r2,lsl#2]	@go (0x4000 + (r2 - 15) * 4)
-	bx lr
-	@b FDS_R
-io_read_tbl:
-	.word _4015r	@4015 (sound)
-	.word joy0_R	@4016: controller 1
-	.word joy1_R	@4017: controller 2
-FDS_R:
 	mov r0, #0
+	str r0, af_state			@ Clear autofire state
+
+	ldr r0,=joy0_R				@ $4016: controller 1
+	str_ r0,rp2A03IORead0
+	ldr r0,=joy1_R				@ $4017: controller 2
+	str_ r0,rp2A03IORead1
+	ldr r0,=joy0_W				@ $4016: Joypad 0 write
+	str_ r0,rp2A03IOWrite
+
 	bx lr
-@---------------------------------------------------------------------------------
-IO_W:		@I/O write
-@write a IO register for NES
-@---------------------------------------------------------------------------------
-	sub r2,addy,#0x4000
-	cmp r2,#0x18	@no writeable io register greater than 0x4018
-	ldrmi pc,[pc,r2,lsl#2]
-	b FDS_W
-io_write_tbl:
-	.word soundwrite	@pAPU Pulse #1 Control Register 0x4000
-	.word soundwrite	@pAPU Pulse #1 Ramp Control Register 0x4001
-	.word soundwrite	@pAPU Pulse #1 Fine Tune (FT) Register 0x4002
-	.word soundwrite	@pAPU Pulse #1 Coarse Tune (CT) Register 0x4003
-	.word soundwrite	@pAPU Pulse #2 Control Register 0x4004
-	.word soundwrite	@pAPU Pulse #2 Ramp Control Register 0x4005
-	.word soundwrite	@pAPU Pulse #2 Fine Tune Register 0x4006
-	.word soundwrite	@pAPU Pulse #2 Coarse Tune Register 0x4007
-	.word soundwrite	@pAPU Triangle Control Register #1 0x4008
-	.word soundwrite	@pAPU Triangle Control Register #2 0x4009
-	.word soundwrite	@pAPU Triangle Frequency Register #1 0x400a
-	.word soundwrite	@pAPU Triangle Frequency Register #2 0x400b
-	.word soundwrite	@pAPU Noise Control Register #1 0x400c
-	.word soundwrite	@Unused
-	.word soundwrite	@pAPU Noise Frequency Register #1 0x400e
-	.word soundwrite	@pAPU Noise Frequency Register #2 0x400f
-	.word soundwrite	@pAPU Delta Modulation Control Register 0x4010
-	.word soundwrite	@pAPU Delta Modulation D/A Register 0x4011
-	.word soundwrite	@pAPU Delta Modulation Address Register 0x4012
-	.word soundwrite	@pAPU Delta Modulation Data Length Register 0x4013
-	.word _4014W		@$4014: Sprite DMA transfer
-	.word soundwrite
-joypad_write_ptr:
-	.word joy0_W	@$4016: Joypad 0 write
-	.word void		@$4017: ?
-@----
-FDS_W:
-	cmp r2, #0x40
-	bcc empty_W
-	cmp r2, #0x90
-	bcs empty_W
-	b soundwrite
-;@----------------------------------------------------------------------------
-_4014W:						;@ Transfer 256 bytes from written page to $2004
-;@----------------------------------------------------------------------------
-	ldr r1,=513*3*CYCLE		@ 513/514 is the right number...
-	sub cycles,cycles,r1
-	stmfd sp!,{r3-r4,lr}
-
-	and r1,r0,#0xe0
-	adr_ r2,m6502MemTbl
-	ldr r2,[r2,r1,lsr#3]
-	and r0,r0,#0xff
-	add r3,r2,r0,lsl#8	@ r3=DMA source
-	mov r4,#0x100
-dmaLoop:
-	ldrb r0,[r3],#1
-	bl ppuOamDataW
-	subs r4,r4,#1
-	bne dmaLoop
-
-	ldmfd sp!,{r3-r4,lr}
-	bx lr
-
 @---------------------------------------------------------------------------------
 refreshNESjoypads:	@call every frame
 @used to refresh joypad button status
@@ -175,6 +100,14 @@ joy3state: .byte 0
 joy0serial: .word 0
 joy1serial: .word 0
 @nrplayers .long 0	@Number of players in multilink.
+
+__af_state:
+af_state:		@auto fire state
+	.word 0		@af_state
+__af_start:
+af_start:		@auto fire start
+	.word 0x101	@af_start 30 fps
+
 @---------------------------------------------------------------------------------
 joy0_W:		@4016
 @writing operation to reset/clear joypad status.
@@ -259,7 +192,7 @@ joy1_R:		@4017
 	orreq r0, r0, #8
 
 0:
-	ldrb_ r1,cartFlags
+	ldrb_ r1,cartFlags 
 	tst r1,#VS
 	orrne r0,r0,#0xf8	@VS dip switches
 
@@ -371,24 +304,24 @@ rj5:
 @---------------------------------
 af_fresh:		@adjust the frequency of the auto-fire
 	ldr r2,joyflags
-	ldr_ r1, af_state
+	ldr r1, af_state
 	tst r1, #0xff00
 	beq aUp
 	sub r1, #0x100
-	str_ r1, af_state
+	str r1, af_state
 	orr r2, r2, #AUTOFIRE
 	b aEnd
 aUp:
 	tst r1, #0xff
 	beq aFresh
 	sub r1, r1, #0x1
-	str_ r1, af_state
+	str r1, af_state
 	bic r2, r2, #AUTOFIRE
 	b aEnd
 aFresh:
-	ldr_ r1, af_start
+	ldr r1, af_start
 	sub r1, #0x100
-	str_ r1, af_state
+	str r1, af_state
 	orr r2, r2, #AUTOFIRE
 aEnd:
 	@eor r2,r2,#AUTOFIRE	@toggle autofire state

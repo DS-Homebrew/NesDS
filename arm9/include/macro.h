@@ -1,16 +1,5 @@
 #ifndef MACRO_H
 #define MACRO_H
-	.macro start_map base, register
-	@GBLA _map_address_
- _map_address_ = \base
-	.endm
-
-	.macro _m_ label=0,size
-	.if \label != 0
- \label = _map_address_
-	.endif
- _map_address_ = _map_address_ + \size
-	.endm
 
 	.macro ldr_ reg,label
 	ldr \reg,[globalptr,#\label]

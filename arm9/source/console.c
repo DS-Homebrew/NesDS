@@ -1,5 +1,6 @@
 #include <nds.h>
 #include "c_defs.h"
+#include "NesMachine.h"
 
 #define TOP_SCREEN_BRIGHT_ON       (REG_MASTER_BRIGHT = 0x8000 | 0)
 #define TOP_SCREEN_BRIGHT_OFF      (REG_MASTER_BRIGHT = 0x8000 | 16)

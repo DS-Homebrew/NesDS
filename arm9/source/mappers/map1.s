@@ -1,36 +1,38 @@
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	#include "equates.h"
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.global mapper1init
-	reg0 = mapperData+0
-	reg1 = mapperData+1
-	reg2 = mapperData+2
-	reg3 = mapperData+3
-	last_addr = mapperData+4
-	patch = mapperData+12
-	shift = mapperData+13
-	regbuf = mapperData + 8
-	wram_patch = mapperData + 9
-	wram_bank = mapperData + 10
-	wram_count = mapperData + 11
-@---------------------------------------------------------------------------------
+
+	.struct mapperData
+reg0:		.byte 0
+reg1:		.byte 0
+reg2:		.byte 0
+reg3:		.byte 0
+lastAddr:	.word 0
+regBuf:		.byte 0
+wramPatch:	.byte 0
+wramBank:	.byte 0
+wramCount:	.byte 0
+patch:		.byte 0
+shift:		.byte 0
+;@----------------------------------------------------------------------------
 .section .text,"ax"
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 mapper1init:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.word write, write, write, write
 	stmfd sp!, {lr}
 
-	mov r0,#0x0c			@init MMC1 regs
+	mov r0,#0x0c			;@ Init MMC1 regs
 	strb_ r0,reg0
 	mov r0,#0x0
 	strb_ r0,reg1
 	strb_ r0,reg2
 	strb_ r0,reg3
-	strb_ r0, shift
-	strb_ r0, regbuf
-	strb_ r0, patch
-	strb_ r0, wram_patch
+	strb_ r0,shift
+	strb_ r0,regBuf
+	strb_ r0,patch
+	strb_ r0,wramPatch
 
 	mov r0, #0
 	bl map89AB_
@@ -45,94 +47,94 @@ mapper1init:
 /*
 @patch for games...
 	stmfd sp!, {lr}
-	ldr_ r1, romBase	@src
-	ldr_ r2, romSize8k	@size
+	ldr_ r1, romBase	;@ src
+	ldr_ r2, romSize8k	;@ size
 	mov r2, r2, lsl#13
 	bl crc
 
-	ldr r1, =0xb8e16bd0	@Snow Bros.(J)
+	ldr r1, =0xb8e16bd0	;@ Snow Bros.(J)
 	cmp r1, r0
 	moveq r2, #2
 	streqb_ r2, patch
 
-	ldr r1, =0xcd2a73f0	@Pirates!(U)
+	ldr r1, =0xcd2a73f0	;@ Pirates!(U)
 	cmp r1, r0
 	moveq r2, #2
 	streqb_ r2, patch
 
-	ldr r1, =0xc9556b36	@ Final Fantasy I&II(J)
+	ldr r1, =0xc9556b36	;@ Final Fantasy I&II(J)
 	cmp r1, r0
 	moveq r2, #2
-	streqb_ r2, wram_patch
+	streqb_ r2, wramPatch
 
-	ldr r1, =0xb8747abf	@Best Play - Pro Yakyuu Special(J)
+	ldr r1, =0xb8747abf		;@ Best Play - Pro Yakyuu Special(J)
 	cmp r1, r0
-	ldrne r1, =0x29449ba9	@Nobunaga no Yabou - Zenkoku Ban(J)
+	ldrne r1, =0x29449ba9	;@ Nobunaga no Yabou - Zenkoku Ban(J)
 	cmpne r1, r0
-	ldrne r1, =0x2b11e0b0	@Nobunaga no Yabou - Zenkoku Ban(J)(alt)
+	ldrne r1, =0x2b11e0b0	;@ Nobunaga no Yabou - Zenkoku Ban(J)(alt)
 	cmpne r1, r0
-	ldrne r1, =0x4642dda6	@Nobunaga's Ambition(U)
+	ldrne r1, =0x4642dda6	;@ Nobunaga's Ambition(U)
 	cmpne r1, r0
-	ldrne r1, =0xfb69743a	@Aoki Ookami to Shiroki Mejika - Genghis Khan(J)
+	ldrne r1, =0xfb69743a	;@ Aoki Ookami to Shiroki Mejika - Genghis Khan(J)
 	cmpne r1, r0
-	ldrne r1, =0x2225c20f	@Genghis Khan(U)
+	ldrne r1, =0x2225c20f	;@ Genghis Khan(U)
 	cmpne r1, r0
-	ldrne r1, =0xabbf7217	@Sangokushi(J)
+	ldrne r1, =0xabbf7217	;@ Sangokushi(J)
 	cmpne r1, r0
 	moveq r2, #0
-	streqb_ r2, wram_patch
+	streqb_ r2, wramPatch
 	moveq r2, #0
-	streqb_ r2, wram_bank
-	streqb_ r2, wram_count
+	streqb_ r2, wramBank
+	streqb_ r2, wramCount
 */
 	ldmfd sp!, {pc}
 
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 write:		@($8000-$9FFF)
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	stmfd sp!, {lr}
 	stmfd sp!, {r0}
 
 	ldr r1, =0xBFFF
 	cmp r1, addy
 	bne skip1
-	ldrb_ r1, wram_patch
+	ldrb_ r1, wramPatch
 	cmp r1, #1
 	bne skip1
 
-	ldrb_ r2, wram_bank
+	ldrb_ r2, wramBank
 	tst r0, #1
 	addne r2, r2, #1
-	strb_ r2, wram_bank
+	strb_ r2, wramBank
 
-	ldrb_ r1, wram_count
+	ldrb_ r1, wramCount
 	add r1, r1, #1
-	strb_ r1, wram_count
+	strb_ r1, wramCount
 	cmp r1, #5
 	bne skip1
 
-@something is wrong here..
+;@ Something is wrong here..
 	cmp r2, #0
 	ldreq r0, =NES_SRAM - 0x6000
-	ldrne r0, =NES_SRAM + 0x2000 - 0x6000	@too big.... in vnes, wram is 128k
+	ldrne r0, =NES_SRAM + 0x2000 - 0x6000	;@ Too big.... in vnes, wram is 128k
 	str_ r0,m6502MemTbl+12
 	mov r0, #0
-	strb_ r2, wram_bank
-	strb_ r1, wram_count
+	strb_ r2, wramBank
+	strb_ r1, wramCount
 
 skip1:
 	ldrb_ r1, patch
 	cmp r1, #1
 	beq skip2
 
-	ldr_ r0, last_addr
+	ldr_ r0, lastAddr
 	and r0, r0, #0x6000
 	and r1, addy, #0x6000
 	cmp r1, r0
 	movne r2, #0
 	strneb_ r2, shift
-	strneb_ r2, regbuf
-	str_ addy, last_addr
+	strneb_ r2, regBuf
+	str_ addy, lastAddr
 
 skip2:
 	ldmfd sp!, {r0}
@@ -141,7 +143,7 @@ skip2:
 
 	mov r1, #0
 	strb_ r1, shift
-	strb_ r1, regbuf
+	strb_ r1, regBuf
 	ldrb_ r1, reg0
 	orr r1, r1, #0x0c
 	strb_ r1, reg0
@@ -153,11 +155,11 @@ skip3:
 	tst r0, #1
 	beq skip4
 
-	ldrb_ r1, regbuf
+	ldrb_ r1, regBuf
 	ldrb_ r2, shift
 	mov r0, #1
 	orr r1, r1, r0, lsl r2
-	strb_ r1, regbuf
+	strb_ r1, regBuf
 
 skip4:
 	ldrb_ r2, shift
@@ -173,20 +175,19 @@ skip5:
 	mov r2, r2, lsr#13
 
 	adrl_ r0, reg0
-	ldrb_ r1, regbuf
+	ldrb_ r1, regBuf
 	strb r1, [r0, r2]
 
 	mov r0, #0
-	strb_ r0, regbuf
+	strb_ r0, regBuf
 	strb_ r0, shift
 
 	ldrb_ r0, patch
 	cmp r0, #1
 	beq bigprom				@e.....
 
-	ldr r1, =gotbl
-	ldr pc, [r1, r2, lsl#2]
-@-------------------------------------
+	ldr pc, [pc, r2, lsl#2]
+	nop
 gotbl:
 	.word gol0, gol1, gol2, gol3
 @-------------------------------------
@@ -204,7 +205,7 @@ mirr4:
 @-------------------------------------
 gol1:
 	ldr_ r0, vromMask
-	tst r0, #0x80000000			@means that there is no vrom
+	tst r0, #0x80000000			;@ Means that there is no vrom
 	bne vrom0
 
 	ldrb_ r2, reg0
@@ -234,7 +235,7 @@ vrom0:
 @-------------------------------------
 gol2:
 	ldr_ r0, vromMask
-	tst r0, #0x80000000			@means that there is no vrom
+	tst r0, #0x80000000			;@ Means that there is no vrom
 	bne vrom02
 
 	ldrb_ r2, reg0
@@ -294,7 +295,7 @@ romcf:
 	ldmfd sp!, {pc}
 @------------------------------------------------
 bigprom:
-	ldrb_ r0, wram_patch
+	ldrb_ r0, wramPatch
 	cmp r0, #2
 	bne b1
 

@@ -16,8 +16,21 @@ include $(DEVKITARM)/ds_rules
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
 BUILD    := build
-SOURCES  := source source/mappers data source/zip source/dswifi_arm9
-INCLUDES := include ../include data/ source/dswifi_arm9
+SOURCES  := source \
+			source/mappers \
+			data \
+			source/zip \
+			source/dswifi_arm9 \
+			source/RP2A03 \
+			source/RP2A03/ARM6502 \
+			source/RP2C02
+INCLUDES := include \
+			../include \
+			data \
+			source/dswifi_arm9 \
+			source/RP2A03 \
+			source/RP2A03/ARM6502 \
+			source/RP2C02
 DATA     :=
 GRAPHICS :=
 
@@ -29,7 +42,7 @@ ARCH := -marm -mthumb-interwork -march=armv5te -mtune=arm946e-s
 CFLAGS   := -g -Wall -O2 -DNO_VIZ\
             $(ARCH) $(INCLUDE) -DARM9
 CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
-ASFLAGS  := -g $(ARCH) $(INCLUDE)
+ASFLAGS  := -g $(ARCH) $(INCLUDE) -DCPU_RP2A03 -DARM7SOUND
 LDFLAGS   = -specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 #---------------------------------------------------------------------------------

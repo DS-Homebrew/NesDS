@@ -7,6 +7,7 @@
 #include "c_defs.h"
 #include "SoundIPC.h"
 #include "menu.h"
+#include "NesMachine.h"
 
 int save_slots = 0;
 int slots_num = 0;

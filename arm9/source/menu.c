@@ -7,6 +7,7 @@
 
 #include "c_defs.h"
 #include "menu.h"
+#include "NesMachine.h"
 
 struct menu_item menu_file_items[] = {
 	{

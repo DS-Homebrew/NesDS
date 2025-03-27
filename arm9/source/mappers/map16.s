@@ -1,46 +1,47 @@
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	#include "equates.h"
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.global mapper16init
-	patch		= mapperData	@may never used
-	eeprom_type	= mapperData + 1
-	irq_enable	= mapperData + 2
-	unused		= mapperData + 3
-	reg0		= mapperData + 4
-	reg1		= mapperData + 5
-	reg2		= mapperData + 6
-	irq_counter	= mapperData + 8
-	irq_latch	= mapperData + 12
+	.global __barcode
+	.global __barcode_out
 
-@---------------------------------------------------------------------------------
+	.struct mapperData
+patch:		.byte 0		;@ May never used
+eepromType:	.byte 0
+irqEnable:	.byte 0
+reg0:		.byte 0
+reg1:		.byte 0
+			.skip 3		;@ Align
+irqCounter:	.word 0
+irqLatch:	.word 0
+
+;@----------------------------------------------------------------------------
 .section .text,"ax"
-@---------------------------------------------------------------------------------
-@ Bandai FCG boards with the FCG-1 that supports no EEPROM, and the LZ93D50 with no or 256 bytes of EEPROM.
-@ See also mapper 159
+;@----------------------------------------------------------------------------
+;@ Bandai FCG boards with the FCG-1 that supports no EEPROM, and the LZ93D50 with no or 256 bytes of EEPROM.
+;@ See also mapper 153, 157 & 159
 mapper16init:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.word write, write, write, write
 	
 	mov r0, #0
-	str_ r0, mapperData
-	str_ r0, mapperData + 4
-	str_ r0, irq_counter
-	str_ r0, irq_latch
-	strb_ r0, eeprom_type
+	str_ r0, irqCounter
+	str_ r0, irqLatch
+	strb_ r0, eepromType
 
-	ldrb_ r0, cartFlags		//games need sram.
+	ldrb_ r0, cartFlags		;@ Games need sram.
 	orr r0, r0, #SRAM
 	strb_ r0, cartFlags
 
 	stmfd sp!, {lr}
 
-	adr r1, writel
+	adr r1, writeL
 	str_ r1,m6502WriteTbl+12
 
 	ldr r0,=hook
 	str_ r0,scanlineHook
 
-	adr r1, readl
+	adr r1, readL
 	str_ r1, m6502ReadTbl+12
 
 	ldr r0, =NES_SRAM
@@ -48,68 +49,48 @@ mapper16init:
 	ldr r0, =NES_SRAM
 	bl x24c02_reset
 
-@patch for games...
-	mov r0, #0		@init val
-	ldr_ r1, romBase	@src
-	ldr_ r2, prgSize8k	@size
-	mov r2, r2, lsl#13
-	swi 0x0e0000		@swicrc16
+;@ Patch for games...
+	ldr_ r0,prgcrc
 
-	ldr r1, =0x1F01		@Dragon Ball Z
+	ldr r1, =0x1F01		@ Dragon Ball Z
 	cmp r1, r0
 	moveq r0, #0
-	streqb_ r0, eeprom_type
 
-	ldr r1, =0x4E30		@Dragon Ball Z2
+	ldr r1, =0x4E30		@ Dragon Ball Z2
 	cmp r1, r0
-	moveq r0, #1
-	streqb_ r0, eeprom_type
 
-	ldr r1, =0x5E48		@Dragon Ball Z3
-	cmp r1, r0
-	moveq r0, #1
-	streqb_ r0, eeprom_type
+	ldrne r1, =0x5E48	@ Dragon Ball Z3
+	cmpne r1, r0
 
-	ldr r1, =0x492c		@Datach - Dragon Ball Z Gaiden
-	cmp r1, r0
-	moveq r0, #1
-	streqb_ r0, eeprom_type
+	ldrne r1, =0x492c	@ Datach - Dragon Ball Z Gaiden
+	cmpne r1, r0
 
-	ldr r1, =0xE158		@Datach - Dragon Ball Z Gaiden
-	cmp r1, r0
-	moveq r0, #1
-	streqb_ r0, eeprom_type
+	ldrne r1, =0xE158	@ Datach - Dragon Ball Z Gaiden
+	cmpne r1, r0
 
-	ldr r1, =0xC0E3		@Datach - SD Gundam - Gundam Wars(J)
-	cmp r1, r0
-	moveq r0, #1
-	streqb_ r0, eeprom_type
+	ldrne r1, =0xC0E3	@ Datach - SD Gundam - Gundam Wars(J)
+	cmpne r1, r0
 
-	ldr r1, =0x4D9A		@Datach - Ultraman Club - Supokon Fight!(J)
-	cmp r1, r0
-	moveq r0, #1
-	streqb_ r0, eeprom_type
+	ldrne r1, =0x4D9A	@ Datach - Ultraman Club - Supokon Fight!(J)
+	cmpne r1, r0
 
-	ldr r1, =0x01CC		@Datach - Yuu Yuu Hakusho - Bakutou Ankoku Bujutsu Kai (J) 
-	cmp r1, r0
-	moveq r0, #1
-	streqb_ r0, eeprom_type
+	ldrne r1, =0x01CC	@ Datach - Yuu Yuu Hakusho - Bakutou Ankoku Bujutsu Kai (J)
+	cmpne r1, r0
 
-	ldr r1, =0xEF42		@Datach - Battle Rush - Build Up Robot Tournament(J)
-	cmp r1, r0
-	moveq r0, #1
-	streqb_ r0, eeprom_type
+	ldrne r1, =0xEF42	@ Datach - Battle Rush - Build Up Robot Tournament(J)
+	cmpne r1, r0
 
-	ldr r1, =0x027D		@Datach - J League Super Top Players(J)
-	cmp r1, r0
+	ldrne r1, =0x027D	@ Datach - J League Super Top Players(J)
+	cmpne r1, r0
+
 	moveq r0, #1
-	streqb_ r0, eeprom_type
+	streqb_ r0, eepromType
 
 	ldmfd sp!, {pc}
 
-@---------------------------------------------------------------------------------
-readl:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
+readL:
+;@----------------------------------------------------------------------------
 	ldrb_ r1, patch
 	ands r1, r1, r1
 	movne r0, addy, lsr#8
@@ -119,14 +100,14 @@ readl:
 	bxne lr
 
 	stmfd sp!, {lr}
-	ldrb_ r1, eeprom_type
+	ldrb_ r1, eepromType
 	cmp r1, #0
 	bne 0f
 
 	bl x24c01_read
 	ands r0, r0, r0
 	movne r0, #0x10
-	ldrb_ r1, barcode_out
+	ldrb r1, barcodeOut
 	orr r0, r0, r1
 	@mov r0, #0
 	ldmfd sp!, {pc}
@@ -138,7 +119,7 @@ readl:
 	bl x24c02_read
 	ands r0, r0, r0
 	movne r0, #0x10
-	ldrb_ r1, barcode_out
+	ldrb r1, barcodeOut
 	orr r0, r0, r1
 	ldmfd sp!, {pc}
 
@@ -149,30 +130,30 @@ readl:
 	ldmfd sp!, {r1}
 	ands r0, r0, r1
 	movne r0, #0x10
-	ldrb_ r1, barcode_out
+	ldrb r1, barcodeOut
 	orr r0, r0, r1
 	ldmfd sp!, {pc}
-	
-@---------------------------------------------------------------------------------
-writel:
+
+;@----------------------------------------------------------------------------
+writeL:
 	ldrb_ r1, patch
 	ands r1, r1, r1
 	bxne lr
-	b writesuba
+	b writeSubA
 
-@--------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 write:
 	ldrb_ r1, patch
 	ands r1, r1, r1
-	beq writesuba
-	b writesubb
+	beq writeSubA
+	b writeSubB
 
-@--------------------------------------------------------------------------------
-writesubb:
+;@----------------------------------------------------------------------------
+writeSubB:
 	bx lr
 
-@--------------------------------------------------------------------------------
-writesuba:
+;@----------------------------------------------------------------------------
+writeSubA:
 	and r1, addy, #0xf
 	cmp r1, #8
 	bcs 8f
@@ -186,7 +167,7 @@ writesuba:
 	blne chr1k
 	ldmfd sp!, {r0, lr}
 
-	ldrb_ r2, eeprom_type
+	ldrb_ r2, eepromType
 	cmp r2, #2
 	bxne lr
 	strb_ r0, reg0
@@ -225,23 +206,24 @@ writesuba:
 
 a1:
 	and r1, r0, #1
-	strb_ r1, irq_enable
-	ldr_ r1, irq_latch
-	str_ r1, irq_counter
-	bx lr
+	strb_ r1, irqEnable
+	ldr_ r1, irqLatch
+	str_ r1, irqCounter
+	mov r0,#0
+	b rp2A03SetIRQPin
 
 b1:
-	strb_ r0, irq_latch
-	strb_ r0, irq_counter
+	strb_ r0, irqLatch
+	strb_ r0, irqCounter
 	bx lr
 
 c1:
-	strb_ r0, irq_latch + 1
-	strb_ r0, irq_counter + 1
+	strb_ r0, irqLatch + 1
+	strb_ r0, irqCounter + 1
 	bx lr
 
 d1:
-	ldrb_ r2, eeprom_type
+	ldrb_ r2, eepromType
 	cmp r2, #0
 	bne 1f
 
@@ -262,53 +244,59 @@ d1:
 	b x24c02_write
 
 2:
-	@no need to support now.
+	;@ No need to support now.
 	bx lr
 
-@--------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 hook:
-@--------------------------------------------------------------------------------
-	ldrb_ r0, barcode
+;@----------------------------------------------------------------------------
+	ldrb r0, barcode
 	ands r0, r0, r0
 	beq 0f
 
-	ldrb r0, barcode_cnt
+	ldrb r0, barcodeCnt
 	add r0, r0, #1
 	cmp r0, #9
 	moveq r0, #0
-	strb r0, barcode_cnt
+	strb r0, barcodeCnt
 	bne 0f
 
 	ldr r1, =barcode_data
-	ldrb r2, barcode_ptr
+	ldrb r2, barcodePtr
 	ldrb r0, [r1, r2]
 	cmp r0, #0xFF
 	moveq r0, #0
-	streqb_ r0, barcode
-	streqb_ r0, barcode_out
-	streqb r0, barcode_ptr
-	streqb r0, barcode_cnt
-	strb_ r0, barcode_out
+	streqb r0, barcode
+	streqb r0, barcodeOut
+	streqb r0, barcodePtr
+	streqb r0, barcodeCnt
+	strb r0, barcodeOut
 	addne r2, r2, #1
-	strneb r2, barcode_ptr
+	strneb r2, barcodePtr
 
 0:
-	ldrb_ r0, irq_enable
+	ldrb_ r0, irqEnable
 	ands r0, r0, r0
 	bxeq lr
-	ldr_ r0, irq_counter
+	ldr_ r0, irqCounter
 	cmp r0, #115
 	subcs r0, r0, #114
-	strcs_ r0, irq_counter
+	strcs_ r0, irqCounter
 	bxcs lr
 
 	ldr r1, =0xFFFF
 	and r0, r0, r1
-	str_ r0, irq_counter
+	str_ r0, irqCounter
 	mov r0,#1
 	b rp2A03SetIRQPin
-@---------------------------------------------------------------------------------
-barcode_ptr:
+;@----------------------------------------------------------------------------
+barcodePtr:
 	.byte 0
-barcode_cnt:
+barcodeCnt:
+	.byte 0
+__barcode:
+barcode:
+	.byte 0
+__barcode_out:
+barcodeOut:
 	.byte 0

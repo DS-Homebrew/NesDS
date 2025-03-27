@@ -1,5 +1,6 @@
 @---------------------------------------------------------------------------------
 	#include "equates.h"
+	#include "M6502.i"
 @---------------------------------------------------------------------------------
 	.global hblankinterrupt
 	.global void
@@ -141,7 +142,7 @@ filler: @r0=data r1=dest r2=word count
 	bx lr
 @---------------------------------------------------------------------------------
 hblankinterrupt:
-	ldr r1, =__hblankhook
+//	ldr r1, =__hblankhook
 	ldr r1, [r1]
 	bx r1
 .ltorg
@@ -150,6 +151,7 @@ hblankinterrupt:
 
 @----------------------------------
 @all below is for memory pre-alloc.
+.pool
 
 .section .bss, "aw"
 .align 4

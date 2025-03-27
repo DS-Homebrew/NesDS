@@ -1,16 +1,14 @@
 #include <nds.h>
 #include "c_defs.h"
+#include "NesMachine.h"
 
 extern u32 agb_bg_map[];
-extern u16 __nes_chr_map[];
 u32 debuginfo[48];
 char *debugtxt[]={
 "ERR0","ERR1","READ","WRITE","BRK","BAD OP","VBLS","FPS",
 "BGMISS","cartflg","a","b","c","ALIVE","TMP0","TMP1",
 "mapper#", "PRGCRC", "diskno", "makeid", "gameid", "emuflag"};
 #define DLINE 4
-extern char *__memmap_tbl[];
-extern char *__rombase;
 
 extern int shortcuts_tbl[];
 extern char *ishortcuts[];
@@ -95,8 +93,12 @@ int debugdump() {
 		return 0;*/
 
 	debuginfo[EMUFLAG] = __emuflags;
+#ifdef DEBUG
+	debuginfo[BRK] = globals.cpu.brkCount;
+	debuginfo[BADOP] = globals.cpu.badOpCount;
+#endif
 	if(1 && (__emuflags & NSFFILE)) {
-		u32 *ip=(u32*)&mapperstate;
+		u32 *ip=(u32*)&globals.mapperData;
 		consoletext	(64 * 4 + 0 * 32, "Version:", 0);
 		hex8		(64 * 4 + 0 * 32 + 18, nsfHeader.Version);
 		consoletext	(64 * 4 + 1 * 32, "startson", 0);
@@ -134,13 +136,13 @@ int debugdump() {
 		consoletext	(64 * 16 + 2 * 32, "Playing:", 0);
 		consoletext		(64 * 16 + 2 * 32 + 18, (char*)getPlayStatusIcon(__nsfPlay), 0);
 
-		//for debugging
-		// for(i = 0; i < 4; i++) {
-		// 	hex32(64 * 20 + i * 32, (u32)__memmap_tbl[i + 4] + 0x2000 * i + 0x8000);
-		// }
+		
+		for(i = 0; i < 4; i++) {
+			hex32(64 * 20 + i * 32, (u32)rp2A03.m6502.memTbl[i + 4] + 0x2000 * i + 0x8000);
+		}
 	} else if(debuginfo[MAPPER] == 20) {
-		u8 *p=(u8*)&mapperstate;//0x7000000;
-		u32 *ip=(u32*)&mapperstate;//0x7000000;
+		u8 *p=(u8*)&globals.mapperData;//0x7000000;
+		u32 *ip=(u32*)&globals.mapperData;//0x7000000;
 		for(i=0;i<18;i++) {
 			consoletext(64 * 4 + i * 32, fdsdbg[i], 0);
 			hex8(64*4+i*32 + 18,p[i]);
@@ -157,16 +159,16 @@ int debugdump() {
 		}
 #if 1
 		for(i = 0; i < 8; i++) {
-			hex(64 * 15 + i * 8, __nes_chr_map[i], 2);
+			hex(64 * 15 + i * 8, globals.ppu.nesChrMap[i], 2);
 		}
 		for(i = 0; i < 4; i++) {
-			hex(64 * 16 + i * 8, (__memmap_tbl[i + 4] - __rombase)/0x2000 + i + 4, 2);
+			hex(64 * 16 + i * 8, ((char *)rp2A03.m6502.memTbl[i + 4] - (char *)globals.romBase)/0x2000 + i + 4, 2);
 		}
 #endif
 #if 1
 		for (i = 0;i < 96; i++)
 		{
-			hex8(64*17 + i*8, mapperstate[i]);
+			hex8(64*17 + i*8, globals.mapperData[i]);
 		}
 #endif
 	}

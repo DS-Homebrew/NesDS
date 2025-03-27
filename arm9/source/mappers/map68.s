@@ -1,40 +1,42 @@
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	#include "equates.h"
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.global mapper68init
 
-	reg0 = mapperData
-	reg1 = mapperData + 1
-	reg2 = mapperData + 2
-	reg3 = mapperData + 3
-@---------------------------------------------------------------------------------
+	.struct mapperData
+reg0:		.byte 0
+reg1:		.byte 0
+reg2:		.byte 0
+reg3:		.byte 0
+bankCache:	.space 4
+;@----------------------------------------------------------------------------
 .section .text,"ax"
-@---------------------------------------------------------------------------------
-@ Sunsoft-4
-@ Used in:
-@ After Burner...
+;@----------------------------------------------------------------------------
+;@ Sunsoft-4
+;@ Used in:
+;@ After Burner...
 mapper68init:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	.word write0,write1,write2,write3
 	mov r0, #-1
-	str r0, bank_cache
+	str_ r0, bankCache
 
 	bx lr
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 write0:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	tst addy,#0x1000
 	bne chr23_
 	b chr01_
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 write1:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	tst addy,#0x1000
 	bne chr67_
 	b chr45_
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 write2:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	tst addy, #0x1000
 	streqb_ r0, reg2
 	strneb_ r0, reg3
@@ -46,44 +48,44 @@ write2:
 	bl chr1k
 	ldmfd sp!, {lr}
 	*/
-	b setNTmanualy
-@---------------------------------------------------------------------------------
+	b setNTManualy
+;@----------------------------------------------------------------------------
 write3:
-@---------------------------------------------------------------------------------
+;@----------------------------------------------------------------------------
 	tst addy,#0x1000
 	bne map89AB_
 
 	and r2, r0, #3
 	strb_ r2, reg1
 	tst r0,#0x10
-	bne setNTmanualy
+	bne setNTManualy
 	b mirrorKonami_
-@----------------------
-setNTmanualy:
+;@----------------------
+setNTManualy:
 	stmfd sp!, {r3-r9, lr}
 	ldr_ r3, vromBase
-	add r3, r3, #(0x80<<10)			@cal the base
+	add r3, r3, #(0x80<<10)		;@ Cal the base
 	ldrb_ r4, reg2
 	ldrb_ r5, reg3
 
-	@add r4, r3, r4, lsl#10			@first bank
-	@add r5, r3, r5, lsl#10			@second bank
+	@add r4, r3, r4, lsl#10		;@ First bank
+	@add r5, r3, r5, lsl#10		;@ Second bank
 
-	ldr r2, =NDS_BG + 0x2000		@point to a free Map area.
-	ldrb r0, bank_cache
+	ldr r2, =NDS_BG + 0x2000	;@ Point to a free Map area.
+	ldrb_ r0, bankCache
 	cmp r0, r4
-	strneb r4, bank_cache
-	addne r4, r3, r4, lsl#10			@first bank
-	blne fresh_bank
+	strneb_ r4, bankCache
+	addne r4, r3, r4, lsl#10	;@ First bank
+	blne freshBank
 
 	ldr r2, =NDS_BG + 0x2800
-	ldrb r0, bank_cache + 1
+	ldrb_ r0, bankCache + 1
 	cmp r0, r5
-	strneb r5, bank_cache
-	addne r4, r3, r5, lsl#10			@second bank
-	blne fresh_bank
+	strneb_ r5, bankCache +1
+	addne r4, r3, r5, lsl#10	;@ Second bank
+	blne freshBank
 
-	mov r0, #0x1C00				@change the map base
+	mov r0, #0x1C00				;@ Change the map base
 	ldrb_ r1, reg1
 	cmp r1, #0
 	addeq r0, r0, #0x4000
@@ -95,13 +97,13 @@ setNTmanualy:
 
 	ldmfd sp!, {r3-r9, pc}
 
-@------------------------
-fresh_bank:
-	add r6, r4, #0x3C0			@the tile attr base.
-	adr r7, ntdata
+;@------------------------
+freshBank:
+	add r6, r4, #0x3C0			;@ The tile attr base.
+	adr r7, ntData
 	mov r9, #8*8
 
-nt_loop:
+ntLoop:
 	ldrb r8, [r6], #1
 	and r0, r8, #3
 	strb r0, [r7]
@@ -116,16 +118,16 @@ nt_loop:
 
 	subs r9, r9, #1
 	beq 0f
-	tst r9, #7				@one row will be 8 bytes
+	tst r9, #7					;@ One row will be 8 bytes
 	addne r7, r7, #2
 	addeq r7, r7, #18
-	b nt_loop
+	b ntLoop
 
 0:
 	mov r6, #0
-	adr r7, ntdata
+	adr r7, ntData
 
-tilenum_loop:
+tilenumLoop:
 	mov r1, r6, lsr#6
 	and r0, r6, #0x1e
 	mov r0, r0, lsr#1
@@ -138,12 +140,10 @@ tilenum_loop:
 	strh r0, [r2], #2
 	add r6, r6, #1
 	cmp r6, #32*30
-	bcc tilenum_loop
+	bcc tilenumLoop
 
 	bx lr
 
-@---------------------------------------------------------------------------------
-bank_cache:
-	.skip 4
-ntdata:
-	.skip 8*8*2*2
+;@----------------------------------------------------------------------------
+ntData:
+	.space 8*8*2*2

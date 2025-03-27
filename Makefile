@@ -15,8 +15,8 @@ export LIBFILESYSTEM := $(DEVKITARM)/libfilesystem
 GAME_ICON := $(CURDIR)/icon.bmp
 
 # These set the information text in the nds file
-GAME_TITLE	:=	NesDS+ 1.5
-GAME_SUBTITLE1	:=	Version 1.5
+GAME_TITLE	:=	NesDS+
+GAME_SUBTITLE1	:=	Version 2.0
 GAME_SUBTITLE2	:=	Better Sound!
 
 .PHONY: checkarm7 checkarm9 clean
