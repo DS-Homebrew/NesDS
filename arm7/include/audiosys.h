@@ -53,7 +53,7 @@ extern void (*FDSSoundWriteHandler)(Uint address, Uint value);
 void FDSSoundInstall(void);
 enum ApuRegion getApuCurrentRegion();
 enum ApuStatus getApuCurrentStatus();
-void Raw_PCM_Channel(unsigned char *buffer);
+int32 Raw_PCM_Channel(unsigned char *buffer);
 
 #ifdef __cplusplus
 }

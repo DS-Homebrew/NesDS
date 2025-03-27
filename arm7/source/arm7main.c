@@ -77,15 +77,15 @@ static inline short adjust_vrc(short sample, int freq_shift)
 
 
 // NES APU Reg $4011, RAW PCM
-void Raw_PCM_Channel(u8 *buffer)
+int32 Raw_PCM_Channel(u8 *buffer)
 {
-static unsigned char pcm_out = 0x7F;
+static unsigned char pcm_out = 0x3F;
 // This needs to be changed along with the Frequency
 // 120 for freq 24064Hz (697 timer freq) 
 // and 163 for DS frequency (32768Hz, 511 timer freq).
 // TODO: Add autoajust ratio formula, line/freq ratio yet unknown.
 int pcm_line = 163;
-int pcmprevol = 0x3F;	
+int pcmprevol = 0x3F;
 
 	u8 *in = IPC_PCMDATA;
 	int i;
@@ -125,7 +125,7 @@ int pcmprevol = 0x3F;
 		}
 	}
 	//not a playable raw pcm.
-	if(count < 10) 
+	if(count < 13) 
 	{
 		for(i = 0; i < MIXBUFSIZE; i++) 
 		{
@@ -521,7 +521,7 @@ void initsound()
 	SCHANNEL_LENGTH(6) = MIXBUFSIZE;
 	SCHANNEL_LENGTH(7) = MIXBUFSIZE;
 	SCHANNEL_LENGTH(8) = MIXBUFSIZE;
-	SCHANNEL_LENGTH(9) = MIXBUFSIZE >> 1;
+	SCHANNEL_LENGTH(9) = MIXBUFSIZE / 2;
 
 	SCHANNEL_REPEAT_POINT(0) = 0;
 	SCHANNEL_REPEAT_POINT(1) = 0;
@@ -538,7 +538,7 @@ void initsound()
 	TIMER_DATA(1) = 0x10000 - MIXBUFSIZE;
 	memset(buffer, 0, sizeof(buffer));
 
-	memset(IPC_PCMDATA, 0, 512);
+	memset(IPC_PCMDATA, 0, 128);
 }  
 
 // // Configure Left Channel Capture
