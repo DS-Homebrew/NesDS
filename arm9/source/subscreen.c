@@ -102,7 +102,7 @@ int debugdump() {
 		consoletext	(64 * 4 + 1 * 32, "startson", 0);
 		hex8		(64 * 4 + 1 * 32 + 18, nsfHeader.StartSong);
 		consoletext	(64 * 4 + 2 * 32, "totalsong", 0);
-		hex8		(64 * 4 + 2 * 32 + 18, nsfHeader.TotalSong);
+		dec		(64 * 4 + 2 * 32 + 18, (nsfHeader.TotalSong),2);
 		consoletext	(64 * 4 + 3 * 32, "LoadAddr", 0);
 		hex16		(64 * 4 + 3 * 32 + 18, nsfHeader.LoadAddress);
 		consoletext	(64 * 4 + 4 * 32, "InitAddr", 0);
@@ -128,7 +128,7 @@ int debugdump() {
 		// 	hex32(64*7+i*32,ip[i]);
 		// }
 		consoletext	(64 * 16 + 0 * 32, "Song No:", 0);
-		hex8		(64 * 16 + 0 * 32 + 18, (__nsfSongNo + 1));
+		dec		(64 * 16 + 0 * 32 + 18, (__nsfSongNo + 1),2);
 		consoletext	(64 * 16 + 1 * 32, "Mode:", 0);
 		hex8		(64 * 16 + 1 * 32 + 18, __nsfSongMode);
 		consoletext	(64 * 16 + 2 * 32, "Playing:", 0);

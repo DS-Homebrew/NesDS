@@ -280,3 +280,23 @@ void hex(int offset,int d,int n) {
 		p[n--] = c;
 	} while(n >= 0);
 }
+
+/*****************************
+* name:         dec
+* function:     to show a decimal number.
+* argument:     offset: offset to the left-top. One line (row) for 64.
+                d: the number.
+                n: amount of characters
+* description:  none
+******************************/
+void dec(int offset, int d, int n) {
+    u16 *p;
+    u16 c;
+    p = (u16*)(SUB_BG + offset);
+    char buffer[12];
+    snprintf(buffer, sizeof(buffer), "%*d", n, d);
+    for (int i = 0; i < n; i++) {
+        c = buffer[i];
+        p[i] = c;
+    }
+}
