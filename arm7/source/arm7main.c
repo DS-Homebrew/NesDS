@@ -162,23 +162,23 @@ int ADPCM = SOUND_FORMAT_ADPCM;
 // 	return P1_VL;
 // }
 
-int P1_VL = SOUND_VOL(0x41); // VOL 0x5F
+int P1_VL = SOUND_VOL(0x40); // VOL 0x5F
 int P1_PN = SOUND_PAN(0x20); // PAN 0X20
 
 // Pulse 2
-int P2_VL = SOUND_VOL(0x40); // VOL 0x5F
+int P2_VL = SOUND_VOL(0x45); // VOL 0x5F
 int P2_PN = SOUND_PAN(0x60); // PAN 0X60
 
 // Triangle
-int TR_VL = SOUND_VOL(0x7F); // VOL 0x7F
+int TR_VL = SOUND_VOL(0x45); // VOL 0x7F
 int TR_PN = SOUND_PAN(0x40); // PAN 0X20
 
 // Noise
-int NS_VL = SOUND_VOL(0x78); // VOL 0x7A
+int NS_VL = SOUND_VOL(0x74); // VOL 0x7A
 int NS_PN = SOUND_PAN(0x45); // PAN 0X45
 
 // DMC
-int DM_VL = SOUND_VOL(0x78); // VOL 0x6F
+int DM_VL = SOUND_VOL(0x7F); // VOL 0x6F
 int DM_PN = SOUND_PAN(0x40); // PAN 0x40
 
 // FDS
