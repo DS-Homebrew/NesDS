@@ -570,7 +570,7 @@ void menu_emu_pal(void)
 {
 	menu_stat = 3;
 	__emuflags |= PALTIMING;
-	ntsc_pal_reset();
+	ntsc_pal_reset(__emuflags);
 	consoletext(64*6 + 12, " PAL ", 0x1000);
 
 	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAL);
@@ -581,7 +581,7 @@ void menu_emu_ntsc(void)
 {
 	menu_stat = 3;
 	__emuflags &= ~PALTIMING;
-	ntsc_pal_reset();
+	ntsc_pal_reset(__emuflags);
 	consoletext(64*6 + 12, " NTSC", 0x1000);
 	fifoSendValue32(FIFO_USER_08, FIFO_APU_NTSC);
 	fifoSendValue32(FIFO_USER_08, FIFO_APU_RESET);
