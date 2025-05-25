@@ -147,6 +147,8 @@ int main(int _argc, char **_argv) {
 	if(!bootext()) {
 		//chdir("/");
 		do_rommenu(); //show a menu selecting rom files.
+	} else {
+		hideconsole();
 	}
 #else
 	do_romebd();
