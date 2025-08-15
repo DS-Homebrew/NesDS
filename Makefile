@@ -63,3 +63,4 @@ clean:
 	$(MAKE) -C arm9 clean
 	$(MAKE) -C arm7 clean
 	rm -f $(TARGET).nds
+	rm -f $(TARGET).dsi
