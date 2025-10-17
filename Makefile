@@ -17,7 +17,7 @@ NITRO_FILES :=
 
 # These set the information text in the nds file
 GAME_TITLE	:=	nesDS
-GAME_SUBTITLE1	:=	Version 2.0
+GAME_SUBTITLE1	:=	Version 2.0.1
 GAME_SUBTITLE2	:=	Enjoy yourself!
 
 include $(DEVKITARM)/ds_rules
