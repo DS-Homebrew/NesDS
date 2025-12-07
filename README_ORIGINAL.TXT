@@ -38,6 +38,8 @@ nesDS@olimar.fea.st
 http://www.cs.utah.edu/~tew/nesDS/
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-Fredrik Olsson
-flubba@passagen.se
+Fredrik Ahlström
+https://bsky.app/profile/therealflubba.bsky.social
+https://www.github.com/FluBBaOfWard
+X/Twitter @TheRealFluBBa
 

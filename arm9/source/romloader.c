@@ -39,19 +39,35 @@ int loadrom();	//return -1 on success
 int selectrom(int rom);	//return -1 on success, or rom count (from directory change)
 void stringsort(char**);
 
-void adjust_fds(char *name, char * rom)
+char *adjust_fds(const char *name, char *rom, int romSize)
 {
-	if(strstr(name, ".FDS") || strstr(name, ".fds")) {
-		rom[0] = 'F';
-		rom[1] = 'D';
-		rom[2] = 'S';
+	char *newPtr = rom;
+	if (strstr(name, ".FDS") || strstr(name, ".fds")) {
+		int discCount = 0;
+		if (romSize == 65500) {
+			discCount = 1;
+		}
+		else if (romSize == 65500 * 2) {
+			discCount = 2;
+		}
+		else if (romSize == 65500 * 4) {
+			discCount = 4;
+		}
+		if (discCount != 0) {
+			newPtr -= 16;
+			newPtr[0] = 'F';
+			newPtr[1] = 'D';
+			newPtr[2] = 'S';
+			newPtr[4] = discCount;
+		}
 	}
+	return newPtr;
 }
 
-int is_nsf_file(char *name, char *rom)
+int is_nsf_file(const char *name, char *rom)
 {
-	//actually the first four chars should be "NESM"
-	if(strstr(name, ".NSF") || strstr(name, ".nsf")) {
+	// actually the first four chars should be "NESM"
+	if (strstr(name, ".NSF") || strstr(name, ".nsf")) {
 		memcpy(&nsfHeader, rom, sizeof(nsfHeader));
 		__emuflags |= NSFFILE;
 		__nsfSongNo = 0;
@@ -79,13 +95,13 @@ void do_rommenu() {
 
 	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);			//disable sound when selecting a rom.
 
-	if(!global_roms) {
+	if (!global_roms) {
 		roms=init_rommenu();
 		global_roms = roms;
 	}
 
-	if(!roms) {
-		if(!active_interface) {			//another driver is present, but init failed
+	if (!roms) {
+		if (!active_interface) {			//another driver is present, but init failed
 			consoletext(64*3,"Device failed.",0);
 		} else {						//no DLDI error, no files
 			consoletext(64*3,"No roms found.",0);
@@ -109,20 +125,20 @@ void do_rommenu() {
 * description:		called by do_rommenu.
 ******************************/
 void rommenu(int roms) {
-	static int selectedrom=0;
+	static int selectedrom = 0;
 	int key;
-	int sel=selectedrom;
-	int loaded=0;
+	int sel = selectedrom;
+	int loaded = 0;
 
 	if (romfilename[0] != '\0')
 		save_sram();
 
 	oldinput=IPC_KEYS;
 
-	if(roms==1)
-		key=KEY_START;
+	if (roms == 1)
+		key = KEY_START;
 	else
-		key=0x80000000;
+		key = 0x80000000;
 	do {
 		swiWaitForVBlank();
 		switch(key) {
@@ -130,35 +146,35 @@ void rommenu(int roms) {
 			case KEY_B:
 			case KEY_A:
 			case KEY_Y:
-				loaded=selectrom(sel);
-				if(loaded > 0) {	//didn't load (it was a directory) loaded == 0 means that ips file is loaded.
-					sel=0;
-					roms=loaded;
+				loaded = selectrom(sel);
+				if (loaded > 0) {	//didn't load (it was a directory) loaded == 0 means that ips file is loaded.
+					sel = 0;
+					roms = loaded;
 					global_roms = roms;
 				}
 				break;
 			case KEY_RIGHT:
-				sel+=10;
-				if(sel>roms-1) sel=roms-1;
+				sel += 10;
+				if (sel > roms-1) sel = roms-1;
 				break;
 			case KEY_LEFT:
-				sel-=10;
-				if(sel<0) sel=0;
+				sel -= 10;
+				if (sel < 0) sel = 0;
 				break;
 			case KEY_UP:
-				sel=sel+roms-1;
+				sel = sel+roms-1;
 				break;
 			case KEY_DOWN:
 				sel++;
 				break;
 		}
-		sel%=roms;
-		if(key && loaded>=0)
+		sel %= roms;
+		if (key && loaded >= 0)
 			drawmenu(sel,roms);
-		key=getinput();
-	} while(loaded>=0);
+		key = getinput();
+	} while (loaded >= 0);
 
-	selectedrom=sel;
+	selectedrom = sel;
 }
 
 #define ROWS 21
@@ -249,44 +265,44 @@ int loadrom() {
 	int i; // romsize
 	char *roms; // rom data
 
-	if(strstr(romfilename, ".fds") || strstr(romfilename, ".FDS")) {
+	if (strstr(romfilename, ".fds") || strstr(romfilename, ".FDS")) {
 		if ((__emuflags & DISKBIOS) == 0) {
 			return 1;
 		}
 	}
 
-	if(strstr(romfilename, ".GZ") || strstr(romfilename, ".gz") ||
+	if (strstr(romfilename, ".GZ") || strstr(romfilename, ".gz") ||
 		strstr(romfilename, ".ZIP") || strstr(romfilename, ".zip")
 	) {	// a gz file is loaded.
-		if(load_gz(romfilename)) {
+		if (load_gz(romfilename)) {
 			return 1;	//fail to unzip.
 		}
-		f=fopen(tmpname,"r");
+		f = fopen(tmpname,"r");
 	}
 	else {
-		f=fopen(romfilename,"r");
+		f = fopen(romfilename,"r");
 	}
 
-	romfileext=strrchr(romfilename,'.')+1;
+	romfileext = strrchr(romfilename,'.')+1;
 	roms = (char *)rom_start;
-	i=fread(roms,1,ROM_MAX_SIZE,f);	//read the whole thing (filesize=some huge number, don't care)
+	i = fread(roms,1,ROM_MAX_SIZE,f);	//read the whole thing (filesize=some huge number, don't care)
 	do_ips(i);
 
 	fclose(f);
 
-	if(strstr(romfilename, ".GZ") || strstr(romfilename, ".gz") ||
+	if (strstr(romfilename, ".GZ") || strstr(romfilename, ".gz") ||
 		strstr(romfilename, ".ZIP") || strstr(romfilename, ".zip")
 		) {    // a gz file is loaded.
 		unlink(tmpname);
 	}
-	romsize=i;
-    if(i < 0x100000)
-        i = 0x100000;            //leave some room for FDS files. Also the NSF file need some extra memory
-    freemem_start=((u32)roms+i+3)&~3;
-    freemem_end=(u32)roms+ROM_MAX_SIZE;
+	romsize = i;
+    if (i < 0x100000)
+        i = 0x100000;            // leave some room for FDS files. Also the NSF file need some extra memory
+    freemem_start = ((u32)roms+i+3)&~3;
+    freemem_end = (u32)roms+ROM_MAX_SIZE;
 
-	if(!is_nsf_file(romfilename, roms)) {
-		adjust_fds(romfilename, roms);
+	if (!is_nsf_file(romfilename, roms)) {
+		roms = adjust_fds(romfilename, roms, romsize);
 		romcorrect(roms);
 	}
 	initcart(roms);
@@ -307,11 +323,11 @@ int loadrom() {
 int selectrom(int rom) {
 	char **files=(char**)rom_files;
 
-	if(*files[rom]==1) {	//directory
+	if (*files[rom] == 1) {	// directory
 		chdir(files[rom]+1);
 		return init_rommenu();
 	} else {	//file
-		if(strstr(files[rom]+1, ".ips") || strstr(files[rom]+1, ".IPS")) {	// a ips file is loaded.
+		if (strstr(files[rom]+1, ".ips") || strstr(files[rom]+1, ".IPS")) {	// a ips file is loaded.
 			load_ips(files[rom]+1);
 			return 0;
 		}
@@ -329,7 +345,7 @@ int selectrom(int rom) {
 * argument:		none
 * description:		called by do_rommenu.
 ******************************/
-//return number of file entries (roms+dirs)
+// return number of file entries (roms+dirs)
 int init_rommenu() {
 	char **files;
 	char *nextfile;
@@ -382,7 +398,7 @@ int init_rommenu() {
 * argument:		s1, s2
 * description:		cmpare to strings.for sorting.
 ******************************/
-//case insensitive string compare
+// case insensitive string compare
 inline int less(char *s1,char *s2) {
 	int c1,c2;
 	do {
@@ -400,21 +416,21 @@ inline int less(char *s1,char *s2) {
 * argument:		p1: pointer of string list.
 * description:		none
 ******************************/
-//lazy man's string sorter
+// lazy man's string sorter
 void stringsort(char **p1) {
 	char **p2;
 	char *s1,*s2;
 	do {	//next s1
-		s1=*p1;
-		if(s1) {
-			p2=p1;
+		s1 = *p1;
+		if (s1) {
+			p2 = p1;
 			do {	//next s2
 				p2++;
-				s2=*p2;
-				if(s2 && less(s2,s1)) {
-					*p1=s2;
-					*p2=s1;
-					s1=s2;
+				s2 = *p2;
+				if (s2 && less(s2,s1)) {
+					*p1 = s2;
+					*p2 = s1;
+					s1 = s2;
 				}
 			} while(s2);
 		}
@@ -431,11 +447,11 @@ char defaultDisksyspath[] = "/disksys.rom";
 
 char *findpath(int argc, char **argv, const char *name){
 	int i=0;
-	for(;i<argc;i++){
+	for (;i<argc;i++){
 		strcpy(ininame,argv[i]);
-		if(ininame[strlen(ininame)-1]!='/')strcat(ininame,"/");
+		if (ininame[strlen(ininame)-1]!='/')strcat(ininame,"/");
 		strcat(ininame,name);
-		if(!access(ininame,0))return ininame;
+		if (!access(ininame,0))return ininame;
 	}
 	// create at root on next save
 	ininame[0]='/';
@@ -449,9 +465,9 @@ int keystr2int(char *buf)
 {
 	int i;
 	int ret = 0;
-	if(buf[0] == 0) return 0;
-	for(i = 0; i < 12; i++) {
-		if(strstr(buf, keystrs[i]) != NULL) {
+	if (buf[0] == 0) return 0;
+	for (i = 0; i < 12; i++) {
+		if (strstr(buf, keystrs[i]) != NULL) {
 			ret |= (1 << i);
 		}
 	}
@@ -462,42 +478,42 @@ int bootext() {
 	//interrupt 0: set my dir (inibuf)
 	int i;
 	strcpy(inibuf,"/");
-	if(argc>0){
+	if (argc>0){
 		strcpy(inibuf,argv[0]);
-		i=strlen(inibuf)+1;
-		for(;i>0;i--)if(inibuf[i-1]=='/'){inibuf[i]=0;break;}
+		i = strlen(inibuf)+1;
+		for (;i>0;i--) if (inibuf[i-1] == '/') {inibuf[i] = 0;break;}
 	}
 
 	memset(shortcuts_tbl, 0, sizeof(shortcuts_tbl));
-	if(findpath(8,(char*[]){"/","/_dstwoplug/","/ismartplug/","/moonshl2/extlink/","/_iMenu/_ini/","/_plugin_/","/_nds/",inibuf},"nesDS.ini")){
+	if (findpath(8,(char*[]){"/","/_dstwoplug/","/ismartplug/","/moonshl2/extlink/","/_iMenu/_ini/","/_plugin_/","/_nds/",inibuf},"nesDS.ini")){
 		//interrupt 1: read config
 		int iniret;
-		if((iniret=ini_getl("nesDSrev2","BASwap",0,ininame)) != 0) joyflags|=B_A_SWAP;
+		if ((iniret=ini_getl("nesDSrev2","BASwap",0,ininame)) != 0) joyflags|=B_A_SWAP;
 
-		if((iniret=ini_getl("nesDSrev2","LRDisable",0,ininame)) != 0) joyflags|=L_R_DISABLE;
-		if((iniret=ini_getl("nesDSrev2","Blend",0,ininame)) != 0) __emuflags|=iniret&3;
-		if((iniret=ini_getl("nesDSrev2","PALTiming",0,ininame)) != 0) __emuflags|=PALTIMING;
-		if((iniret=ini_getl("nesDSrev2","FollowMem",0,ininame)) != 0) __emuflags|=FOLLOWMEM;
-		if((iniret=ini_getl("nesDSrev2","ScreenSwap",0,ininame)) != 0) __emuflags|=SCREENSWAP;
-		if((iniret=ini_getl("nesDSrev2","AllPixelOn",0,ininame)) != 0) __emuflags|=ALLPIXELON;
-		if((iniret=ini_getl("nesDSrev2","Render",0,ininame)) != 0)  {
-			if(iniret == 1)	__emuflags|=SPLINE;
+		if ((iniret=ini_getl("nesDSrev2","LRDisable",0,ininame)) != 0) joyflags|=L_R_DISABLE;
+		if ((iniret=ini_getl("nesDSrev2","Blend",0,ininame)) != 0) __emuflags|=iniret&3;
+		if ((iniret=ini_getl("nesDSrev2","PALTiming",0,ininame)) != 0) __emuflags|=PALTIMING;
+		if ((iniret=ini_getl("nesDSrev2","FollowMem",0,ininame)) != 0) __emuflags|=FOLLOWMEM;
+		if ((iniret=ini_getl("nesDSrev2","ScreenSwap",0,ininame)) != 0) __emuflags|=SCREENSWAP;
+		if ((iniret=ini_getl("nesDSrev2","AllPixelOn",0,ininame)) != 0) __emuflags|=ALLPIXELON;
+		if ((iniret=ini_getl("nesDSrev2","Render",0,ininame)) != 0)  {
+			if (iniret == 1)	__emuflags|=SPLINE;
 			else __emuflags|=SOFTRENDER;
 		}
-		if((iniret=ini_getl("nesDSrev2","AutoSRAM",0,ininame)) != 0) __emuflags|=AUTOSRAM;
-		if((iniret=ini_getl("nesDSrev2","Screen_Scale",0,ininame)) != 0) ad_scale=iniret;
-		if((iniret=ini_getl("nesDSrev2","Screen_Offset",0,ininame)) != 0) ad_ypos=iniret;
-		if((iniret=ini_getl("nesDSrev2","Screen_Gamma",0,ininame)) != 0) gammavalue=iniret;
-		if((iniret=ini_getl("nesDSrev2","Screen_Palette",0,ininame)) != 0) palette_value=iniret;
+		if ((iniret=ini_getl("nesDSrev2","AutoSRAM",0,ininame)) != 0) __emuflags|=AUTOSRAM;
+		if ((iniret=ini_getl("nesDSrev2","Screen_Scale",0,ininame)) != 0) ad_scale=iniret;
+		if ((iniret=ini_getl("nesDSrev2","Screen_Offset",0,ininame)) != 0) ad_ypos=iniret;
+		if ((iniret=ini_getl("nesDSrev2","Screen_Gamma",0,ininame)) != 0) gammavalue=iniret;
+		if ((iniret=ini_getl("nesDSrev2","Screen_Palette",0,ininame)) != 0) palette_value=iniret;
 		palset();
-		if((iniret=ini_getl("nesDSrev2","AutoFire",2,ininame)) != 0) autofire_fps=iniret;
-		if((iniret=ini_getl("nesDSrev2","UseSavesDir",0,ininame)) != 0) use_saves_dir=true;
+		if ((iniret=ini_getl("nesDSrev2","AutoFire",2,ininame)) != 0) autofire_fps=iniret;
+		if ((iniret=ini_getl("nesDSrev2","UseSavesDir",0,ininame)) != 0) use_saves_dir=true;
 		__af_start = ((autofire_fps >> 1) << 8) + (autofire_fps >> 1) + (autofire_fps & 1);
 
 		rescale(ad_scale, ad_ypos);
 
-		for(i = 0 ; i < MAX_SC; i++) {
-			if((iniret=ini_getl("nesDSrev2",ishortcuts[i],0,ininame)) != 0) shortcuts_tbl[i]=iniret;
+		for (i = 0 ; i < MAX_SC; i++) {
+			if ((iniret=ini_getl("nesDSrev2",ishortcuts[i],0,ininame)) != 0) shortcuts_tbl[i]=iniret;
 			else {
 				ini_gets("nesDSrev2", ishortcuts[i], none, inibuf, 512, ininame);
 				shortcuts_tbl[i] = keystr2int(inibuf);
@@ -513,14 +529,14 @@ int bootext() {
 		strcpy(inibuf,"/");
 	}*/
 
-	if(!*inibuf||inibuf[strlen(inibuf)-1]!='/')strcat(inibuf,"/");
+	if (!*inibuf||inibuf[strlen(inibuf)-1]!='/')strcat(inibuf,"/");
 	chdir(inibuf); //might be overwritten in readFrontend()
 
 	// if we didn't have an ini, this'll be blank
 	if (disksyspath[0] == 0) {
 		strcpy(disksyspath, defaultDisksyspath);
 	}
-	FILE* bios = fopen(disksyspath, "r");
+	FILE *bios = fopen(disksyspath, "r");
 	if (bios != NULL) {
 		fseek(bios, 0, SEEK_END);
 		size_t offset = ftell(bios);
@@ -533,10 +549,10 @@ int bootext() {
 		fclose(bios);
 	}
 
-	//interrupt 2: read frontend
-	if(!readFrontend(romfilename)) return 0;
+	// interrupt 2: read frontend
+	if (!readFrontend(romfilename)) return 0;
 
-	//interrupt 3: load rom
+	// interrupt 3: load rom
 	if (loadrom() == -1) return 1;
 	return 0;
 }
