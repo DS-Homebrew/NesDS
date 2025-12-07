@@ -10,7 +10,7 @@ irqEnable:			.byte 0
 irqRepeat:			.byte 0
 irqOccur:			.byte 0
 irqTransfer:		.byte 0
-diskEnable:			.byte 0
+ioEnable:			.byte 0
 soundEnable:		.byte 0
 rwStart:			.byte 0
 rwMode:				.byte 0
@@ -21,27 +21,34 @@ driveReset:			.byte 0
 firstAccess:		.byte 0
 diskSide:			.byte 0
 diskMountCount:		.byte 0
-irqType:			.byte 0
 soundStartupFlag:	.byte 0
-					.skip 3 ;@ Align
+extConOut:			.byte 0
+transferDone:		.byte 0
+blockMode:			.byte 0
+					.skip 1 ;@ Align
+
 bDiskThrottle:		.word 0
 diskThrottleTime:	.word 0
 disk:				.word 0
 diskW:				.word 0
-irqCounter:			.word 0
-irqLatch:			.word 0
+timerCounter:		.word 0
+timerLatch:			.word 0
+transferCounter:	.word 0
 blockPoint:			.word 0
-blockMode:			.word 0
 sizeFileData:		.word 0
 fileAmount:			.word 0
 point:				.word 0
 soundStartupTimer: 	.word 0
 soundSeekendTimer: 	.word 0
 
-diskNo:				.word 0
+diskCount:			.word 0
 makerId: 			.word 0
 gameId:				.word 0
 
+
+IRQ_TIMER			= 1<<0
+IRQ_DRAM_REFRESH	= 1<<1
+IRQ_TRANSFER		= 1<<7
 
 EXCMDWR_NONE		= 0
 EXCMDWR_DISKINSERT	= 1
@@ -68,15 +75,14 @@ OFFSET_FILE_DATA	= 74
 ;@ FDS expansion
 mapper20init:
 ;@----------------------------------------------------------------------------
-	@.word void, void, void, void
-	.word write, write, write, void
+	.word write, write, write, rom_W
 
 	ldr_ r2, romBase
-	ldrb r1, [r2, #-12]		;@ diskNo		DEBUG this...
-	strb_ r1, diskNo
+	ldrb r1, [r2, #-12]			;@ diskCount	DEBUG this...
+	strb_ r1, diskCount
 	DEBUGINFO DISKNO, r1
 	mov r0, r1, lsl#2
-	strb_ r0, prgSize16k		;@ 65500 * diskNo, not equal...
+	strb_ r0, prgSize16k		;@ 65500 * diskCount, not equal...
 	ldrb r1, [r2, #0x1F]		;@ makerId.... I dont know..
 	strb_ r1, makerId
 	DEBUGINFO MAKEID, r1
@@ -94,7 +100,7 @@ mapper20init:
 	DEBUGINFO MAPPER, r0
 
 	mov r0, #0xff
-	strb_ r0, diskEnable
+	strb_ r0, ioEnable
 	strb_ r0, soundEnable
 	strb_ r0, rwStart
 	strb_ r0, diskEject
@@ -103,6 +109,9 @@ mapper20init:
 
 	mov r0, #119
 	strb_ r0, diskMountCount
+
+	mov r0, #0
+	str_ r0,timerLatch
 
 	mov r0, #-1
 	str_ r0, soundStartupTimer
@@ -138,7 +147,7 @@ mapper20init:
 	str_ r0, rp2A03MemRead
 	adr r0, exWrite
 	str_ r0, rp2A03MemWrite
-	ldr r0, =writel
+	ldr r0, =write
 	str_ r0, m6502WriteTbl + 12
 	ldr r0, =hSync
 	str_ r0, scanlineHook
@@ -149,6 +158,14 @@ mapper20init:
 
 	bx lr
 
+
+;@-------------------------------
+disableTransferIrq:
+;@-------------------------------
+	ldrb_ r0,irqOccur
+	bic r0,r0,#IRQ_TRANSFER
+	strb_ r0,irqOccur
+	b rp2A03SetIRQPin			;@ Update IRQ pin on CPU
 ;@-------------------------------
 exRead:
 ;@-------------------------------
@@ -156,32 +173,31 @@ exRead:
 	cmp r0, #0x40
 	bne empty_R
 	and r1, addy, #0xFF
-	cmp r1, #0x34
-	bcs empty_R
-	subs r1, r1, #0x30
-	ldrcs pc, [pc, r1, lsl#2]
+	sub r1, r1, #0x30
+	cmp r1, #4
+	ldrcc pc, [pc, r1, lsl#2]
 	b empty_R
 ;@--------------------------
 exrTbl:
 	.word r30, r31, r32, r33
 r30:
-	stmfd sp!,{lr}
+	ldrb_ r0,irqOccur
+	ldrb_ r1,transferDone
+	orr r0,r0,r1
+	stmfd sp!,{r0,lr}
 	mov r0,#0
+	strb_ r0,irqOccur
+	strb_ r0,transferDone
 	bl rp2A03SetIRQPin			;@ Clear IRQ pin on CPU
-	ldmfd sp!,{lr}
-	mov r0, #0x80
-	mov r1, #0
-	ldrb_ r2, irqOccur
-	strb_ r1, irqOccur
-	ands r2, r2, r2
-	bxeq lr
-	ldrb_ r2, irqTransfer
-	tst r2, #0xFF
-	orrne r0, #0x2
-	orreq r0, #0x1
-	bx lr
+	ldmfd sp!,{r0,pc}
 
 r31:
+	stmfd sp!,{lr}
+	bl disableTransferIrq
+	ldmfd sp!,{lr}
+	mov r0,#0
+	strb_ r0,transferDone
+
 	ldrb_ r0, rwMode
 	ands r0, r0, r0
 	moveq r0, #0xFF
@@ -195,7 +211,7 @@ r31:
 	moveq r0, #0xFF
 	bxeq lr
 
-	ldr_ r0, blockMode
+	ldrb_ r0, blockMode
 	ldr pc, [pc, r0, lsl#2]
 	nop
 ;@-----------------------
@@ -278,9 +294,9 @@ r32:
 	bx lr
 
 r33:
-	mov r0, #0x80
+	ldrb_ r0,extConOut
+//	bic r0,r0,#0x80			;@ Battery Not OK
 	bx lr
-
 
 ;@-------------------------------
 exWrite:
@@ -289,49 +305,58 @@ exWrite:
 	cmp r1, #0x40
 	bne empty_W
 	and r1, addy, #0xFF
-	cmp r1, #0x90
+	cmp r1, #0x98
 	bcs empty_W
 	cmp r1, #0x40
 	bcs soundwrite
 	sub r1, r1, #0x20
 	cmp r1, #0x07
-	ldrmi pc, [pc, r1, lsl#2]
+	ldrcc pc, [pc, r1, lsl#2]
 	b empty_W
 exwTbl:
 	.word w20, w21, w22, w23, w24, w25, w26
 
 ;@-----
 w20:
-	strb_ r0, irqLatch
+	strb_ r0, timerLatch
 	bx lr
 w21:
-	strb_ r0, irqLatch+1
+	strb_ r0, timerLatch+1
 	bx lr
 w22:
-	mov r1, #0
-	strb_ r1, irqOccur
+	ldrb_ r1, ioEnable
+	tst r1,#1
+	bxeq lr
 	and r1, r0, #1
 	strb_ r1, irqRepeat
-	ands r0, r0, #2
-	streqb_ r0, irqEnable
-	beq rp2A03SetIRQPin			;@ Clear IRQ pin on CPU
-	ldrb_ r0, diskEnable
-	ands r0, r0, r0
-	strb_ r0, irqEnable
-	bxeq lr
-	ldr_ r0, irqLatch
-	str_ r0, irqCounter
+	ands r1, r0, #2
+	strb_ r1, irqEnable
+	ldreqb_ r0, irqOccur
+	biceq r0,r0,#IRQ_TIMER
+	streqb_ r0, irqOccur
+	beq rp2A03SetIRQPin			;@ Update IRQ pin on CPU
+	ldr_ r0, timerLatch
+	str_ r0, timerCounter
 	bx lr
 
 w23:
+	and r0, r0, #0x83
+	strb_ r0, ioEnable
 	ands r0, r0, #1
-	strb_ r0, diskEnable
 	bxne lr
-	strb_ r0, irqEnable
-	strb_ r0, irqOccur
+	strb_ r0, irqOccur			;@ Clear all IRQs
 	b rp2A03SetIRQPin			;@ Clear IRQ pin on CPU
 
 w24:
+	stmfd sp!,{r0,lr}
+	ldrb_ r0,irqOccur
+	bic r0,r0,#IRQ_TRANSFER
+	strb_ r0,irqOccur
+	bl rp2A03SetIRQPin			;@ Update IRQ pin on CPU
+	ldmfd sp!,{r0,lr}
+	mov r1,#0
+	strb_ r1,transferDone
+
 	ldrb_ r1, rwMode
 	ands r1, r1, r1
 	bxne lr
@@ -346,7 +371,7 @@ w24:
 	ands r1, r1, r1
 	bxeq lr
 
-	ldr_ r1, blockMode
+	ldrb_ r1, blockMode
 	ldr pc, [pc, r1, lsl#2]
 	nop
 w24tbl:
@@ -424,6 +449,9 @@ w25:
 	and r1, r0, #0x80
 	strb_ r1, irqTransfer
 	;@ Clear irq....
+	stmfd sp!,{r0,lr}
+	bl disableTransferIrq
+	ldmfd sp!,{r0,lr}
 	ands r1, r0, #0x40
 	beq 0f
 	ldrb_ r1, rwStart
@@ -433,7 +461,7 @@ w25:
 	mov r1, #0xff
 	strb_ r1, firstAccess
 
-	ldr_ r1, blockMode
+	ldrb_ r1, blockMode
 	ldr pc, [pc, r1, lsl#2]
 	nop
 exChTbl:
@@ -441,14 +469,14 @@ exChTbl:
 ;@-------------------
 exChReady:
 	mov r1, #BLOCK_VOLUME_LABEL
-	str_ r1, blockMode
+	strb_ r1, blockMode
 	mov r1, #0
 	str_ r1, point
 	b 0f
 
 exChLabel:
 	mov r1, #BLOCK_FILE_AMOUNT
-	str_ r1, blockMode
+	strb_ r1, blockMode
 	ldr_ r1, point
 	add r1, r1, #SIZE_VOLUME_LABEL
 	str_ r1, point
@@ -456,7 +484,7 @@ exChLabel:
 
 exChAmount:
 	mov r1, #BLOCK_FILE_HEADER
-	str_ r1, blockMode
+	strb_ r1, blockMode
 	ldr_ r1, point
 	add r1, r1, #SIZE_FILE_AMOUNT
 	str_ r1, point
@@ -464,7 +492,7 @@ exChAmount:
 
 exChHeader:
 	mov r1, #BLOCK_FILE_DATA
-	str_ r1, blockMode
+	strb_ r1, blockMode
 	ldr_ r1, point
 	add r1, r1, #SIZE_FILE_HEADER
 	str_ r1, point
@@ -472,7 +500,7 @@ exChHeader:
 
 exChData:
 	mov r1, #BLOCK_FILE_HEADER
-	str_ r1, blockMode
+	strb_ r1, blockMode
 	ldr_ r2, point
 	ldr_ r1, sizeFileData
 	add r2, r2, #1
@@ -491,7 +519,7 @@ exChData:
 	str_ r1, point
 	str_ r1, blockPoint
 	mov r1, #BLOCK_READY
-	str_ r1, blockMode
+	strb_ r1, blockMode
 	mov r1, #0
 	strb_ r1, soundStartupFlag
 	mov r1, #0xff
@@ -530,12 +558,7 @@ exChData:
 	b mirror2V_
 ;@-------------
 w26:
-	bx lr
-
-;@-------------
-writel:
-	ldr r2, =NES_DRAM - 0x6000
-	strb r0, [r2, addy]
+	strb_ r0,extConOut
 	bx lr
 
 ;@-------------
@@ -546,49 +569,44 @@ write:
 
 ;@-------------
 hSync:
-	ldrb_ r0, irqEnable
-	ands r0, r0, r0
-	beq checkTr
+	ldrb_ r0,ioEnable
+	tst r0,#1
+	bxeq lr
 
-	ldr_ r1, irqCounter
-	ldrb_ r2, irqType
-	ands r2, r2, r2
-	subeq r1, r1, #114
+	ldrb_ r0,irqOccur
 
-	tst r1, #0x80000000
-	str_ r1, irqCounter
-	beq 0f
+	ldr_ r1,transferCounter
+	subs r1,r1,#114
+	addls r1,r1,#150
+	str_ r1,transferCounter
+	bhi noTransmission
+	mov r1,#0x80
+	strb_ r1,transferDone
+	ldrb_ r1,irqTransfer
+	orr r0,r0,r1				;@ #IRQ_TRANSFER
+noTransmission:
+	ldrb_ r1,irqEnable
+	cmp r1,#0
+	beq setIrq
 
-	ldr_ r0, irqLatch
-	add r1, r1, r0
-	str_ r1, irqCounter
+	ldr_ r1,timerCounter
+	subs r1,r1,#114
+	str_ r1,timerCounter
+	bhi setIrq
 
-	ldrb_ r0, irqOccur
-	ands r0, r0, r0
-	bne 0f
+	ldr_ r2,timerLatch
+	adds r1,r1,r2
+	movcc r1,r2
+	str_ r1,timerCounter
 
-	mov r0, #0xff
-	strb_ r0, irqOccur
+	ldrb_ r2,irqRepeat
+	cmp r2,#0
+	streqb_ r2,irqEnable
 
-	ldrb_ r0, irqRepeat
-	ands r0, r0, r0
-	streqb_ r0, irqEnable
-
-	mov r0,#1
-	b rp2A03SetIRQPin			;@ Set IRQ pin on CPU
-
-0:
-	ldr_ r1, irqCounter
-	ldrb_ r2, irqType
-	ands r2, r2, r2
-	subne r1, r1, #114
-	strne_ r1, irqCounter
-
-checkTr:
-	ldrb_ r0, irqTransfer
-	ands r0, r0, r0
-	bne rp2A03SetIRQPin			;@ Set IRQ pin on CPU
-	bx lr
+	orr r0,r0,#IRQ_TIMER
+setIrq:
+	strb_ r0,irqOccur
+	b rp2A03SetIRQPin			;@ Update IRQ pin on CPU
 
 
 ;@-------------
@@ -658,7 +676,7 @@ e0:
 	bx lr
 
 ;@------------------------------------
-fdscmdwrite:	;@ Called when....
+fdscmdwrite:	;@ Called from menu switching disks?
 	@r0 = data
 	stmfd sp!,{globalptr,lr}
 	ldr globalptr,=globals
@@ -699,10 +717,10 @@ exCmdEject:
 	strb_ r0, diskSide
 	bx lr
 
-.ltorg
+@.ltorg
 
 ;@-------------------------------
-.section .bss, "aw"
+@.section .bss, "aw"
 @NES_DRAM:			@defined in memory.s
 	@.skip 0x8000
 @NES_DISK:			@defined in memory.s

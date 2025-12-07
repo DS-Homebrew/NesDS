@@ -189,6 +189,9 @@ NES_DISK:
 
 rom_files:
 	.skip MAXFILES * 64 + MAXFILES * 4	@this will take a lot of memory. filename should not be longer than 64 in average.
+
+	.align 8
+	.skip 0xF0
 rom_start:
 	.skip 0x40000 + 16		@this is the bigest size for FDS game.
 NES_DRAM:				@if the game is a FDS one, this is available. otherwise not.

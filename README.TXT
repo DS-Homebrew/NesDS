@@ -271,7 +271,7 @@ Directory listing is shown the same way as WinNT(8.3 lower case). <- If you name
 /nesDS.ini is used for configuration(minIni).
 @----------- end   -----------@
 updates:
-Add the shout-cuts for configuration.
+Add the short-cuts for configuration.
 Sound fixed.. better than 0.44b. Almost no noise(not the noise channel).
 sprite0y of 'per-scanline' fixed.
 h-blank interrupt handler added, which was removed since 0.44b. 
@@ -361,7 +361,7 @@ COMPILING:
 You need devkitARM to compile this project. If you are compiling on windows you also need mingw. On linux you will need to have make installed. 
 
 The project compiles on windows and linux using devkitARM r32 (devkitPro). To compile on windows use
-msys-1.0.15 (devkitPro) as well. You do not need anyhting else to comiple the project.
+msys-1.0.15 (devkitPro) as well. You do not need anyhting else to compile the project.
 
 Compiling on windows:
 
