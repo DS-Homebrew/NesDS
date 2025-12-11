@@ -39,10 +39,9 @@
 empty_R:		@read bad address (error)
 @---------------------------------------------------------------------------------
 	DEBUGINFO READ,addy
-
-	mov r0,addy,lsr#8
+	// Simulate cpu open bus
+	ldrb r0,[m6502pc,#-1]
 void: @- - - - - - - - -empty function
-@	mov r0,#0	@VS excitebike liked this, read from $3DDE ($2006).
 	bx lr
 @---------------------------------------------------------------------------------
 rom_W:			@write ROM address (error)
