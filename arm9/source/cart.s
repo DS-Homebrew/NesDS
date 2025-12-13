@@ -314,7 +314,7 @@ lc1:					@ call mapperXXinit
 	adr_ r5,m6502WriteTbl+16
 	ldr r0,[r1,#-4]		@ r0 = mapperxxxinit
 	ldmia r0!,{r1-r4}
-	stmia r5,{r1-r4}	@ set default (write) operation for NES(0x8000 ~ 0xFFFF), maybe 'void', according to Mapper.
+	stmia r5,{r1-r4}	@ set default (write) operation for NES(0x8000 ~ 0xFFFF), maybe 'rom_W', according to Mapper.
 	str_ r0,mapperInitPtr
 
 	bl NES_reset

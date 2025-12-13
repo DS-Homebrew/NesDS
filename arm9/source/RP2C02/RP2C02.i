@@ -37,10 +37,12 @@ ppuBusLatch:	.byte 0
 sprite0X:		.byte 0
 vramAddrInc:	.byte 0
 toggle:			.byte 0
-ppuCtrl0:		.byte 0
+
+ppuCtrl0:		.byte 0			;@ These 4 need to be together
 ppuCtrl1:		.byte 0
 ppuStat:		.byte 0
 ppuOamAdr:		.byte 0
+
 ppuCtrl0Frame:	.byte 0
 readTemp:		.byte 0
 rp2C02Revision:	.byte 0

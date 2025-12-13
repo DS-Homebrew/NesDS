@@ -45,10 +45,12 @@ typedef struct {
 	u8 sprite0X;
 	u8 vramAddrInc;
 	u8 toggle;
+
 	u8 ppuCtrl0;
 	u8 ppuCtrl1;
 	u8 ppuStat;
 	u8 ppuOamAdr;
+
 	u8 ppuCtrl0Frame;
 	u8 readTemp;
 	u8 rp2C02Revision;
