@@ -23,7 +23,6 @@
 	.global writeBG
 	.global ctrl1_W
 	.global EMU_VBlank
-	.global ppusync
 	.global rescale_nr
 	.global bg_chr_req
 	.global chr0_
@@ -356,9 +355,11 @@ rp2C02SetRevision:			;@ rp2a03ptr = r10
 	ldrne r0,=341			;@ NTSC		(113+2/3)*3
 	ldreq r0,=320			;@ PAL		(106+9/16)*3
 	str_ r0,cyclesPerScanline
-	ldrne r0,=262			;@ NTSC
-	ldreq r0,=312			;@ PAL
+	ldrne r0,=261			;@ NTSC
+	ldreq r0,=311			;@ PAL
 	str_ r0,lastScanline
+	str r0,ppuLastLine
+	add r0,r0,#1
 	str r0,ppuTotalLines
 	bx lr
 ;@-----------------------------------------------------------------------------
@@ -464,9 +465,6 @@ PAL60: 			.byte 0
 ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 ;@-----------------------------------------------------------------------------
 	stmfd sp!,{r3,lr}
-
-//	mov r0,#0
-//	strb_ r0,ppuOamAdr
 
 	ldr_ r0, emuFlags
 	tst r0, #SOFTRENDER
@@ -582,6 +580,12 @@ ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 	bl spchr_update
 	ldmfd sp!, {r4-r12}
 0:
+	ldr_ r0,sprite0Y
+	tst r0,#0xFF
+	bleq checkSprite0Collision
+	mov r0,#0
+	strb_ r0,ppuOamAdr
+
 	@- - -
 	ldr_ r0, emuFlags
 	tst r0, #PALSYNC
@@ -656,11 +660,55 @@ DMAline: .word 0
 DMAlinestart: .word 0
 
 ;@-----------------------------------------------------------------------------
+checkSprite0Collision:		;@ r0=spriteLine
+;@-----------------------------------------------------------------------------
+	ldr_ r12,ppuCtrl0			;@ Read PPU reg0, reg1 & oamAdr.
+	adr_ r2,ppuOAMMem
+	ldrb r0,[r2,r12,lsr#24]!	;@ Sprite 0 ypos
+	ldr_ r1,scanline
+	sub r0,r1,r0
+	tst r12,#0x20				;@ PPU reg 0 8x16?
+	moveq r1,#8
+	movne r1,#16
+	cmp r0,r1					;@ Sprite height
+	bxcs lr
+	and r1,r12,#0x1800			;@ PPU reg 1
+	cmp r1, #0x1800				;@ Sprites & BG on?
+	bxne lr
+	ldrb r1,[r2,#1]				;@ Sprite tile#
+	ldr r3,=NDS_OBJVRAM
+	tst r12,#0x08				;@ PPU reg 0 CHR base? (0000/1000)
+	addne r3,r3,#0x2000
+	add r3,r3,r1,lsl#5			;@ r0=VRAM base+tile*32
+	ldr r1,[r3,r0,lsl#2]		;@ I dont really give a shit about Y flipping at the moment
+	cmp r1,#0
+	bxeq lr
+
+	ldrb r1,[r2,#3]				;@ r1=sprite0 x
+	cmp r1,#0xFF
+	bxeq lr
+	and r3,r12,#0x0600			;@ PPU reg 1, bg & Spr mask.
+	cmp r3,#0x0600
+	beq noSpr0Hide
+	cmp r1,#0
+	bxeq lr
+noSpr0Hide:
+//	cmp r1,#0x13
+//	bxeq lr
+	strb_ r1,sprite0X
+	ldr_ r1,scanline
+	add r1,r1,#1
+	cmp r1,#240
+	strcc_ r1,sprite0Y
+	bx lr
+;@-----------------------------------------------------------------------------
 PPULineStateTable:
 	.long 0, newframe			;@ ppuZeroLine
 	.long 119, midFrame			;@ ppuMidScanline
 	.long 241, line241			;@ Last visible scanline
 	.long 241, line241NMI		;@ frameIRQ on
+ppuLastLine:
+	.long 261, lastLineHook
 ppuTotalLines:
 	.long 262, frameEndHook		;@ totalScanlines
 ;@-----------------------------------------------------------------------------
@@ -726,6 +774,14 @@ line241NMI:
 	ldr_ pc, endFrameHook
 
 ;@-----------------------------------------------------------------------------
+lastLineHook:
+	mov r0,#0x200
+	str_ r0,sprite0Y		;@ Spr0 collision outside screen
+	mov r0,#0
+	strb_ r0,ppuStat		;@ Clear Vbl, sprite0 & sprite ovr
+	ldr_ pc,ppuIrqFunc		;@ Clear INT Pin (on PPU)
+
+;@-----------------------------------------------------------------------------
 frameEndHook:
 	adr r2,PPULineStateTable
 	ldr r1,[r2],#4
@@ -745,6 +801,7 @@ updateINTPin:
 	and r0,r0,#0x80
 	mov lr,pc
 	ldr_ pc,ppuIrqFunc		;@ Set INT Pin (on PPU)
+	orr cycles,cycles,#0xC0000000
 	ldmfd sp!,{r0,pc}
 ;@-----------------------------------------------------------------------------
 PPU_R:	;@
@@ -771,7 +828,7 @@ PPU_W:	;@
 PPU_write_tbl:
 	.word ctrl0_W		;@ $2000
 	.word ctrl1_W		;@ $2001
-	.word void			;@ $2002
+	.word empty_W		;@ $2002
 	.word oamAddrW		;@ $2003
 	.word ppuOamDataW	;@ $2004
 	.word bgscroll_W	;@ $2005
@@ -844,25 +901,18 @@ stat_R:		;@ (2002)
 	strb_ r0,toggle
 	ldrb_ r2,ppuStat
 
-	ldr_ r0, emuFlags
-	tst r0, #SOFTRENDER
-	bne 0f
-
-	ldrb_ r1,ppuCtrl1
-	tst r1, #0x10				;@ Sprites on?
-	beq 0f
-
 	ldr_ r0,sprite0Y			;@ Sprite0 hit?
 	ldr_ r1,scanline
 	cmp r1,r0
-@	ble noSprH
-@	ldrb r0,sprite0X			;@ For extra high resolution sprite0 hit
-@	ldr_ r1,cyclesPerScanline	;@ The store is in IO.s
-@	sub r1,r1,cycles
-@	cmp r1,r0
 	orrhi r2,r2,#0x40
-@noSprH
-0:
+	bne noSprH
+	ldrb_ r0,sprite0X			;@ For extra high resolution sprite0 hit
+	ldr_ r1,cyclesPerScanline	;@ The store is in IO.s
+	sub r1,r1,cycles,lsr#CYC_SHIFT
+	cmp r1,r0
+	orrcs r2,r2,#0x40
+noSprH:
+
 	bic r1,r2,#0x80				;@ Vbl flag clear
 	strb_ r1,ppuStat
 
@@ -884,15 +934,15 @@ ppuOamDataR:	;@ (2004)
 	ldrb_ r1,ppuOamAdr
 	adr_ r2,ppuOAMMem
 	ldrb r0,[r2,r1]
-	and r2,r2,#3
-	cmp r2,#2
-	biceq r0,r0,#0x1C			;@ Only when reading attribute (2).
 	strb_ r0,ppuBusLatch
 	bx lr
 ;@-----------------------------------------------------------------------------
 ppuOamDataW:	;@ (2004)
 ;@-----------------------------------------------------------------------------
 	ldrb_ r1,ppuOamAdr
+	and r2,r1,#3
+	cmp r2,#2
+	andeq r0,r0,#0xE3			;@ Only when writing attribute (2).
 	adr_ r2,ppuOAMMem
 	strb r0,[r2,r1]
 	add r1,r1,#1
@@ -1150,10 +1200,6 @@ newframe:	;@ Called at NES scanline 0
 	tst r1,#1
 	subeq cycles,cycles,#CYCLE	;@ Every other frame has 1 less PPU cycle.
 
-	mov r0,#0
-	strb_ r0,ppuStat			;@ Vbl, sprite0 & sprite ovr clear
-	bl updateINTPin
-
 	bl renderSprites
 
 	ldr_ r0, loopy_t
@@ -1246,7 +1292,7 @@ vram_write_tbl:	;@ For vmdata_W, r0=data, addy=vram addr
 	.word VRAM_name0	;@ $3000
 	.word VRAM_name1	;@ $3400
 	.word VRAM_name2	;@ $3800
-	.word VRAM_pal	;@ $3c00
+	.word VRAM_pal		;@ $3c00
 
 vram_map:	@for vmdata_R
 	.word 0			;@ 0000
@@ -1704,43 +1750,12 @@ PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 
 	ldrb_ r0,ppuCtrl0Frame	;@ 8x16?
 	tst r0,#0x20
+	mov r4,#PRIORITY
 	bne dm4
 ;@- - - - - - - - - - - - - 8x8 size
 							;@ get sprite0 hit pos:
 	tst r0,#0x08			;@ CHR base? (0000/1000)
-	moveq r4,#0+PRIORITY	;@ r4=CHR set+AGB priority
-	movne r4,#0x100+PRIORITY
-	ldrb r0,[addy,#1]		;@ Sprite tile#
-	ldr r1,=NDS_OBJVRAM
-	addne r1,r1,#0x2000
-	add r0,r1,r0,lsl#5		;@ r0=VRAM base+tile*32
-	ldr r1,[r0]				;@ I dont really give a shit about Y flipping at the moment
-	cmp r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	and r0,r0,#31
-	ldrb r1,[addy]			;@ r1=sprite0 Y
-	add r1,r1,#1
-	add r1,r1,r0,lsr#2
-@	moveq r1,#512			;@ Blank tile=no hit
-	cmp r1,#239
-	movhi r1,#512			;@ No hit if Y>239
-	str_ r1,sprite0Y
-@	ldrb r1,[addy,#3]		;@ r1=sprite0 x
-@	strb r1,sprite0X
-
+	orrne r4,r4,#0x100
 dm11:
 	ldr r3,[addy],#4
 	and r0,r3,#0xff
@@ -1780,56 +1795,6 @@ dm10:
 	b dm9
 
 dm4:	@- - - - - - - - - - - - - 8x16 size
-				;@ Check sprite hit:
-	ldrb r0,[addy,#1]		;@ Sprite tile#
-	movs r0,r0,lsr#1
-	orrcs r0,r0,#0x80
-	ldr r1,=NDS_OBJVRAM
-	add r0,r1,r0,lsl#6
-	ldr r1,[r0]
-	cmp r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	ldreq r1,[r0,#4]!
-	cmpeq r1,#0
-	and r0,r0,#63
-	ldrb r1,[addy]			;@ r1=sprite0 Y
-	add r1,r1,#1
-	add r1,r1,r0,lsr#2
-@	moveq r1,#512			;@ Blank tile=no hit
-	cmp r1,#239
-	movhi r1,#512			;@ No hit if Y>239
-	str_ r1,sprite0Y
-@	ldrb r1,[addy,#3]		;@ r1=sprite0 x
-@	strb r1,sprite0X
-
-	mov r4,#PRIORITY
 dm12:
 	ldr r3,[addy],#4
 	and r0,r3,#0xff
@@ -1914,7 +1879,7 @@ masklp:
 	ldrb r1, [r9], #4
 	cmp r1, #239
 	strcs r6, [r5]
-	strcs_ r6, sprite0Y
+//	strcs_ r6, sprite0Y
 	add r4, r1, #1
 	strb r4, [r0, r4]
 	add r5, r5, #8
@@ -2084,7 +2049,7 @@ sp0end:
 	@ldrb r1, [r9]
 	@cmp r0, r1
 	@strne_ r0, sprite0Y
-	str_ r0, sprite0Y
+	//str_ r0, sprite0Y
 	ldmfd sp!, {r0-r5, r11}
 0:
 
