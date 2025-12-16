@@ -23,7 +23,7 @@ latchTbl:	.skip 32
 ;@ Punch Out
 mapper9init:	;@ Really bad PunchOut hack
 ;@----------------------------------------------------------------------------
-	.word empty_W,writeAB,write,write
+	.word rom_W,writeAB,write,write
 map10start:
 	mov r0, #0
 	str_ r0, reg0
@@ -53,7 +53,7 @@ map10start:
 ;@ MMC4
 mapper10init:
 ;@----------------------------------------------------------------------------
-	.word empty_W,write,write,write
+	.word rom_W,write,write,write
 	b map10start
 ;@----------------------------------------------------------------------------
 writeAB:
@@ -184,7 +184,7 @@ latLoop:
 	ldrb r4, [r7, r8, lsr#3]
 
 reChr:
-	ldr_ r3, vromBase
+	ldr_ r3, vmemBase
 	ldrb_ r6, ppuCtrl0
 	tst r6, #0x10
 	bne chrB
@@ -234,7 +234,7 @@ lend:
 
 ;@----------------------------------------------------------------------------
 chrLatch:
-	ldr_ r4, vromBase		;@ r4 returns the new ptr
+	ldr_ r4, vmemBase		;@ r4 returns the new ptr
 	tst r1, #0x8			;@ r1 = ppuCtrl0, r0 = tile#
 	bne spChrB
 spChrA:

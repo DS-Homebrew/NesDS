@@ -33,20 +33,7 @@ KEY_X			= 1024
 KEY_Y			= 2048
 KEY_TOUCH		= 4096
 
-		;@ DMA buffers go in high RAM - stay below 27ffc00 (firmware settings)
-DISPCNTBUFF		= ct_buffer
-BGCNTBUFF		= DISPCNTBUFF + 512*4	;@ Size is 240*16
-BGCNTBUFFB		= BGCNTBUFF + 256 * 16
-
 		;@ Miscellaneous stuff
-
-NES_RAM			= nes_region		;@ Keep $400 byte aligned for 6502 stack
-NES_SRAM		= NES_RAM+0x0800	;@ ***!!! also in c_defs.h
-NES_VRAM		= NES_SRAM+0x2000
-NES_XRAM		= NES_VRAM+0x3000
-CHR_DECODE		= NES_XRAM+0x2000
-MAPPED_RGB		= CHR_DECODE+0x400	;@ Mapped NES palette (for VS unisys)
-;@?			EQU MAPPED_RGB+64*3
 
 NDS_VRAM		= 0x6000000
 NDS_OAM			= 0x7000000

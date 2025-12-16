@@ -11,7 +11,7 @@
 ;@ Vs. Ice Climber
 mapper99init:
 ;@----------------------------------------------------------------------------
-	.word empty_W,empty_W,empty_W,empty_W
+	.word rom_W,rom_W,rom_W,rom_W
 
 	ldrb_ r0,cartFlags
 	orr r0,r0,#VS
@@ -19,6 +19,10 @@ mapper99init:
 
 	adr r0,write4016
 	str_ r0,rp2A03IOWrite
+	ldr r0,=vsJoy0_R		;@ $4016: controller 1
+	str_ r0,rp2A03IORead0
+	ldr r0,=vsJoy1_R		;@ $4017: controller 2
+	str_ r0,rp2A03IORead1
 	adr r0,countCoins
 	str_ r0,rp2A03MemWrite
 
@@ -32,7 +36,7 @@ write4016:
 	bl chr01234567_
 
 	ldmfd sp!,{r0,lr}
-	b joy0_W
+	b standardJoy_W
 ;@----------------------------------------------------------------------------
 countCoins:
 ;@----------------------------------------------------------------------------

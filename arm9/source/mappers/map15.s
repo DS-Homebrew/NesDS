@@ -14,7 +14,7 @@ waste:		.word 0
 ;@ 168-in-1 New Contra Function 16
 mapper15init:
 ;@----------------------------------------------------------------------------
-	.word write800x,void,void,void
+	.word write800x,rom_W,rom_W,rom_W
 
 	mov r0,#0
 	b map89ABCDEF_

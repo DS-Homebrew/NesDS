@@ -120,7 +120,7 @@ mapper20init:
 	@MechanicalSound
 
 	ldr r0, =NES_VRAM
-	str_ r0, vromBase
+	str_ r0, vmemBase
 
 	ldr r0, =NES_DRAM - 0x6000
 	str_ r0, m6502MemTbl + 12

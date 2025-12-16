@@ -10,7 +10,7 @@
 ;@ Kaiketsu Yanchamaru
 mapper97init:
 ;@----------------------------------------------------------------------------
-	.word write97,write97,void,void
+	.word write97,write97,rom_W,rom_W
 
 	mov r0,#-1
 	b map89AB_

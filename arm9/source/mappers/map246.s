@@ -10,7 +10,7 @@
 ;@ 封神榜 (Fēngshénbǎng: Fúmó Sān Tàizǐ).
 mapper246init:
 ;@----------------------------------------------------------------------------
-	.word void, void, void, void
+	.word rom_W, rom_W, rom_W, rom_W
 	ldr r0, =writel
 	str_ r0, m6502WriteTbl+12
 

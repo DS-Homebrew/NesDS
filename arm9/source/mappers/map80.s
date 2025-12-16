@@ -16,7 +16,7 @@ patch:	.byte 0
 ;@ See also mapper 82, 207
 mapper80init:
 ;@----------------------------------------------------------------------------
-	.word void,void,void,void
+	.word rom_W,rom_W,rom_W,rom_W
 
 	adr r0,write80
 	str_ r0,m6502WriteTbl+12

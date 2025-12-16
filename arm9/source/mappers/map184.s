@@ -8,7 +8,7 @@
 ;@ Sunsoft-1
 mapper184init:
 ;@----------------------------------------------------------------------------
-	.word void,void,void,void
+	.word rom_W,rom_W,rom_W,rom_W
 
 	adr r0,write184
 	str_ r0,m6502WriteTbl+12

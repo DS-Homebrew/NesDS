@@ -11,7 +11,7 @@
 ;@ 勇者斗恶龙 VII - Dragon Quest (Yǒngzhě dòu è lóng VII - Dragon Quest),
 mapper245init:
 ;@----------------------------------------------------------------------------
-	.word write0, write1, void, void
+	.word write0, write1, rom_W, rom_W
 	mov r0, #0
 	str_ r0, reg0
 

@@ -7,7 +7,7 @@
 ;@----------------------------------------------------------------------------
 mapper111init:
 ;@----------------------------------------------------------------------------
-	.word void,void,void,void
+	.word rom_W,rom_W,rom_W,rom_W
 
 	adr r0,mapper111write
 	str_ r0,rp2A03MemWrite
@@ -17,7 +17,7 @@ mapper111init:
 ;@----------------------------------------------------------------------------
 mapper111write:
 	tst addy,#0x1000
-	beq empty_W
+	beq rom_W
 	stmfd sp!,{r0,lr}
 	bl map89ABCDEF_
 	ldmfd sp,{r0}

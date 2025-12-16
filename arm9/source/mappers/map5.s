@@ -37,7 +37,7 @@ chrPage11:	.word 0
 ;@ MMC5
 mapper5init:
 ;@----------------------------------------------------------------------------
-	.word void,void,void,void
+	.word rom_W,rom_W,rom_W,rom_W
 
 	adr r1,write0
 	str_ r1,rp2A03MemWrite

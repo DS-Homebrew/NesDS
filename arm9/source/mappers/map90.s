@@ -52,7 +52,7 @@ patch:		.byte
 ;@ Also see mapper 35, 209 & 211
 mapper90init:
 ;@----------------------------------------------------------------------------
-	.word write89,writeAB,writeCD,void
+	.word write89,writeAB,writeCD,rom_W
 
 	stmfd sp!, {lr}
 

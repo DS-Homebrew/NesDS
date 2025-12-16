@@ -25,17 +25,6 @@ mapper1init:
 
 	mov r0,#0x0c			;@ Init MMC1 regs
 	strb_ r0,reg0
-	mov r0,#0x0
-	strb_ r0,reg1
-	strb_ r0,reg2
-	strb_ r0,reg3
-	strb_ r0,shift
-	strb_ r0,regBuf
-	strb_ r0,patch
-	strb_ r0,wramPatch
-
-	mov r0, #0
-	bl map89AB_
 
 	ldr_ r0, prgSize16k
 	cmp r0, #32

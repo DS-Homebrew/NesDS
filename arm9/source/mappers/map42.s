@@ -14,7 +14,7 @@ irqEn:		.byte 0
 ;@ "Mario Baby" (really Bio Miracle Bokutte Upa)
 mapper42init:
 ;@----------------------------------------------------------------------------
-	.word chr01234567_,void,void,write3
+	.word chr01234567_,rom_W,rom_W,write3
 	stmfd sp!, {lr}
 
 	ldr r1,=mem_R60			;@ Swap in ROM at $6000-$7FFF.

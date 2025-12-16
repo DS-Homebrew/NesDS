@@ -242,6 +242,17 @@ void do_top_menu(void)
 
 int autofire_fps = 2;
 
+void setLightGun(bool enable) {
+	if (enable) {
+		__emuflags |= LIGHTGUN;
+		setJoyPort1(1);
+	}
+	else {
+		__emuflags &= ~LIGHTGUN;
+		setJoyPort1(0);
+	}
+}
+
 void autofire_fresh(void)
 {
 	char buf[16];
@@ -812,14 +823,14 @@ void menu_extra_action(void)
 		if(lastbutton_type == 2) {
 			switch(lastbutton_cnt) {
 			case 0:
-				__emuflags|=LIGHTGUN;
+				setLightGun(true);
 				menu_stat = 0;
 				menu_draw = 0;
 				__emuflags &= ~SCREENSWAP;
 				hideconsole();
 				break;
 			case 1:
-				__emuflags|=LIGHTGUN;
+				setLightGun(true);
 				menu_stat = 0;
 				menu_draw = 0;
 				__emuflags |= SCREENSWAP;

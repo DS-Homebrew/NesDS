@@ -15,7 +15,7 @@ pSwitch:	.byte 0
 ;@ Kaiketsu Yanchamaru 2
 mapper32init:
 ;@----------------------------------------------------------------------------
-	.word write8000,writeA000,void,void
+	.word write8000,writeA000,rom_W,rom_W
 
 	bx lr
 ;@----------------------------------------------------------------------------

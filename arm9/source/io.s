@@ -1,40 +1,62 @@
-@---------------------------------------------------------------------------------
+;@-----------------------------------------------------------------------------
 	#include "equates.h"
-@---------------------------------------------------------------------------------
-	.global IO_reset
-	.global joy0_W
-	.global joyflags
-	.global refreshNESjoypads
+;@-----------------------------------------------------------------------------
 	.global joystate
 	.global nifi_keys
 	.global __af_state
 	.global __af_start
-@---------------------------------------------------------------------------------
-.section .text,"ax"
-@---------------------------------------------------------------------------------
-IO_reset:
-@---------------------------------------------------------------------------------
-	mov r0, #0
-	str r0, af_state			@ Clear autofire state
 
-	ldr r0,=joy0_R				@ $4016: controller 1
-	str_ r0,rp2A03IORead0
-	ldr r0,=joy1_R				@ $4017: controller 2
-	str_ r0,rp2A03IORead1
-	ldr r0,=joy0_W				@ $4016: Joypad 0 write
+	.global IO_reset
+	.global setJoyPort1
+	.global refreshNESjoypads
+	.global standardJoy_W
+	.global fourScore_W
+	.global standardJoy0_R
+	.global standardJoy1_R
+	.global vsJoy0_R
+	.global vsJoy1_R
+	.global zapper_R
+	.global joyflags
+;@-----------------------------------------------------------------------------
+.section .text,"ax"
+;@-----------------------------------------------------------------------------
+IO_reset:
+;@-----------------------------------------------------------------------------
+	mov r0, #0
+	str r0, af_state			;@ Clear autofire state
+
+	ldr r0,=standardJoy_W		;@ $4016: Joypad 0 write
 	str_ r0,rp2A03IOWrite
+	ldr r0,=standardJoy0_R		;@ $4016: controller 1
+	str_ r0,rp2A03IORead0
+	ldr r0,=standardJoy1_R		;@ $4017: controller 2
+	str_ r0,rp2A03IORead1
 
 	bx lr
-@---------------------------------------------------------------------------------
-refreshNESjoypads:	@call every frame
-@used to refresh joypad button status
-@---------------------------------------------------------------------------------
+
+;@-----------------------------------------------------------------------------
+setJoyPort1:				;@ r0=controller type, 0=standard, 1=zapper.
+	.type   setJoyPort1 STT_FUNC
+;@-----------------------------------------------------------------------------
+	stmfd sp!,{globalptr,lr}
+	ldr globalptr,=globals	@ init ptr regs
+
+	cmp r0,#1
+	ldreq r0,=zapper_R			;@ $4017: controller 2
+	ldrne r0,=standardJoy1_R	;@ $4017: controller 2
+	str_ r0,rp2A03IORead1
+	ldmfd sp!,{globalptr,lr}
+	bx lr
+;@-----------------------------------------------------------------------------
+refreshNESjoypads:	;@ Call every frame
+;@used to refresh joypad button status
+;@-----------------------------------------------------------------------------
 	ldr r2, =nifi_stat
 	ldr r2, [r2]
 	cmp r2, #5
 	bcs multi_nifi
 
-	ldr r1,=IPC_KEYS		@read the NDS button status
+	ldr r1,=IPC_KEYS		;@ Read the NDS button status
 	ldr r1,[r1]
 
 	@-> R L D U St Sl B A
@@ -42,13 +64,13 @@ refreshNESjoypads:	@call every frame
 	ldr r2,joyflags
 	mov r0,#0
 
-	tst r2,#B_A_SWAP		@swap buttons?
+	tst r2,#B_A_SWAP		;@ Swap buttons?
 	bne rj0
 		tst r1,#KEY_B
 		orrne r0,r0,#1
-		tst r2,#AUTOFIRE	@auto?
+		tst r2,#AUTOFIRE	;@ Auto?
 		tstne r1,#KEY_A
-		orrne r0,r0,#1	
+		orrne r0,r0,#1
 
 		tst r1,#KEY_Y
 		orrne r0,r0,#2
@@ -61,7 +83,7 @@ rj0:
 		orrne r0,r0,#1
 		tst r2,#AUTOFIRE
 		tstne r1,#KEY_X
-		orrne r0,r0,#1	
+		orrne r0,r0,#1
 
 		tst r1,#KEY_B
 		orrne r0,r0,#2
@@ -83,20 +105,22 @@ rj1:
 	orrne r0,r0,#128
 
 	tst r2,#P1_ENABLE
-	orrne r2,r2,r0		@refresh joy0state
+	orrne r2,r2,r0			;@ Refresh joy0state
 	tst r2,#P2_ENABLE
-	orrne r2,r2,r0,lsl#8	@refresh joy1state
-	str r2,joystate		
+	orrne r2,r2,r0,lsl#8	;@ Refresh joy1state
+	str r2,joystate
 
 	b af_fresh
 
 joyflags:	.word P1_ENABLE	@d0-7=pad0, d8-15=pad1, others=flags
 
-joystate:       
+joystate:
 joy0state: .byte 0
 joy1state: .byte 0
-joy2state: .byte 0       
-joy3state: .byte 0      
+joy2state: .byte 0
+joy3state: .byte 0
+outPortVal: .byte 0
+			.space 3
 joy0serial: .word 0
 joy1serial: .word 0
 @nrplayers .long 0	@Number of players in multilink.
@@ -108,46 +132,53 @@ __af_start:
 af_start:		@auto fire start
 	.word 0x101	@af_start 30 fps
 
-@---------------------------------------------------------------------------------
-joy0_W:		@4016
-@writing operation to reset/clear joypad status.
-@---------------------------------------------------------------------------------
-	tst r0,#1		@0 for clear; 1 for reset
-	bxne lr
-	@ldr r2,nrplayers
-	@cmp r2,#3
-	mov r2,#-1
+;@-----------------------------------------------------------------------------
+standardJoy_W:					;@ 4016
+;@writing operation to strobe/clear joypad status.
+;@-----------------------------------------------------------------------------
+	strb r0,outPortVal
+	tst r0,#1				;@ 0 for clear; 1 for strobe
+	bxeq lr
 
 	ldrb r0,joy0state
-	@ldrb r1,joy2state
-	@orr r0,r0,r1,lsl#8
-	orr r0,r0,r2,lsl#8	@for normal joypads.
-	@orrpl r0,r0,#0x00080000	@4player adapter
+	sub r0,r0,#0x100		;@ for normal joypads.
 	str r0,joy0serial
 
 	ldrb r0,joy1state
-	@ldrb r1,joy3state
-	@orr r0,r0,r1,lsl#8
-	orr r0,r0,r2,lsl#8	@for normal joypads.
-	@orrpl r0,r0,#0x00040000	@4player adapter
+	orr r0,r0,#0x100		;@ for normal joypads.
+	str r0,joy1serial
+	bx lr
+;@-----------------------------------------------------------------------------
+fourScore_W:			;@ 4016
+;@writing operation to strobe/clear joypad status.
+;@-----------------------------------------------------------------------------
+	strb r0,outPortVal
+	tst r0,#1				;@ 0 for clear; 1 for strobe
+	bxeq lr
+
+	ldrb r0,joy0state
+	ldrb r1,joy2state
+	orr r0,r0,r1,lsl#8
+	orr r0,r0,#0x00080000	;@ 4player adapter
+	str r0,joy0serial
+
+	ldrb r0,joy1state
+	ldrb r1,joy3state
+	orr r0,r0,r1,lsl#8
+	orr r0,r0,#0x00040000	;@ 4player adapter
 	str r0,joy1serial
 	bx lr
 @---------------------------------------------------------------------------------
-joy0_R:		@4016
+standardJoy0_R:			;@ 4016
 @---------------------------------------------------------------------------------
 	ldr r0,joy0serial
+	ldrb r1,outPortVal
+	tst r1,#1				;@ Strobe on?
 	mov r1,r0,asr#1
 	and r0,r0,#1
-	str r1,joy0serial
+	streq r1,joy0serial		;@ Only shift when not strobe
 
-	ldrb_ r1,cartFlags
-	tst r1,#VS
-	orreq r0,r0,#0x40
-	bxeq lr
-
-	ldrb r1,joy0state
-	tst r1,#8		@start=coin (VS)
-	orrne r0,r0,#0x40
+	orr r0,r0,#0x40			;@ Open bus value
 
 	ldr_ r1, emuFlags
 	tst r1, #MICBIT
@@ -157,16 +188,55 @@ joy0_R:		@4016
 
 	bx lr
 @---------------------------------------------------------------------------------
-joy1_R:		@4017
+vsJoy0_R:				;@ 4016
 @---------------------------------------------------------------------------------
-	ldr r0,joy1serial
+	ldr r0,joy0serial
+	ldrb r1,outPortVal
+	tst r1,#1				;@ Strobe on?
 	mov r1,r0,asr#1
 	and r0,r0,#1
-	str r1,joy1serial
+	streq r1,joy0serial		;@ Only shift when not strobe
 
-	ldr_ r1, emuFlags
-	tst r1, #LIGHTGUN
-	beq 0f
+	ldrb r1,joy0state
+	tst r1,#8				;@ Start = Coin
+	orrne r0,r0,#0x40
+
+	bx lr
+@---------------------------------------------------------------------------------
+standardJoy1_R:			;@ 4017
+@---------------------------------------------------------------------------------
+	ldr r0,joy1serial
+	ldrb r1,outPortVal
+	tst r1,#1				;@ Strobe on?
+	mov r1,r0,asr#1
+	and r0,r0,#1
+	streq r1,joy1serial
+
+	orr r0,r0,#0x40			;@ Open bus value
+
+	bx lr
+@---------------------------------------------------------------------------------
+vsJoy1_R:				;@ 4017
+@---------------------------------------------------------------------------------
+	ldr r0,joy1serial
+	ldrb r1,outPortVal
+	tst r1,#1				;@ Strobe on?
+	mov r1,r0,asr#1
+	and r0,r0,#1
+	streq r1,joy1serial
+
+	orr r0,r0,#0xf8			;@ VS dip switches
+
+	bx lr
+@---------------------------------------------------------------------------------
+zapper_R:				;@ 4016/4017
+@---------------------------------------------------------------------------------
+	ldr r0,joy1serial
+	ldrb r1,outPortVal
+	tst r1,#1				;@ Strobe on?
+	mov r1,r0,asr#1
+	and r0,r0,#1
+	streq r1,joy1serial
 
 	ldr r1, =IPC_KEYS
 	ldr r2, [r1]
@@ -182,7 +252,7 @@ joy1_R:		@4017
 
 	ldr_ r1, lightY
 
-	add r2, r2, r1, lsl#8		@r2 = renderData
+	add r2, r2, r1, lsl#8		;@ r2 = renderData
 	ldrb r2, [r2]
 
 	adr r1, bright
@@ -190,11 +260,6 @@ joy1_R:		@4017
 	ldrb r2, [r1, r2]
 	ands r2, r2, r2
 	orreq r0, r0, #8
-
-0:
-	ldrb_ r1,cartFlags 
-	tst r1,#VS
-	orrne r0,r0,#0xf8	@VS dip switches
 
 	bx lr
 @------
@@ -263,7 +328,7 @@ rj3:
 		orrne r0,r0,#(1 << 8)
 		tst r2,#AUTOFIRE	@auto?
 		tstne r1,#KEY_A
-		eorne r0,r0,#(1 << 8)	
+		eorne r0,r0,#(1 << 8)
 
 		tst r1,#KEY_Y
 		orrne r0,r0,#(2 << 8)
@@ -276,7 +341,7 @@ rj4:
 		orrne r0,r0,#(1 << 8)
 		tst r2,#AUTOFIRE
 		tstne r1,#KEY_X
-		eorne r0,r0,#(1 << 8)	
+		eorne r0,r0,#(1 << 8)
 
 		tst r1,#KEY_B
 		orrne r0,r0,#(2 << 8)

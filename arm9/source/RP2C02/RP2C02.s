@@ -1217,7 +1217,7 @@ newframe:	;@ Called at NES scanline 0
 	tst r0, #SOFTRENDER
 	bne nfsoft
 
-	ldr_ r0, vromBase
+	ldr_ r0, vmemBase
 	ldr r1, =NES_VRAM
 	cmp r0, r1		;@ Means that the game does NOT have any vrom.
 	bne 0f
@@ -1307,10 +1307,10 @@ nes_nt0: .word NES_VRAM+0x2000	;@ 2000
 nes_nt1: .word NES_VRAM+0x2000	;@ 2400
 nes_nt2: .word NES_VRAM+0x2400	;@ 2800
 nes_nt3: .word NES_VRAM+0x2400	;@ 2c00
-	.word NES_VRAM+0x2000	;@ 3000
-	.word NES_VRAM+0x2000	;@ 3400
-	.word NES_VRAM+0x2400	;@ 3800
-	.word NES_VRAM+0x2400	;@ 3c00
+		.word NES_VRAM+0x2000	;@ 3000
+		.word NES_VRAM+0x2000	;@ 3400
+		.word NES_VRAM+0x2400	;@ 3800
+		.word NES_VRAM+0x2400	;@ 3c00
 
 agb_nt_map:
 	.word 0,0,0,0
@@ -1335,8 +1335,7 @@ mirror1H_:
 	adrne r0,m0000
 	b mirrorchange
 mirrorKonami_:
-	movs r1,r0,lsr#2
-	tst r0,#1
+	movs r1,r0,lsl#31
 	bcc mirror2V_
 @	bcs mirror1_
 mirror1_:
@@ -1406,9 +1405,7 @@ resetCHR:	;@ Initialize CHR  - used by loadcart
 	str r0,currentBG
 	str r0,nextBG
 
-	mov r0,#0
 	strb_ r0,ppuCtrl0	;@ BG gets tileset 0 (ensures first banks get cached first for chr-ram)
-	mov r0,#0
 	bl chr01234567_		;@ Default CHR mapping
 	bl updateBGCHR
 
@@ -1447,7 +1444,7 @@ chr1k:
 	add r2, r2, r1, lsl#1
 	strh r0,[r2]
 
-	ldr_ r2,vromBase
+	ldr_ r2,vmemBase
 	add r0,r2,r0,lsl#10
 	ldr r2,=vram_map
 	str r0,[r2,r1,lsl#2]
@@ -1477,7 +1474,7 @@ chr2k:
 	strh r0,[r2,#2]
 	bic r0, r0, #1
 
-	ldr_ r2,vromBase
+	ldr_ r2,vmemBase
 	add r0,r2,r0,lsl#10
 	ldr r2,=vram_map
 	str r0,[r2,r1,lsl#2]!
@@ -1498,7 +1495,7 @@ chr0123_:
 	orr r2,r1,r2
 	str_ r2,nesChrMap+4
 
-	ldr_ r1,vromBase
+	ldr_ r1,vmemBase
 	add r1,r1,r0,lsl#12
 	str r1,vram_map
 	add r1,r1,#0x400
@@ -1528,7 +1525,7 @@ chr01234567_:
 	orr r2,r1,r2
 	str_ r2,nesChrMap+12
 
-	ldr_ r1,vromBase
+	ldr_ r1,vmemBase
 	add r1,r1,r0,lsl#13
 	str r1,vram_map
 	add r1,r1,#0x400
@@ -1553,7 +1550,7 @@ chr4567_:
 	orr r2,r1,r2
 	str_ r2,nesChrMap+12
 
-	ldr_ r1,vromBase
+	ldr_ r1,vmemBase
 	add r1,r1,r0,lsl#12
 _4567:	str r1,vram_map+16
 	add r1,r1,#0x400
@@ -1668,7 +1665,7 @@ bg0:
 	 addeq agbptr,agbptr,#0x800
 	 beq bg2
 	 mov tilecount,#64
-	 ldr_ nesptr,vromBase
+	 ldr_ nesptr,vmemBase
 	 add nesptr,nesptr,r0,lsl#10	;@ Bank#*$400
 bg1:
 	  ldrb r0,[nesptr],#1
@@ -1693,7 +1690,7 @@ bg0_:
 	 addeq agbptr,agbptr,#0x800
 	 beq bg2_
 	 mov tilecount,#64
-	 ldr_ nesptr,vromBase
+	 ldr_ nesptr,vmemBase
 	 add nesptr,nesptr,r0,lsl#10	;@ Bank#*$400
 bg1_:
 	  ldrb r0,[nesptr],#1
@@ -2250,7 +2247,7 @@ vromNT1k:	;@ r1=nt0...3
 	add r2, r2, r1, lsl#1
 	strh r0, [r2]
 
-	ldr_ r3, vromBase
+	ldr_ r3, vmemBase
 	ldr r2, =NDS_BG + 0x2000	;@ Point to a free Map area.
 	add r2, r2, r1, lsl#11
 	add r4, r3, r0, lsl#10

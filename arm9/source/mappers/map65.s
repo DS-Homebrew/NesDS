@@ -18,7 +18,7 @@ mSwitch:	.byte 0
 ;@ Spartan X 2
 mapper65init:
 ;@----------------------------------------------------------------------------
-	.word write8000,writeA000,writeC000,void
+	.word write8000,writeA000,writeC000,rom_W
 
 	adr r0,hook
 	str_ r0,scanlineHook
