@@ -11,7 +11,7 @@
 ;@ Urusei Yatsura...
 mapper86init:
 ;@----------------------------------------------------------------------------
-	.word void,void,void,write86
+	.word rom_W,rom_W,rom_W,write86
 	adr r1,write86
 	str_ r1,m6502WriteTbl+12
 	mov r0,#0

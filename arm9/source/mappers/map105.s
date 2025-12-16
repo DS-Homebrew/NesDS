@@ -37,25 +37,13 @@ latchBit:	.byte 0
 ;@ Nintendo World Championships
 mapper105init:
 ;@----------------------------------------------------------------------------
-	.word write0,write1,void,write3
+	.word write0,write1,rom_W,write3
 
 	adr r0,hook
 	str_ r0,scanlineHook
 
 	mov r0,#0x0c	;@ Init MMC1 regs
 	strb_ r0,reg0
-@	mov r0,#0x00
-@	strb r0,reg1
-@	strb r0,reg2
-@	strb r0,reg3
-@reset
-	mov r0,#0
-	strb_ r0,latch
-	strb_ r0,latchBit
-
-@	ldrb r0,reg0
-@	orr r0,r0,#0x0c
-@	strb r0,reg0
 
 	mov r0,#0
 	b map89ABCDEF_

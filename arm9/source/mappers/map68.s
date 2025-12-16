@@ -63,7 +63,7 @@ write3:
 ;@----------------------
 setNTManualy:
 	stmfd sp!, {r3-r9, lr}
-	ldr_ r3, vromBase
+	ldr_ r3, vmemBase
 	add r3, r3, #(0x80<<10)		;@ Cal the base
 	ldrb_ r4, reg2
 	ldrb_ r5, reg3

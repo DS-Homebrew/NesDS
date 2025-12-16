@@ -22,7 +22,7 @@ romType:	.byte 0
 ;@ Final Fantasy IV - 最终幻想 4꞉ 光与暗 水晶纷争 (NJ098)
 mapper163init:
 ;@----------------------------------------------------------------------------
-	.word void, void, void, void
+	.word rom_W, rom_W, rom_W, rom_W
 
 	mov r0, #0xFF
 	strb_ r0, reg1

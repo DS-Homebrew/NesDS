@@ -7,9 +7,6 @@
 
 //#define DTCM 0x0b000000
 
-#define NES_RAM nes_region
-#define NES_SRAM NES_RAM + 0x800
-//nes_region
 #define MAX_IPS_SIZE 0x80000		//actually, the ips file won't be larger than 512kB.
 #define ROM_MAX_SIZE 0x2b0000		//2,7MB free rom space
 #define MAXFILES 1024
@@ -263,8 +260,8 @@ extern void setbarcodedata( char *code, int len );
 extern u8 rom_start[];
 extern u8 rom_files[];
 extern u32 ipc_region[];
-extern u8 nes_region[];
-extern u8 ct_buffer[];
+extern u8 NES_RAM[];
+extern u8 NES_SRAM[];
 
 //menu.h
 void do_menu();

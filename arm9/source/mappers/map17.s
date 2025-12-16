@@ -12,7 +12,7 @@ enable:		.byte 0
 ;@ Front Fareast Super Magic Card
 mapper17init:
 ;@----------------------------------------------------------------------------
-	.word void,void,void,void
+	.word rom_W,rom_W,rom_W,rom_W
 
 	adr r1,write0
 	str_ r1,rp2A03MemWrite

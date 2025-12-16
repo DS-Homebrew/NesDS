@@ -146,7 +146,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	str_ r0,romMask			@ romMask=romSize-1
 
 	add r0,r3,r1,lsl#14		@ r0 = rom end.(romsize + rom start)
-	str_ r0,vromBase		@ set vrom base
+	str_ r0,vmemBase		@ set vmem base
 
 	ldrb r4,[r3,#-11]		@ 8K CHR-ROM page count
 	movne r4, #0			@ nsf has none?
@@ -166,7 +166,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	rsbs r0,r2,r1,lsl#13	@ r0 = VROM page size * 8K - 1
 	str_ r0,vromMask		@ vromMask=vromSize-1
 	ldrmi r0,=NES_VRAM
-	strmi_ r0,vromBase		@ vromBase=NES VRAM if vromSize=0
+	strmi_ r0,vmemBase		@ vmemBase=NES VRAM if vromSize=0
 
 	ldr r0,=void
 	ldrmi r0,=VRAM_chr		@ enable/disable chr write
@@ -277,7 +277,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	str_ r1,m6502MemTbl+4
 	ldr r1,=NES_XRAM-0x4000
 	str_ r1,m6502MemTbl+8
-	ldr r1,=NES_RAM-0x5800	@ $6000 for mapper 40, 69 & 90 that has rom here.
+	ldr r1,=NES_SRAM-0x6000	@ $6000 for mapper 40, 69 & 90 that has rom here.
 	str_ r1,m6502MemTbl+12
 
 	ldrb r1,[r3,#-10]		@ get mapper#
@@ -355,7 +355,8 @@ ss0:
 
 	ldmfd sp!,{r4-r6,globalptr,pc}
 
-savelst: .word NES_RAM,0x2800
+savelst:
+	.word NES_RAM,0x2800
 	.word NES_VRAM,0x3000
 	.word agb_pal,96
 	.word vram_map,64

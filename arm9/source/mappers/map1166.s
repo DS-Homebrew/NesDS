@@ -32,7 +32,7 @@ mapper66init:
 ;@ Bio Senshi Dan - Increaser Tono Tatakai
 mapper140init:
 ;@----------------------------------------------------------------------------
-	.word void,void,void,void
+	.word rom_W,rom_W,rom_W,rom_W
 
 	adr r1,write66
 	str_ r1,m6502WriteTbl+12

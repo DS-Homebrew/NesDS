@@ -13,7 +13,7 @@
 ;@ Also see mapper 95, 158 & 207
 mapper118init:
 ;@----------------------------------------------------------------------------
-	.word write0, empty_W, mmc3CounterW, mmc3IrqEnableW
+	.word write0, rom_W, mmc3CounterW, mmc3IrqEnableW
 	b mmc3Init
 
 ;@----------------------------------------------------------------------------

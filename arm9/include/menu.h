@@ -97,6 +97,8 @@ void menu_list_action(void);
 void menu_cht_action(void);
 void menu_debug_start(void);
 void menu_debug_action(void);
+
+void setLightGun(bool enable);
 void autofire_fresh(void);
 
 void menu_shortcut_start(void);
@@ -113,3 +115,5 @@ void menu_saveini(void);
 void menu_extra_barcode_start(void);
 
 void show_all_pixel(void);
+
+void setJoyPort1(int joyType);		// From io.s

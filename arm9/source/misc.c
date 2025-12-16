@@ -322,7 +322,7 @@ void do_quickf(int func)
 		write_savestate(slots_num);
 		break;
 	case 2:
-		__emuflags &= ~LIGHTGUN;
+		setLightGun(false);
 		do_rommenu();
 		break;
 	case 3:
@@ -385,26 +385,18 @@ void do_quickf(int func)
 		}
 		break;
 	case 15:
-		{
-			if(!(__emuflags & LIGHTGUN))
-				__emuflags ^= SCREENSWAP;
-		}
+		if(!(__emuflags & LIGHTGUN))
+			__emuflags ^= SCREENSWAP;
 		break;
 	case 16:
-		{
-			__emuflags &= ~LIGHTGUN;
-			__emuflags &= ~SCREENSWAP;
-		}
+		setLightGun(false);
+		__emuflags &= ~SCREENSWAP;
 		break;
 	case 17:
-		{
-			__emuflags |= FASTFORWARD;
-		}
+		__emuflags |= FASTFORWARD;
 		break;
 	case 18:
-		{
-			__emuflags |= REWIND;
-		}
+		__emuflags |= REWIND;
 		break;
 	default:
 		break;

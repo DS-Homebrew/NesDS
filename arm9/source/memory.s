@@ -20,14 +20,23 @@
 	.global mem_WC0
 	.global mem_WE0
 	.global filler
+
+	.global DISPCNTBUFF
+	.global BGCNTBUFF
+	.global BGCNTBUFFB
+	.global NES_RAM
+	.global NES_NTRAM
+	.global NES_SRAM
+	.global NES_VRAM
+	.global NES_XRAM
+	.global CHR_DECODE
+	.global MAPPED_RGB
 	.global NES_DRAM
 	.global NES_DISK
 
 	.global rom_files
 	.global rom_start
 	.global ipc_region
-	.global nes_region
-	.global ct_buffer
 
 #ifdef ROM_EMBEDED
 	.global romebd_s
@@ -101,31 +110,31 @@ rom_RE0:	@rom read ($E000-$FFFF)
 	ldrb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
-mem_W80:	@rom write ($8000-$9FFF)
+mem_W80:	@cart write ($8000-$9FFF)
 @---------------------------------------------------------------------------------
 	ldr_ r1,m6502MemTbl+16
 	strb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
-mem_WA0:	@rom write ($A000-$BFFF)
+mem_WA0:	@cart write ($A000-$BFFF)
 @---------------------------------------------------------------------------------
 	ldr_ r1,m6502MemTbl+20
 	strb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
-mem_WC0:	@rom write ($C000-$DFFF)
+mem_WC0:	@cart write ($C000-$DFFF)
 @---------------------------------------------------------------------------------
 	ldr_ r1,m6502MemTbl+24
 	strb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
-mem_WE0:	@rom write ($E000-$FFFF)
+mem_WE0:	@cart write ($E000-$FFFF)
 @---------------------------------------------------------------------------------
 	ldr_ r1,m6502MemTbl+28
 	strb r0,[r1,addy]
 	bx lr
 @---------------------------------------------------------------------------------
-@mem_R	@mem read ($8000-$FFFF) (actually $6000-$FFFF now)
+@mem_R	@mem read ($6000-$FFFF)
 @---------------------------------------------------------------------------------
 @	adr r2,m6502MemTbl
 @	ldr r1,[r2,r1,lsr#11] @r1=addy & 0xe000
@@ -157,12 +166,32 @@ hblankinterrupt:
 ipc_region:
 	.skip 8192
 
-ct_buffer:
-	.skip 512*20			@DISPCNTBUFF & BGCNTBUFF
-.align 10				@0x400 aligned
+DISPCNTBUFF:
+	.skip 512 * 4
+BGCNTBUFF:
+	.skip 256 * 16
+BGCNTBUFFB:
+	.skip 512 * 8
 
-nes_region:				@NES_RAM should be 0x400 bytes aligned.... 
-	.skip 0x800 + 0x2000 + 0x3000 + 0x2000 + 0x400 + 0x100 + 0x100
+.align 10				@0x400 aligned
+;@ Internal NES RAM
+NES_RAM:				@NES_RAM should be 0x400 bytes aligned....
+	.skip 0x800
+NES_NTRAM:
+	.skip 0x800
+
+;@ Different kinds of Cartridge RAM
+NES_VRAM:
+	.skip 0x3000
+NES_SRAM:
+	.skip 0x2000
+NES_XRAM:
+	.skip 0x2000
+
+CHR_DECODE:
+	.skip 0x400
+MAPPED_RGB:
+	.skip 0x100
 
 #ifdef ROM_EMBEDED
 
