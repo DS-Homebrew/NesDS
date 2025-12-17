@@ -61,7 +61,7 @@ typedef struct {
 	u32 loopy_y;
 	u32 loopy_v;
 
-	u32 vromMask;
+	u32 vmemMask;
 	u32 vmemBase;
 	u32 palSyncLine;
 

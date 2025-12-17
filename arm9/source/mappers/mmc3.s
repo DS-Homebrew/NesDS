@@ -5,6 +5,8 @@
 	.global mmc3SetBankPpu
 	.global mmc3SetBankCpu
 	.global mmc3MappingW
+	.global mmc3Mapping0W
+	.global mmc3Mapping1W
 	.global mmc3MirrorW
 	.global mmc3CounterW
 	.global mmc3IrqEnableW
@@ -48,8 +50,7 @@ mmc3Init:
 	ldr r0,=mmc3HSync
 	str_ r0,scanlineHook
 
-	ldmfd sp!, {lr}
-	bx lr
+	ldmfd sp!, {pc}
 
 ;@----------------------------------------------------------------------------
 mmc3SetBankCpu:
@@ -134,15 +135,16 @@ mmc3SetBankPpu:
 mmc3MappingW:		;@ 8000-9FFF
 ;@----------------------------------------------------------------------------
 	tst addy, #1
-	bne w8001
+	bne mmc3Mapping1W
 
+mmc3Mapping0W:
 	strb_ r0, reg0
 	stmfd sp!, {lr}
 	bl mmc3SetBankCpu
 	ldmfd sp!, {lr}
 	b mmc3SetBankPpu
 
-w8001:
+mmc3Mapping1W:
 	strb_ r0, reg1
 	ldrb_ r1, reg0
 	and r1, r1, #7

@@ -6,10 +6,13 @@
 .section .text,"ax"
 ;@----------------------------------------------------------------------------
 ;@ RetroUSB UNROM 512
-;@ Uses bankable CHR RAM.
+;@ Uses 32kB bankable CHR RAM.
 mapper30init:
 ;@----------------------------------------------------------------------------
 	.word mapper30Write,mapper30Write,mapper30Write,mapper30Write
+	mov r0,#0x8000
+	sub r0,r0,#1
+	str_ r0,vmemMask		@ vmemMask=vmemSize-1
 	bx lr
 
 mapper30Write:

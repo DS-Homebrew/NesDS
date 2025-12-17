@@ -1,6 +1,7 @@
 ;@----------------------------------------------------------------------------
 	#include "equates.h"
 ;@----------------------------------------------------------------------------
+	.global mapper71init
 	.global mapper232init
 
 	.struct mapperData
@@ -11,18 +12,32 @@ mapbyte2:	.byte 0
 ;@----------------------------------------------------------------------------
 ;@ Camerica/Codemasters mapper
 ;@ Used in:
+;@ MiG 29 - Soviet Fighter
+;@ Fire Hawk
+;@ The Fantastic Adventures of Dizzy
+;@ Bee 52
+mapper71init:
+;@----------------------------------------------------------------------------
+	.word map71w,rom_W,map89AB_,map89AB_
+	bx lr
+;@----------------------------------------------------------------------------
+;@ Camerica/Codemasters mapper
+;@ Used in:
 ;@ Quattro Adventure
 ;@ Quattro Sports
 ;@ Quattro Arcade
-;@ Also see mapper 71
 mapper232init:
 ;@----------------------------------------------------------------------------
 	.word write0,write0,write1,write1
-
 	mov r0,#0x18
 	strb_ r0,mapbyte1
-
 	bx lr
+;@----------------------------------------------------------------------------
+map71w:
+	tst addy,#0x1000
+	bxeq lr
+	tst r0,#0x10
+	b mirror1_
 ;@----------------------------------------------------------------------------
 write0:
 ;@----------------------------------------------------------------------------

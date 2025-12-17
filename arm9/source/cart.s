@@ -87,6 +87,7 @@ mappertbl:
 	.word 151,mapper151init
 	.word 152,mapper152init
 	.word 153,mapper16init
+	.word 155,mapper155init
 	.word 157,mapper16init
 	.word 158,mapper64init
 	.word 159,mapper159init
@@ -130,13 +131,13 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	ldr_ r1,emuFlags
 	tst r1, #NSFFILE
 	addeq r3,r0,#16			@ skip over iNES header
-	addne r3, r0, #128		@ skip nsf file header
+	addne r3,r0,#128		@ skip nsf file header
 	str_ r3,romBase			@ set rom base.  r3=romBase til end of initcart
 
 	mov r2,#1
 	ldrb r1,[r3,#-12]		@ r1 = 16K PRG-ROM page count
 	movne r1, #1			@ nsf has 16k?
-	str_ r1,prgSize16k		@ some games' prg rom not == to (2**n), shit...
+	str_ r1,prgSize16k		@ some games prg rom not == to (2**n), shit...
 	mov r0, r1, lsl#1
 	str_ r0,prgSize8k
 	mov r0, r1, lsr#1
@@ -164,7 +165,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	cmp r4,#64
 	movhi r1,#128
 	rsbs r0,r2,r1,lsl#13	@ r0 = VROM page size * 8K - 1
-	str_ r0,vromMask		@ vromMask=vromSize-1
+	str_ r0,vmemMask		@ vmemMask=vromSize-1
 	ldrmi r0,=NES_VRAM
 	strmi_ r0,vmemBase		@ vmemBase=NES VRAM if vromSize=0
 
@@ -175,7 +176,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	bl filler
 
 	stmfd sp!, {r3, r12}
-	mov r0, #0				@ init val, cal crc for prgrom
+	mov r0, #0				@ init val, calc crc for prgrom
 	ldr_ r1, romBase		@ src
 	ldr_ r2, prgSize8k		@ size
 	mov r2, r2, lsl#13
@@ -215,7 +216,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	mov r2,#0x800/4			
 	bl filler				@ reset NES RAM
 	mov r0,#0				@ clear nes sram
-	add r1,m6502zpage,#0x800	@ save ram = SRAM
+	ldr r1,=NES_SRAM
 	mov r2,#0x2000/4
 	bl filler
 	adrl_ r1,mapperData		@ clear mapperData so we dont have to do that in every MapperInit.
@@ -223,8 +224,8 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	bl filler
 
 	mov r0,#0x7c			@ I didnt like the way below to change the init mem for fixing some games.
-	mov r1,m6502zpage
-	ldr r2,=0x247d			@ 0x7c7d
+	ldr r1,=NES_SRAM
+	ldr r2,=0x147d			@ 0x7c7d
 	strb r0,[r1,r2]			@ for "Low G Man".
 	add r2,r2,#0x100
 	mov r0,#0x7d
