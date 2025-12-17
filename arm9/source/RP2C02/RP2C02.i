@@ -53,7 +53,7 @@ loopy_x:		.long 0
 loopy_y:		.long 0
 loopy_v:		.long 0
 
-vromMask:		.long 0
+vmemMask:		.long 0
 vmemBase:		.long 0
 palSyncLine:	.long 0
 

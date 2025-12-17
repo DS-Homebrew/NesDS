@@ -28,7 +28,7 @@ void do_romebd()
 void showversion()
 {
 	memset((void *)(SUB_BG),0,64*3);
-	consoletext(64*2-32,"       nesDS 2.0.1______________________________",0);
+	consoletext(64*2-32,"     nesDS 2.0.1________________________________",0);
 }
 
 /*****************************

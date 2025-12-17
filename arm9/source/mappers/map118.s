@@ -10,7 +10,7 @@
 ;@ Used in:
 ;@ Armadillo
 ;@ Pro Sport Hockey
-;@ Also see mapper 95, 158 & 207
+;@ Also see mapper 95, 119, 158 & 207
 mapper118init:
 ;@----------------------------------------------------------------------------
 	.word write0, rom_W, mmc3CounterW, mmc3IrqEnableW
@@ -20,7 +20,7 @@ mapper118init:
 write0:			;@ 8000-9FFF
 ;@----------------------------------------------------------------------------
 	tst addy, #1
-	beq mmc3MappingW
+	beq mmc3Mapping0W
 
 w8001:
 	stmfd sp!, {lr}
@@ -41,11 +41,4 @@ w8001:
 	bl mirror1H_
 1:
 	ldmfd sp!, {lr}
-	ldrb_ r0, reg1
-	ldrb_ r1, reg0
-	and r1, r1, #7
-	adrl_ r2, chr01
-	strb r0, [r2, r1]
-	cmp r1, #6
-	bcc mmc3SetBankPpu
-	b mmc3SetBankCpu
+	b mmc3Mapping1W

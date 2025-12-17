@@ -7,12 +7,6 @@
 #define	MMC3_IRQ_ROCKMAN3	5
 ;@----------------------------------------------------------------------------
 	.global mapper4init
-	.global mmc3SetBankCpu
-	.global mmc3MappingW
-	.global mmc3MirrorW
-	.global mmc3CounterW
-	.global mmc3IrqEnableW
-	.global mmc3HSync
 
 	.struct mmc3Extra
 vs_patch:	.byte 0
@@ -26,22 +20,13 @@ irq_type:	.byte 0
 mapper4init:
 ;@----------------------------------------------------------------------------
 	.word mmc3MappingW, mmc3MirrorW, mmc3CounterW, mmc3IrqEnableW
-	stmfd sp!, {lr}
-
-	bl mmc3Init
-
-	mov r0, #0
-	strb_ r0, irq_type
-	strb_ r0, vs_patch
-	strb_ r0, vs_index
 
 	adr r0, writel
 	str_ r0, rp2A03MemWrite
 	adr r0, readl
 	str_ r0, rp2A03MemRead
 
-	ldmfd sp!, {lr}
-	bx lr
+	b mmc3Init
 
 @patch for games...
 	@ldrb_ r0, irq_type

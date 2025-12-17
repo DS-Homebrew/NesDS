@@ -74,14 +74,13 @@ writel:			@($6000-$7FFF)
 	strb_ r0,prg1
 
 	ldrb_ r0,reg0
-	ldr addy,=0x8000
-	b mmc3MappingW
+	b mmc3Mapping0W
 
 ;@----------------------------------------------------------------------------
 write0:			@($8000-$9FFF)
 ;@----------------------------------------------------------------------------
 	tst addy, #1
-	beq mmc3MappingW
+	beq mmc3Mapping0W
 
 w8001:
 	ldrb_ r1, reg0
@@ -94,5 +93,5 @@ w8001:
 	andeq r0,r0,r1			;@ PRG, one bank is 128Kb
 	ldreqb_ r1,outerCpuBank
 	orreq r0,r0,r1,lsl#2
-	b mmc3MappingW
+	b mmc3Mapping1W
 ;@----------------------------------------------------------------------------

@@ -181,10 +181,10 @@ NES_NTRAM:
 	.skip 0x800
 
 ;@ Different kinds of Cartridge RAM
-NES_VRAM:
-	.skip 0x3000
 NES_SRAM:
 	.skip 0x2000
+NES_VRAM:
+	.skip 0x8000
 NES_XRAM:
 	.skip 0x2000
 

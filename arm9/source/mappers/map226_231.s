@@ -82,7 +82,7 @@ mapper231init:
 	.word w231, w231, w231, w231
 
 	stmfd sp!, {lr}
-	ldr_ r1, vromMask
+	ldr_ r1, vmemMask
 	tst r1, #0x80000000
 	moveq r0, #0
 	bleq chr01234567_

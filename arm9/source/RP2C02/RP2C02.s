@@ -49,7 +49,6 @@
 	.global mirror4_
 	.global mirrorKonami_
 	.global mirror_xram_0000
-	.global agb_bg_map
 	.global resetCHR
 	.global writeCHRTBL
 	.global chr1k
@@ -291,8 +290,6 @@ rs1:	movs r4,r1,asr#16
 	bcc rs1
 
 	mov r1,#REG_BASE		;@ Change blend control for scaling type
-	@ldr r0,=emuFlags
-	@ldr r0,[r0]
 	ldr_ r0,emuFlags
 	tst r0,#ALPHALERP
 	ldrne r2,=0x08082241
@@ -398,9 +395,6 @@ EMU_VBlank:	;@ Call every vblank
 	tst r0, #SOFTRENDER
 	bne svbEnd
 
-	@ldr_ r0,=emuFlags
-	@ldr r0,[r0]
-	ldr_ r0,emuFlags
 	mov r3, #0					;@ Reset the scale, a fake one...
 	tst r0,#NOFLICKER
 	bne ev0
@@ -574,7 +568,7 @@ ppusync:		;@ Called on NES scanline 0..239 (r0=line)
 
 	@- - -
 	ldr_ r0, emuFlags
-	tst r0, #0x40		;@ Sprite render type
+	tst r0, #SPLINE		;@ Sprite render type
 	beq 0f
 	stmfd sp!, {r4-r12}
 	bl spchr_update
@@ -676,6 +670,10 @@ checkSprite0Collision:		;@ r0=spriteLine
 	cmp r1, #0x1800				;@ Sprites & BG on?
 	bxne lr
 	ldrb r1,[r2,#1]				;@ Sprite tile#
+	tst r12,#0x20				;@ PPU reg 0 8x16?
+	tstne r1,#1
+	bicne r1,#1
+	orrne r1,r1,#0x100
 	ldr r3,=NDS_OBJVRAM
 	tst r12,#0x08				;@ PPU reg 0 CHR base? (0000/1000)
 	addne r3,r3,#0x2000
@@ -1096,8 +1094,6 @@ writeBG:		;@ loadcart jumps here
 	and r1,r1,#0xf000
 	orr r1,r0,r1
 	strh r1,[r2,addy]	;@ Write tile#
-		cmp r0,#0xfd	@mapper 9 shit..
-		bhs mapper9BGcheck
 	bx lr
 writeAttrib:
 	stmfd sp!,{r3,r4,lr}
@@ -1107,7 +1103,7 @@ writeAttrib:
 	and addy,addy,#0x07
 	add addy,addy,r1,lsl#2
 	add addy,r2,addy,lsl#3
-	ldr r3,=0x00ff00ff
+	ldr r3,=0x01ff01ff
 	ldr r4,=0x00030003
 
 	ldr r1,[addy]
@@ -1239,7 +1235,7 @@ newframe:	;@ Called at NES scanline 0
 	str r0,DMAline
 
 	ldr_ r0, emuFlags
-	tst r0, #0x40			;@ Sprite render type
+	tst r0, #SPLINE			;@ Sprite render type
 	bleq updateOBJCHR		;@ (nes_zpage still valid here)
 ;@------------------------
 	ldr_ r0, emuFlags
@@ -1277,14 +1273,14 @@ nfsoft:
 agb_pal:		.skip 32*2	;@ Copy this to real AGB palette every frame
 
 vram_write_tbl:	;@ For vmdata_W, r0=data, addy=vram addr
-	.word 0
-	.word 0
-	.word 0
-	.word 0
-	.word 0
-	.word 0
-	.word 0
-	.word 0
+	.word void
+	.word void
+	.word void
+	.word void
+	.word void
+	.word void
+	.word void
+	.word void
 	.word VRAM_name0	;@ $2000
 	.word VRAM_name1	;@ $2400
 	.word VRAM_name2	;@ $2800
@@ -1303,28 +1299,28 @@ vram_map:	@for vmdata_R
 	.word 0			;@ 1400
 	.word 0			;@ 1800
 	.word 0			;@ 1c00
-nes_nt0: .word NES_VRAM+0x2000	;@ 2000
-nes_nt1: .word NES_VRAM+0x2000	;@ 2400
-nes_nt2: .word NES_VRAM+0x2400	;@ 2800
-nes_nt3: .word NES_VRAM+0x2400	;@ 2c00
-		.word NES_VRAM+0x2000	;@ 3000
-		.word NES_VRAM+0x2000	;@ 3400
-		.word NES_VRAM+0x2400	;@ 3800
-		.word NES_VRAM+0x2400	;@ 3c00
+nes_nt0: .word NES_NTRAM+0x000	;@ 2000
+nes_nt1: .word NES_NTRAM+0x000	;@ 2400
+nes_nt2: .word NES_NTRAM+0x400	;@ 2800
+nes_nt3: .word NES_NTRAM+0x400	;@ 2c00
+		.word NES_NTRAM+0x000	;@ 3000
+		.word NES_NTRAM+0x000	;@ 3400
+		.word NES_NTRAM+0x400	;@ 3800
+		.word NES_NTRAM+0x400	;@ 3c00
 
 agb_nt_map:
 	.word 0,0,0,0
 ;@-----------------------------------------------------------------------------
 BGCNT	= 0x1800
-m0000:	.word BGCNT+0x0000,NES_VRAM+0x2000,NES_VRAM+0x2000,NES_VRAM+0x2000,NES_VRAM+0x2000
+m0000:	.word BGCNT+0x0000,NES_NTRAM+0x000,NES_NTRAM+0x000,NES_NTRAM+0x000,NES_NTRAM+0x000
 	.word NDS_BG+0x0000,NDS_BG+0x0000,NDS_BG+0x0000,NDS_BG+0x0000
-m1111:	.word BGCNT+0x0100,NES_VRAM+0x2400,NES_VRAM+0x2400,NES_VRAM+0x2400,NES_VRAM+0x2400
+m1111:	.word BGCNT+0x0100,NES_NTRAM+0x400,NES_NTRAM+0x400,NES_NTRAM+0x400,NES_NTRAM+0x400
 	.word NDS_BG+0x0800,NDS_BG+0x0800,NDS_BG+0x0800,NDS_BG+0x0800
-m0101:	.word BGCNT+0x4000,NES_VRAM+0x2000,NES_VRAM+0x2400,NES_VRAM+0x2000,NES_VRAM+0x2400
+m0101:	.word BGCNT+0x4000,NES_NTRAM+0x000,NES_NTRAM+0x400,NES_NTRAM+0x000,NES_NTRAM+0x400
 	.word NDS_BG+0x0000,NDS_BG+0x0800,NDS_BG+0x0000,NDS_BG+0x0800
-m0011:	.word BGCNT+0x8000,NES_VRAM+0x2000,NES_VRAM+0x2000,NES_VRAM+0x2400,NES_VRAM+0x2400
+m0011:	.word BGCNT+0x8000,NES_NTRAM+0x000,NES_NTRAM+0x000,NES_NTRAM+0x400,NES_NTRAM+0x400
 	.word NDS_BG+0x0000,NDS_BG+0x0000,NDS_BG+0x0800,NDS_BG+0x0800
-m0123:	.word BGCNT+0xc000,NES_VRAM+0x2000,NES_VRAM+0x2400,NES_VRAM+0x2800,NES_VRAM+0x2c00
+m0123:	.word BGCNT+0xc000,NES_VRAM+0x7000,NES_VRAM+0x7400,NES_VRAM+0x7800,NES_VRAM+0x7c00
 	.word NDS_BG+0x0000,NDS_BG+0x0800,NDS_BG+0x1000,NDS_BG+0x1800
 @mapper5 need this
 m0000_xram:	.word BGCNT+0x0400,NES_XRAM+0x1C00,NES_XRAM+0x1C00,NES_XRAM+0x1C00,NES_XRAM+0x1C00
@@ -1339,8 +1335,8 @@ mirrorKonami_:
 	bcc mirror2V_
 @	bcs mirror1_
 mirror1_:
-	adrne r0,m1111
 	adreq r0,m0000
+	adrne r0,m1111
 	b mirrorchange
 mirror2V_:
 	adreq r0,m0101
@@ -1437,7 +1433,7 @@ chr6_:
 chr7_:
 	mov r1,#7
 chr1k:
-	ldr_ r2,vromMask
+	ldr_ r2,vmemMask
 	and r0,r0,r2,lsr#10
 
 	adr_ r2,nesChrMap
@@ -1463,7 +1459,7 @@ chr67_:
 	mov r1,#6
 	@b chr2k
 chr2k:
-	ldr_ r2,vromMask
+	ldr_ r2,vmemMask
 	and r0,r0,r2,lsr#11
 
 	mov r0,r0,lsl#1
@@ -1484,7 +1480,7 @@ chr2k:
 ;@-----------------------------------------------------------------------------
 chr0123_:
 ;@-----------------------------------------------------------------------------
-	ldr_ r2,vromMask
+	ldr_ r2,vmemMask
 	and r0,r0,r2,lsr#12
 
 	orr r1,r0,r0,lsl#16
@@ -1508,7 +1504,7 @@ chr0123_:
 ;@-----------------------------------------------------------------------------
 chr01234567_:
 ;@-----------------------------------------------------------------------------
-	ldr_ r2,vromMask
+	ldr_ r2,vmemMask
 	and r0,r0,r2,lsr#13
 
 	orr r1,r0,r0,lsl#16
@@ -1539,7 +1535,7 @@ chr01234567_:
 ;@-----------------------------------------------------------------------------
 chr4567_:
 ;@-----------------------------------------------------------------------------
-	ldr_ r2,vromMask
+	ldr_ r2,vmemMask
 	and r0,r0,r2,lsr#12
 
 	orr r1,r0,r0,lsl#16
@@ -1623,7 +1619,8 @@ bg_chr_req:	;@ Request BG CHR group in r0
 
 	mov r2,r6
 	add r3,r6,#SLOTS*8
-bcr0:	ldr r1,[r2],#4
+bcr0:
+	ldr r1,[r2],#4
 	ldr r4,[r2],#4
 	cmp r0, r1
 	cmpeq r8, r4
@@ -1723,14 +1720,13 @@ renderSprites:
 PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 
 	ldr_ r0, emuFlags
-	tst r0, #0x40 + SOFTRENDER	;@ Sprite render type or pure software
+	tst r0, #SPLINE + SOFTRENDER	;@ Sprite render type or pure software
 	bxne lr
 	stmfd sp!,{r3-r9,lr}
 
 	adr_ addy,ppuOAMMem
-	ldr_ r0,emuFlags			;@ r7,8=priority flags for scaling type
 	tst r0,#ALPHALERP
-	moveq r7,#0x00200000
+	moveq r7,#0x00200000		;@ r7,8=priority flags for scaling type
 	movne r7,#0
 	eor r8,r7,#0x00200000
 
