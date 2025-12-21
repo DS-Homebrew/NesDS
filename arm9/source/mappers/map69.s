@@ -71,7 +71,7 @@ mapJinx:
 	ldrne r1,=sram_W		;@ Swap in sram at $6000-$7FFF.
 	str_ r1,m6502WriteTbl+12
 	beq map67_
-	ldr r1,=NES_SRAM-0x6000	;@ sram at $6000.
+	ldr r1,=CART_SRAM-0x6000	;@ sram at $6000.
 	str_ r1,m6502MemTbl+12
 	bx lr
 ;@----------------------------------------------------------------------------

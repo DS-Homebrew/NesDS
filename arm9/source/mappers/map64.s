@@ -2,15 +2,33 @@
 	#include "equates.h"
 ;@----------------------------------------------------------------------------
 	.global mapper64init
+	.global mapper158init
 
 	.struct mapperData
-latch:		.byte 0
-irqen:		.byte 0
-rmode:		.byte 0
-countdown:	.byte 0
-cmd:		.byte 0
-bank0:		.byte 0
-reload:		.byte 0
+chr01:	.byte 0
+chr23:	.byte 0
+chr4:	.byte 0
+chr5:	.byte 0
+chr6:	.byte 0
+chr7:	.byte 0
+prg0:	.byte 0
+prg1:	.byte 0
+
+chr1:	.byte 0
+chr3:	.byte 0
+		.skip 5
+prg2:	.byte 0
+
+prg3:	.byte 0
+
+cmd:	.byte 0
+
+irq_latch:		.byte 0
+irq_enable:		.byte 0
+irq_reload:		.byte 0
+irq_counter:	.byte 0
+irq_mode:		.byte 0
+				.skip 1		;@ align
 ;@----------------------------------------------------------------------------
 .section .text,"ax"
 ;@----------------------------------------------------------------------------
@@ -21,94 +39,170 @@ reload:		.byte 0
 ;@ Rolling Thunder
 ;@ Shinobi
 ;@ Skull and Crossbones
-;@ Also see mapper 158
 mapper64init:
 ;@----------------------------------------------------------------------------
-	.word write0,write1,write2,write3
+	.word m64MappingW, m64MirrorW, m64CounterW, m64IrqEnableW
+m64Init:
+	stmfd sp!, {lr}
+	mov r0, #0
+	strb_ r0, prg0			@prg0 = 0; prg1 = 1
+	mov r0, #1
+	strb_ r0, prg1
+	mov r0, #-2
+	strb_ r0, prg2
+	mov r0, #-1
+	strb_ r0, prg3
+
+	bl m64SetBankCpu
+
+	mov r0,#0xFF
+	strb_ r0,irq_latch
 
 	adr r0,RAMBO1HSync
 	str_ r0,scanlineHook
 
-	bx lr
+	ldmfd sp!,{pc}
 ;@----------------------------------------------------------------------------
-write0:		;@ 8000-8001
+;@ Tengen RAMBO-1 with other mirroring
+;@ Used in:
+;@ Alien Syndrome
+mapper158init:
+;@----------------------------------------------------------------------------
+	.word m64MappingW, rom_W, m64CounterW, m64IrqEnableW
+	b m64Init
+;@----------------------------------------------------------------------------
+m64SetBankCpu:
+;@----------------------------------------------------------------------------
+	stmfd sp!,{lr}
+	ldrb_ r0,prg1
+	bl mapAB_
+	ldrb_ r0,prg3
+	bl mapEF_
+	ldrb_ r1,cmd
+	ldrb_ r0,prg0
+	tst r1,#0x40
+	beq sbc1
+
+	bl mapCD_
+	ldmfd sp!,{lr}
+	ldrb_ r0,prg2
+	b map89_
+
+sbc1:
+	bl map89_
+	ldmfd sp!,{lr}
+	ldrb_ r0,prg2
+	b mapCD_
+
+;@----------------------------------------------------------------------------
+m64MappingW:		;@ 8000-9FFF
 ;@----------------------------------------------------------------------------
 	tst addy,#1
-	streqb_ r0,cmd
-w8001:
-	ldrb_ r1,cmd
-	and r1,r1,#0xF
-	ldrne pc,[pc,r1,lsl#2]
-	bx lr
-;@----------------------------------------------------------------------------
-commandlist:	.word cmd0,cmd1,chr4_,chr5_,chr6_,chr7_,map89_,mapAB_
-				.word cmd0x,cmd1x,void,void,void,void,void,mapCD_
-;@----------------------------------------------------------------------------
+	bne m64Mapping1W
 
-cmd0:			@0000-07ff
+m64Mapping0W:
 	ldrb_ r1,cmd
-	tst r1,#0x20
-	bne chr0_
-	mov r0,r0,lsr#1
-	b chr01_
-cmd1:			@0800-0fff
-	ldrb_ r1,cmd
-	tst r1,#0x20
-	bne chr2_
-	mov r0,r0,lsr#1
-	b chr23_
+	strb_ r0,cmd
+	eor r1,r1,r0
+	tst r1,#0x80			;@ Swap CHR A12
+	beq noChrSwap
+	adr_ r0,nesChrMap
+	stmfd sp!,{r1,r3,r4}
+	ldmia r0,{r1-r4}
+	stmia r0!,{r3,r4}
+	stmia r0!,{r1,r2}
+	ldmfd sp!,{r1,r3,r4}
+noChrSwap:
+	tst r1,#0x40
+	bxeq lr
+	b m64SetBankCpu
 
-cmd0x:			@1000-17ff
-	ldrb_ r1,cmd
-	tst r1,#0x20
-	bxeq lr
-	b chr1_
-cmd1x:			@1800-1fff
-	ldrb_ r1,cmd
-	tst r1,#0x20
-	bxeq lr
-	b chr3_
+m64Mapping1W:
+	ldrb_ r2,cmd
+	mov r2,r2,ror#4
+	adrl_ r1,chr01
+	strb r0,[r1,r2,lsr#28]
+	ands r1,r2,#0x08
+	movne r1,#4
+	ldr pc,[pc,r2,lsr#26]
+	nop
 ;@----------------------------------------------------------------------------
-write1:		;@ A000-A001
+commandlist:	.word setChr01,setChr23,setChr4,setChr5,setChr6,setChr7,m64SetBankCpu,mapAB_
+				.word cmd0x,cmd1x,void,void,void,void,void,m64SetBankCpu
+;@----------------------------------------------------------------------------
+setChr01:
+	tst r2,#0x2		;@ K=1?
+	bne chr1k
+	b chr2k1k
+setChr23:
+	eor r1,r1,#2
+	tst r2,#0x2		;@ K=1?
+	bne chr1k
+	b chr2k1k
+setChr4:
+	eor r1,r1,#4
+	b chr1k
+setChr5:
+	eor r1,r1,#5
+	b chr1k
+setChr6:
+	eor r1,r1,#6
+	b chr1k
+setChr7:
+	eor r1,r1,#7
+	b chr1k
+cmd0x:			;@ 0400-07ff
+	tst r2,#0x2		;@ K=1?
+	bxeq lr
+	eor r1,r1,#1
+	b chr1k
+cmd1x:			;@ 0c00-0fff
+	tst r2,#0x2		;@ K=1?
+	bxeq lr
+	eor r1,r1,#3
+	b chr1k
+
+;@----------------------------------------------------------------------------
+m64MirrorW:			;@ A000-BFFF
 ;@----------------------------------------------------------------------------
 	tst addy,#1
 	bxne lr
 	tst r0,#1
 	b mirror2V_
 ;@----------------------------------------------------------------------------
-write2:		;@ C000-C001
+m64CounterW:		;@ C000-DFFF
 ;@----------------------------------------------------------------------------
-	ands addy,addy,#1
-	streqb_ r0,latch
-	strneb_ r0,rmode
-	movne r0,#0
-	strneb_ r0,countdown
+	tst addy,#1
+	streqb_ r0,irq_latch
+	strneb_ r0,irq_mode
+	ldrneb_ r0,irq_latch
+	strneb_ r0,irq_counter
 	bx lr
 ;@----------------------------------------------------------------------------
-write3:		;@ E000-E001
+m64IrqEnableW:		;@ E000-E001
 ;@----------------------------------------------------------------------------
 	ands r0,addy,#1
-	strb_ r0,irqen
+	strb_ r0,irq_enable
 	beq rp2A03SetIRQPin
 	bx lr
 ;@----------------------------------------------------------------------------
 RAMBO1HSync:
 ;@----------------------------------------------------------------------------
-@	ldrb r0,ppuCtrl1
-@	tst r0,#0x18	;@ No sprite/BG enable?  0x18
-@	bxeq lr			;@ Bye..
-
 	ldr_ r0,scanline
 	cmp r0,#240		;@ Not rendering?
 	bxhi lr			;@ Bye..
 
-	ldrb_ r0,countdown
-	subs r0,r0,#1
-	ldrmib_ r0,latch
-	strb_ r0,countdown
-	bxne lr
+	ldrb_ r1,irq_mode
+	tst r1,#1
+	moveq r1,#1			;@ Scanline mode
+	movne r1,#28		;@ Cycle mode (cpu cyles / 4)
+	ldrb_ r0,irq_counter
+	subs r0,r0,r1
+	ldrmib_ r0,irq_latch
+	strb_ r0,irq_counter
+	bxpl lr
 
-	ldrb_ r0,irqen
+	ldrb_ r0,irq_enable
 	cmp r0,#0
 	bne rp2A03SetIRQPin
 	bx lr

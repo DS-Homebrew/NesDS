@@ -80,9 +80,8 @@ d000: @-------------------------
 writeEF:
 e000: @-------------------------
 	tst addy,#0x1000
-	bne f000
-	strb_ r0,reg3
-	bx lr
+	streqb_ r0,reg3
+	bxeq lr
 f000: @-------------------------
 	tst r0,#1
 	b mirror2V_

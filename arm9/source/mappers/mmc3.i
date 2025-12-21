@@ -22,4 +22,7 @@ chr7:	.byte 0
 
 prg0:	.byte 0
 prg1:	.byte 0
+prg2:	.byte 0
+prg3:	.byte 0
+		.skip 2		;@ align
 mmc3Extra:

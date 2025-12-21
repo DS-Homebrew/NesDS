@@ -48,11 +48,12 @@
 	.global mirror2H_
 	.global mirror4_
 	.global mirrorKonami_
-	.global mirror_xram_0000
+	.global setNameTables
 	.global resetCHR
 	.global writeCHRTBL
 	.global chr1k
 	.global chr2k
+	.global chr2k1k
 	.global currentBG
 	.global agb_bg_map
 	.global agb_obj_map
@@ -324,7 +325,7 @@ PPU_reset:
 	str_ r0,frame		;@ Frame count reset
 
 	mov r0,#0
-	ldr r1,=NES_VRAM
+	ldr r1,=CART_VRAM
 	mov r2,#0x3000/4
 	bl filler			;@ Clear nes VRAM
 
@@ -1214,7 +1215,7 @@ newframe:	;@ Called at NES scanline 0
 	bne nfsoft
 
 	ldr_ r0, vmemBase
-	ldr r1, =NES_VRAM
+	ldr r1, =CART_VRAM
 	cmp r0, r1		;@ Means that the game does NOT have any vrom.
 	bne 0f
 					;@ Make the guarantee that NDS freshes the 'chr's per frame.
@@ -1320,16 +1321,13 @@ m0101:	.word BGCNT+0x4000,NES_NTRAM+0x000,NES_NTRAM+0x400,NES_NTRAM+0x000,NES_NT
 	.word NDS_BG+0x0000,NDS_BG+0x0800,NDS_BG+0x0000,NDS_BG+0x0800
 m0011:	.word BGCNT+0x8000,NES_NTRAM+0x000,NES_NTRAM+0x000,NES_NTRAM+0x400,NES_NTRAM+0x400
 	.word NDS_BG+0x0000,NDS_BG+0x0000,NDS_BG+0x0800,NDS_BG+0x0800
-m0123:	.word BGCNT+0xc000,NES_VRAM+0x7000,NES_VRAM+0x7400,NES_VRAM+0x7800,NES_VRAM+0x7c00
+m0123:	.word BGCNT+0xc000,CART_VRAM+0x7000,CART_VRAM+0x7400,CART_VRAM+0x7800,CART_VRAM+0x7c00
 	.word NDS_BG+0x0000,NDS_BG+0x0800,NDS_BG+0x1000,NDS_BG+0x1800
-@mapper5 need this
-m0000_xram:	.word BGCNT+0x0400,NES_XRAM+0x1C00,NES_XRAM+0x1C00,NES_XRAM+0x1C00,NES_XRAM+0x1C00
-	.word NDS_BG+0x2000,NDS_BG+0x2000,NDS_BG+0x2000,NDS_BG+0x2000
 ;@-----------------------------------------------------------------------------
 mirror1H_:
 	adreq r0,m1111
 	adrne r0,m0000
-	b mirrorchange
+	b mirrorChange
 mirrorKonami_:
 	movs r1,r0,lsl#31
 	bcc mirror2V_
@@ -1337,32 +1335,28 @@ mirrorKonami_:
 mirror1_:
 	adreq r0,m0000
 	adrne r0,m1111
-	b mirrorchange
+	b mirrorChange
 mirror2V_:
 	adreq r0,m0101
 	adrne r0,m0011
-	b mirrorchange
+	b mirrorChange
 mirror2H_:
 	adreq r0,m0011
 	adrne r0,m0101
-	b mirrorchange
-mirror_xram_0000:
-	adr r0,m0000_xram
-	b mirrorchange
+	b mirrorChange
 mirror4_:
 	adr r0,m0123
-mirrorchange:
+mirrorChange:
 	ldrb_ r1,cartFlags
 	tst r1,#SCREEN4+VS
-	ldrne r0,=m0123		;@ Force 4way mirror for SCREEN4 or VS flags
-
+	adrne r0,m0123		;@ Force 4way mirror for SCREEN4 or VS flags
+setNameTables:
 	stmfd sp!,{r3-r5,lr}
 
-		ldmia r0!,{r1}
+		ldmia r0!,{r1-r5}
 		str_ r1,bg0Cnt
 
 		ldr r1,=nes_nt0
-		ldmia r0!,{r2-r5}
 		stmia r1!,{r2-r5}
 		stmia r1,{r2-r5}
 
@@ -1457,7 +1451,9 @@ chr45_:
 	b chr2k
 chr67_:
 	mov r1,#6
-	@b chr2k
+	b chr2k
+chr2k1k:				;@ Used by MMC3
+	mov r0,r0,lsr#1
 chr2k:
 	ldr_ r2,vmemMask
 	and r0,r0,r2,lsr#11

@@ -31,7 +31,7 @@ write0:		;@ $6000-7FFF
 	and addy,addy,#0xF
 	ldr pc,[pc,addy,lsl#2]
 	nop
-write80tbl: .word wF0,wF1,chr4_,chr5_,chr6_,chr7_,wF6,wF7,wF8,wF9,map89_,mapAB_,mapCD_,irqLatch,irqCtrl,irqReload
+write82tbl: .word wF0,wF1,chr4_,chr5_,chr6_,chr7_,wF6,wF7,wF8,wF9,map89_,mapAB_,mapCD_,irqLatch,irqCtrl,irqReload
 
 handleRAM:
 	bxhi lr
