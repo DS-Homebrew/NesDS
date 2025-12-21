@@ -45,13 +45,13 @@ readl:
 
 ;@----------------------------------------------------------------------------
 writeh:
-	ldr r1,=NES_SRAM
+	ldr r1,=CART_SRAM
 	bic r2, addy, #0xE000
 	strb r0,[r1,r2]
 	bx lr
 ;@----------------------------------------------------------------------------
 readh:
-	ldr r1,=NES_SRAM	
+	ldr r1,=CART_SRAM	
 	bic r2, addy, #0xE000
 	ldrb r0,[r1,r2]
 	bx lr

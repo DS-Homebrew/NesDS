@@ -49,6 +49,7 @@ mappertbl:
 	.word 37,mapper37init
 	.word 40,mapper40init
 	.word 42,mapper42init
+	.word 46,mapper46init
 	.word 47,mapper47init
 	.word 48,mapper48init
 	.word 64,mapper64init
@@ -71,31 +72,37 @@ mappertbl:
 	.word 85,mapper85init
 	.word 86,mapper86init
 	.word 87,mapper87init
+	.word 88,mapper88init
 	.word 90,mapper90init
 	.word 91,mapper91init
 	.word 92,mapper92init
 	.word 93,mapper93init
 	.word 94,mapper94init
+	.word 95,mapper95init
 	.word 97,mapper97init
 	.word 99,mapper99init
 	.word 105,mapper105init
 	.word 111,mapper111init
 	.word 118,mapper118init
-	.word 119,mapper4init
+	.word 119,mapper119init
 	.word 140,mapper66init
 	.word 148,mapper148init
 	.word 151,mapper151init
 	.word 152,mapper152init
 	.word 153,mapper16init
+	.word 154,mapper154init
 	.word 155,mapper155init
 	.word 157,mapper16init
-	.word 158,mapper64init
+	.word 158,mapper158init
 	.word 159,mapper159init
 	.word 163,mapper163init
 	.word 180,mapper180init
 	.word 184,mapper184init
 	.word 189,mapper189init
 	.word 198,mapper198init
+	.word 206,mapper206init
+	.word 207,mapper207init
+	.word 210,mapper210init
 	.word 216,mapper216init
 	.word 225,mapper225init
 	.word 226,mapper226init
@@ -116,7 +123,7 @@ mappertbl:
 @---------------------------------------------------------------------------------
 @ name:		initcart
 @ function:	program starts from here.
-@ arguments:	none
+@ arguments:	rom file ptr
 @ description:	none
 
 initcart: @called from C:  r0=rom, (r1=emuFlags?)
@@ -166,7 +173,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	movhi r1,#128
 	rsbs r0,r2,r1,lsl#13	@ r0 = VROM page size * 8K - 1
 	str_ r0,vmemMask		@ vmemMask=vromSize-1
-	ldrmi r0,=NES_VRAM
+	ldrmi r0,=CART_VRAM
 	strmi_ r0,vmemBase		@ vmemBase=NES VRAM if vromSize=0
 
 	ldr r0,=void
@@ -216,7 +223,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	mov r2,#0x800/4			
 	bl filler				@ reset NES RAM
 	mov r0,#0				@ clear nes sram
-	ldr r1,=NES_SRAM
+	ldr r1,=CART_SRAM
 	mov r2,#0x2000/4
 	bl filler
 	adrl_ r1,mapperData		@ clear mapperData so we dont have to do that in every MapperInit.
@@ -224,7 +231,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	bl filler
 
 	mov r0,#0x7c			@ I didnt like the way below to change the init mem for fixing some games.
-	ldr r1,=NES_SRAM
+	ldr r1,=CART_SRAM
 	ldr r2,=0x147d			@ 0x7c7d
 	strb r0,[r1,r2]			@ for "Low G Man".
 	add r2,r2,#0x100
@@ -278,7 +285,7 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	str_ r1,m6502MemTbl+4
 	ldr r1,=NES_XRAM-0x4000
 	str_ r1,m6502MemTbl+8
-	ldr r1,=NES_SRAM-0x6000	@ $6000 for mapper 40, 69 & 90 that has rom here.
+	ldr r1,=CART_SRAM-0x6000	@ $6000 for mapper 40, 69 & 90 that has rom here.
 	str_ r1,m6502MemTbl+12
 
 	ldrb r1,[r3,#-10]		@ get mapper#
@@ -358,7 +365,7 @@ ss0:
 
 savelst:
 	.word NES_RAM,0x2800
-	.word NES_VRAM,0x3000
+	.word CART_VRAM,0x3000
 	.word agb_pal,96
 	.word vram_map,64
 	.word agb_nt_map,16
@@ -411,7 +418,7 @@ ls0:	ldr r5,[r6],#4
 	ldr_ r2,romBase		@adjust ptr shit (see savestate above)
 	bl fixromptrs
 @---
-	ldr r3,=NES_VRAM+0x2000		@write all nametbl + attrib
+	ldr r3,=CART_VRAM+0x2000	@ write all nametbl + attrib
 	ldr r4,=NDS_BG
 ls4:	mov r5,#0
 ls3:	mov r1,r3

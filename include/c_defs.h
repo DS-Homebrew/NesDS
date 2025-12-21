@@ -261,7 +261,7 @@ extern u8 rom_start[];
 extern u8 rom_files[];
 extern u32 ipc_region[];
 extern u8 NES_RAM[];
-extern u8 NES_SRAM[];
+extern u8 CART_SRAM[];
 
 //menu.h
 void do_menu();

@@ -1,38 +1,51 @@
 ;@----------------------------------------------------------------------------
 	#include "equates.h"
 ;@----------------------------------------------------------------------------
-	.global mapper88init
+	.global mapper46init
 
 	.struct mapperData
-cmd:	.byte 0
+prgReg:	.byte 0
+chrReg:	.byte 0
+		.skip 2
 ;@----------------------------------------------------------------------------
 .section .text,"ax"
 ;@----------------------------------------------------------------------------
-;@ Namcot 108
-;@ Quinty (J)
-;@ Namcot Mahjong 3 - Mahjong Tengoku
-;@ Dragon Spirit - Aratanaru Densetsu
-;@ See also mapper 76, 206
-mapper88init:
+;@ Color Dreams Multicart
+mapper46init:
 ;@----------------------------------------------------------------------------
-	.word write0,rom_W,write1,rom_W
+	.word write46,write46,write46,write46
+	adr r0,writeOuter
+	str_ r0,m6502WriteTbl+12
+	mov r0,#0
+	b w46
+;@----------------------------------------------------------------------------
+writeOuter:				;@ [CCCC PPPP]
+;@----------------------------------------------------------------------------
+	ldr_ r1,prgReg
+	mov r0,r0,ror#4
+	bic r1,r1,#0xF800
+	orr r1,r1,r0,lsl#11
 
-	bx lr
+	bic r1,r1,#0x00FE
+	orr r0,r1,r0,lsr#27
+	b w46
 ;@----------------------------------------------------------------------------
-write0:		@ $8000-8001
+write46:				;@ [.ccc ...p]
 ;@----------------------------------------------------------------------------
-	tst addy,#1
-	streqb_ r0,cmd
-	bxeq lr
-w8001:
-	ldrb_ r1,cmd
-	and r1,r1,#7
-	ldr pc,[pc,r1,lsl#2]
-	nop
-commandList:	.word chr01_,chr23_,chr4_,chr5_,chr6_,chr7_,map89_,mapAB_
-;@----------------------------------------------------------------------------
-write1:		;@ $C000
-;@----------------------------------------------------------------------------
-	tst r0,#0
-	b mirror1_
+	ldr_ r1,prgReg
+	and r2,r0,#0x70
+	bic r1,r1,#0x0700
+	orr r1,r1,r2,lsl#4
+
+	and r0,r0,#1
+	bic r1,r1,#0x0001
+	orr r0,r1,r0
+w46:
+	str_ r0,prgReg
+	stmfd sp!,{r0,lr}
+	bl map89ABCDEF_
+	ldmfd sp!,{r0,lr}
+	mov r0,r0,lsr#8
+	b chr01234567_
+
 ;@----------------------------------------------------------------------------

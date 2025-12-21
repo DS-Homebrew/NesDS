@@ -34,7 +34,7 @@ NSF_Run:
 
 	mov r0, #0
 	mov r1, m6502zpage
-	ldr r2, =0x2000/4
+	ldr r2, =0x800/4
 	bl filler
 
 	ldr r1, =nsfExtraChipSelect

@@ -44,9 +44,9 @@ mapper16init:
 	adr r1, readL
 	str_ r1, m6502ReadTbl+12
 
-	ldr r0, =NES_SRAM
+	ldr r0, =CART_SRAM
 	bl x24c01_reset
-	ldr r0, =NES_SRAM
+	ldr r0, =CART_SRAM
 	bl x24c02_reset
 
 ;@ Patch for games...
