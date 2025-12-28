@@ -17,13 +17,11 @@ vromMask:	.word 0
 mapper119init:
 ;@----------------------------------------------------------------------------
 	.word write0, mmc3MirrorW, mmc3CounterW, mmc3IrqEnableW
-	stmfd sp!,{lr}
 	ldr_ r0,vmemBase
 	str_ r0,vromBase
 	ldr_ r0,vmemMask
 	str_ r0,vromMask
 
-	ldmfd sp!,{lr}
 	b mmc3Init
 
 ;@----------------------------------------------------------------------------
@@ -34,8 +32,8 @@ write0:			;@ 8000-9FFF
 
 w8001:
 	ldrb_ r2,reg0
-	and r2,r2,#7
-	cmp r2,#6
+	and r1,r2,#7
+	cmp r1,#6
 	bcs mmc3Mapping1W
 
 	stmfd sp!,{r0,lr}
@@ -49,12 +47,15 @@ w8001:
 
 	ldreq r0,=void			;@ Disable chr write
 	ldrne r0,=VRAM_chr		;@ Enable chr write
-	ldr r1,=vram_write_tbl
+	and r1,r2,#0x80
+	and r2,r2,#7
 	cmp r2,#1
 	biceq r2,r2,#1
 	addpl r2,r2,#2
+	eor r2,r2,r1,lsr#5
+	ldr r1,=vram_write_tbl
 	str r0,[r1,r2,lsl#2]!
-	strls r0,[r1,#1]
+	strls r0,[r1,#4]
 	ldmfd sp!,{r0,lr}
 
 	b mmc3Mapping1W
