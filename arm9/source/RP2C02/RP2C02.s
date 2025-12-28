@@ -1567,7 +1567,7 @@ updateBGCHR:	;@ See if BG CHR needs to change, setup BGxCNTBUFF
 	bl bg_chr_req
 	ldmfd sp!,{r2-r9, pc}
 ;@-----------------------------------------------------------------------------
-updateOBJCHR:	;@ Sprite CHR update (r3-r7 killed)
+updateOBJCHR:	;@ Sprite CHR update (r3-r9 killed)
 ;@-----------------------------------------------------------------------------
 	ldrb_ r2,ppuCtrl0Frame
 	tst r2,#0x20	@8x16?
@@ -1742,7 +1742,6 @@ PRIORITY = 0x000	@0x800=AGB OBJ priority 2/3
 	mov r4,#PRIORITY
 	bne dm4
 ;@- - - - - - - - - - - - - 8x8 size
-							;@ get sprite0 hit pos:
 	tst r0,#0x08			;@ CHR base? (0000/1000)
 	orrne r4,r4,#0x100
 dm11:
@@ -1779,11 +1778,12 @@ dm9:
 	str r0, [r2]			;@ Hide the sprite 65 of NDS, which was used by per-line type
 	ldmfd sp!,{r3-r9,pc}
 dm10:
-	mov r0,#0x2a0			;@ double, y=160
+	mov r0,#0x2c0			;@ double, y=192
 	str r0,[r2],#8
 	b dm9
 
-dm4:	@- - - - - - - - - - - - - 8x16 size
+@- - - - - - - - - - - - - 8x16 size
+dm4:
 dm12:
 	ldr r3,[addy],#4
 	and r0,r3,#0xff
@@ -1821,7 +1821,7 @@ dm14:
 	str r0, [r2]			;@ Hide the sprite 65 of NDS, which was used by per-line type
 	ldmfd sp!,{r3-r9,pc}
 dm13:
-	mov r0,#0x2a0			;@ double, y=160
+	mov r0,#0x2c0			;@ double, y=192
 	str r0,[r2],#8
 	b dm14
 
@@ -1858,7 +1858,7 @@ masklp:
 	bne masklp
 
 	mov r2, #64
-	ldr r5, =0x7000008
+	ldr r5, =NDS_OAM+8
 	mov r6, #0x200
 	mov r3, #0xE0
 	str r3, [r5, #-8]
@@ -1868,7 +1868,6 @@ masklp:
 	ldrb r1, [r9], #4
 	cmp r1, #239
 	strcs r6, [r5]
-//	strcs_ r6, sprite0Y
 	add r4, r1, #1
 	strb r4, [r0, r4]
 	add r5, r5, #8
@@ -1897,8 +1896,8 @@ msplp:
 
 hidesp:
 	adr_ r3,ppuOAMMem
-	ldr r2, =0x7000008
-	mov r4, #0x200
+	ldr r2, =NDS_OAM+8
+	mov r4,#0x2c0			;@ double, y=192
 	mov r1, #64
 
 hidesp_loop:
@@ -1944,7 +1943,7 @@ hidesp_loop:
 	stmfd sp!, {lr}
 
 splp:
-	ldr r12, =0x7000008
+	ldr r12, =NDS_OAM+8
 	ldrb r0, [r9]
 	add r0, r0, #1
 	cmp r0, r3
@@ -1955,92 +1954,6 @@ splp:
 	add r12, r12, r8, lsl#3
 	add r11, r11, r8, lsl#6
 
-	cmp r8, #0
-	bne 0f			;@ Check sprite0
-
-	stmfd sp!, {r0-r5, r11}
-	ldrb_ r3, ppuCtrl0
-	tst r3, #0x20
-	bne sp160
-sp80:
-	and r0, r3, #0x08
-	mov r11, r0, lsl#9
-	ldrb r0, [r9, #1]
-	add r11, r11, r0, lsl#4	
-
-	mov r0, r11, lsr#10
-	bic r1, r11, #0xFC00
-	ldr r2, =vram_map
-	ldr r2, [r2, r0, lsl#2]
-
-	ldrb r0, [r9]
-	ldrb r3, [r2, r1]!
-	ldrb r4, [r2, #8]
-	orrs r3, r3, r4
-	add r0, r0, #1
-	bne sp0end
-
-	mov r5, #2
-sp0lp:
-	ldrb r3, [r2, #1]!
-	ldrb r4, [r2, #8]
-	orrs r3, r3, r4
-	add r0, r0, #1
-	bne sp0end
-	add r5, r5, #1
-	cmp r5, #9
-	bne sp0lp
-	mov r0, #0x200
-	b sp0end
-
-sp160:
-	ldrb r0, [r9, #1]
-	and r1, r0, #1
-	and r2, r0, #0xFE
-	mov r11, r1, lsl#12
-	add r11, r11, r2, lsl#4		;@ spraddr = (((INT)sp->tile&1)<<12)+(((INT)sp->tile&0xFE)<<4)
-
-	mov r0, r11, lsr#10
-	bic r1, r11, #0xFC00
-	ldr r2, =vram_map
-	ldr r2, [r2, r0, lsl#2]
-
-	ldrb r0, [r9]
-	ldrb r3, [r2, r1]!
-	ldrb r4, [r2, #8]
-	orrs r3, r3, r4
-	add r0, r0, #1
-	bne sp0end
-
-	mov r5, #2
-sp0lp161:
-	ldrb r3, [r2, #1]!
-	ldrb r4, [r2, #8]
-	orrs r3, r3, r4
-	add r0, r0, #1
-	bne sp0end
-	add r5, r5, #1
-	cmp r5, #9
-	bne sp0lp161
-
-	add r2, r2, #8
-sp0lp162:
-	ldrb r3, [r2, #1]!
-	ldrb r4, [r2, #8]
-	orrs r3, r3, r4
-	add r0, r0, #1
-	bne sp0end
-	add r5, r5, #1
-	cmp r5, #17
-	bne sp0lp162
-	mov r0, #0x200
-sp0end:
-	@ldrb r1, [r9]
-	@cmp r0, r1
-	@strne_ r0, sprite0Y
-	//str_ r0, sprite0Y
-	ldmfd sp!, {r0-r5, r11}
-0:
 
 	ldrb r6, [r9, #3]
 	ldrb r2, [r9, #2]

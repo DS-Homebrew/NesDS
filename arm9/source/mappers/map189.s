@@ -117,12 +117,10 @@ setBankPPU:
 	stmfd sp!, {lr}
 	mov r1, #0
 	ldrb_ r0, chr01
-	mov r0,r0,lsr#1
-	bl chr2k
+	bl chr2k1k
 	mov r1, #2
 	ldrb_ r0, chr23
-	mov r0,r0,lsr#1
-	bl chr2k
+	bl chr2k1k
 	mov r1, #4
 	ldrb_ r0, chr4
 	bl chr1k

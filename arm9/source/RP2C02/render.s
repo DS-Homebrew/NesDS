@@ -118,9 +118,9 @@ soft_render:
 	cmp r0, #0
 	bxne lr
 
-	stmfd sp!, {r3-r4, lr}
+	stmfd sp!, {r3, lr}
 	bl swiWaitForVBlank
-	ldmfd sp!, {r3-r4, pc}
+	ldmfd sp!, {r3, pc}
 
 soft_r:
 	ldrb_ r1, renderCount
@@ -449,15 +449,11 @@ bg_render:
 
 	ldr r1, =renderData
 	add r1, r1, r0, lsl#8
-	adr_ r0,paletteMem
-	ldrb r0, [r0]
+	ldrb_ r0,paletteMem
 	orr r0, r0, r0, lsl#8
 	orr r0, r0, r0, lsl#16
 	mov r2, #256/4
 	b filler
-
-	bx lr
-
 
 bg_normal:
 	stmfd sp!,{r2-r12, lr}
