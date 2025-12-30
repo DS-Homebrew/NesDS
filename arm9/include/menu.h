@@ -1,6 +1,6 @@
 struct menu_item
 {
-	char *name;	//name of the menu
+	const char *name;	//name of the menu
 	int none;		//align for button
 	char x,y,w,h;	//for button
 	int type;		//type
@@ -10,7 +10,7 @@ struct menu_item
 
 struct menu_unit
 {
-	char *top;	//name of the menu
+	const char *top;	//name of the menu
 	int subcnt;		//count of items.
 	void (*start)(void);	//when init the menu, call this function...
 	struct menu_item *item;	//point to the submenu or the functions. maybe array.
@@ -18,7 +18,7 @@ struct menu_unit
 
 struct button
 {
-	char *name;
+	const char *name;
 	short type;
 	short stat;
 	char x,y,w,h;
@@ -61,9 +61,9 @@ extern int menu_draw;
 
 extern void (*menu_func)(void);
 
-void draw_button(char *text, int x, int y, int w, int h, int color);
+void draw_button(const char *text, int x, int y, int w, int h, int color);
 int add_buttonp(int group, struct button *adb);
-int add_button(int group, char *name, char type, char x, char y, char w, char h);
+int add_button(int group, const char *name, char type, char x, char y, char w, char h);
 void show_button_group(int group);
 void check_button_group(int group);
 

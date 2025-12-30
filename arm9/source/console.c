@@ -191,7 +191,7 @@ void consoleinit() {
 				2 for dir selected
 * description:		none
 ******************************/
-void menutext(int line,char *s,int selected) {
+void menutext(int line,const char *s,int selected) {
 	int color=selected?0x1000:0;
 	u16 *p=(u16*)(SUB_BG+line*64);
 	u16 *p2=p+32;
@@ -219,7 +219,7 @@ void menutext(int line,char *s,int selected) {
 			color: difine the color
 * description:		none
 ******************************/
-void consoletext(int offset,char *s,int color) {
+void consoletext(int offset,const char *s,int color) {
 	u16 *p;
 	p = (u16*)(SUB_BG + offset);
 	while (*s) {
