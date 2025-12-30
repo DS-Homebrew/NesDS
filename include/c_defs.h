@@ -79,8 +79,8 @@ void consoleinit(void);
 #define hex24(a,b) hex(a,b,5)
 #define hex32(a,b) hex(a,b,7)
 void hex(int offset,int d,int n);
-void consoletext(int offset,char *s,int color);
-void menutext(int line,char *s,int selected);
+void consoletext(int offset,const char *s,int color);
+void menutext(int line,const char *s,int selected);
 void clearconsole(void);
 void hideconsole(void);
 void showconsole(void);

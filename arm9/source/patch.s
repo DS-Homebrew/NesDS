@@ -38,13 +38,5 @@ nespatch:
 	cmp r0, r1
 	ldreq r2, =360
 	streq_ r2,cyclesPerScanline
-	bxeq lr
-
-	ldr r1, =0xD796		@Alien Syndrome (J)
-	cmp r0, r1
-	ldreqb_ r1,cartFlags
-	biceq r1, r1, #SCREEN4+VS
-	streqb_ r1, cartFlags
-	beq mirror2H_
 
 	bx lr

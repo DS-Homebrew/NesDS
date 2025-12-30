@@ -33,12 +33,6 @@ coto:
 	- nifi, sound, touchscreen works in NTR mode as of devkitARM r43. 
 	- fixed exception due to buffer overflow in Rom Database
 
-2011-3-23
-avenir contributed some codes to version 0.45a.
-
-2011-9-32
-avenir contributed some codes to version 1.0a.
-
 Q: What can I do if some pics had been crashed?
 A: You can try the 'sprite per-line type' under the 'Display' menu bar. If it does not work, just tell me, I will try to fix it.
 
@@ -56,7 +50,7 @@ UPDATES:
 mapper5 update.
 
 current:
-FDS and vcr6 sound are enabled in NSF mode
+FDS and vrc6 sound are enabled in NSF mode
 sprite0y is updated in sp-pertile mode
 
 1.3a:
@@ -69,7 +63,7 @@ Load and save slot number merged to one.
 nsf play supported, use <left/right> to select song, use <up/down> to play/stop, use 'debug' menu to see the details.
 
 1.2b:
-vcr6 sound channel for mapper24 and mapper26 is added.
+vrc6 sound channel for mapper24 and mapper26 is added.
 a sound reset button is added to menu>settings>config, which is used when the sound goes bad,
 when close and open the DS, this is probly needed.
 Mapper253 is added.
@@ -109,6 +103,8 @@ A bug with ppuStat fixed. e.g.'teenage mutant ninja turtles'
 A bug with palette fixed.
 Patch update. Battleloads (Europe) <Double Dragons> added.
 SRAM can be saved whatever a game supports.
+
+2011-9-32
 
 1.0a:
 code of .gz replaced with a new one, still works.
@@ -261,6 +257,7 @@ Some others not important...
 0.45a_v2:
 sound fixed..
 
+2011-3-23
 0.45a:
 avenir write a patch to nesDS, what's new? He said...
 @----------- start -----------@

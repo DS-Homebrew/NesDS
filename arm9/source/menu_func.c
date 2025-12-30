@@ -703,7 +703,7 @@ struct button button_nifi[] = {
 	{.name = "\rClose Nifi", .x = 1, .y = 12, .w = 10, .h = 3},
 };
 
-char *nifi_chars[] = 
+const char *nifi_chars[] = 
 {
 	"Single player. IDLE.        ",
 	"Waiting for 2P.             ",

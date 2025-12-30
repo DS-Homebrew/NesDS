@@ -522,7 +522,7 @@ struct button *lastbutton = NULL;
 int lastbutton_type = 0;
 int lastbutton_cnt = 0;
 
-void draw_button(char *text, int x, int y, int w, int h, int color)
+void draw_button(const char *text, int x, int y, int w, int h, int color)
 {
 	int i;
 	consoletext(y * 64 + x * 2, "\xa2", color);
@@ -549,7 +549,7 @@ int add_buttonp(int group, struct button *adb)
 	int *bcnt;
 
 	switch(group) {
-	case 0:	//top buttion
+	case 0:	//top button
 		bt = &top_button[top_bcnt];
 		bcnt = &top_bcnt;
 		break;
@@ -576,7 +576,7 @@ int add_buttonp(int group, struct button *adb)
 	return bt->w + bt->x;
 }
 
-int add_button(int group, char *name, char type, char x, char y, char w, char h)
+int add_button(int group, const char *name, char type, char x, char y, char w, char h)
 {
 	struct button *bt;
 	int *bcnt;

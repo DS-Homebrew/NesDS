@@ -2,7 +2,7 @@
 #include "c_defs.h"
 #include "menu.h"
 
-static char *tips[]= {
+static const char *tips[]= {
 //--------------------------------
 "2009.9 ~ now  0.2x ~ 1.x        "
 "Maintained by Hao Huiming.      "
@@ -171,44 +171,44 @@ static char *tips[]= {
 "'debug' menu to see the details."
 };
 
-touchstring aboutext[]={
+touchstring aboutext[] = {
 	{64*4+16,"<<"}, {64*4+44,">>"},
-	{-1,0}};
+	{-1,0}
+};
 
 int nesds_about()
 {
 	static int tipnum = -1;
-	int i;
 	int fresh = 0;
 
-	if(tipnum < 0) {
-		fresh = 1;
+	if (tipnum < 0) {
 		tipnum = 0;
+		fresh = 1;
 	}
-	if(menu_stat == 5) {
+	if (menu_stat == 5) {
 		menu_stat = 6;
 		fresh = 1;
 	}
-	
-	i=do_touchstrings(aboutext,0);
-	if(touchstate==4) {
+
+	int i = do_touchstrings(aboutext,0);
+	if (touchstate == 4) {
 		switch(i) {
 			case 0: 
 				tipnum--;
-				if(tipnum < 0)
+				if (tipnum < 0)
 					tipnum = sizeof(tips)/sizeof(tips[0]) - 1;
 				fresh = 1;
 				break;
 			case 1:
 				tipnum++;
-				if(tipnum >= sizeof(tips)/sizeof(tips[0]))
+				if (tipnum >= sizeof(tips)/sizeof(tips[0]))
 					tipnum = 0;
 				fresh = 1;
 				break;
 		}
 	}
-	
-	if(fresh) {
+
+	if (fresh) {
 		clearconsole();
 		hex8(64*4+30, tipnum);
 		consoletext(64*6, tips[tipnum], 0x0000); 
