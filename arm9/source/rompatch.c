@@ -2,7 +2,7 @@
 #include "c_defs.h"
 #include "NesMachine.h"
 
-unsigned int romdb[] = {
+unsigned int const romdb[] = {
 0x0021ed29, 0x0021ed29, 0x00010010,
 0x00837960, 0x8871b5c4, 0x00010043,
 0x008ba28d, 0x008ba28d, 0x00010043,
@@ -613,7 +613,7 @@ unsigned int romdb[] = {
 0x2e4ccf46, 0x02b26e69, 0x00010000,
 0x2e563c66, 0x15be6e58, 0x00010041,
 0x2e5db849, 0x00000000, 0x00010001,
-0x2e6301ed, 0xa0ed7d20, 0x00010040,
+0x2e6301ed, 0xa0ed7d20, 0x00010040,		// Super Mario Bros. 3 (rev1) (U)
 0x2e6b1432, 0x8113b937, 0x00010001,
 0x2e6ee98d, 0xb33bc971, 0x00010010,
 0x2e91eb15, 0x00000000, 0x00010012,
@@ -2046,7 +2046,7 @@ unsigned int romdb[] = {
 0xa09aa82c, 0xf754da71, 0x000150b1,
 0xa0a095c4, 0x8b56faeb, 0x00010030,
 0xa0a5a0b9, 0x7e036525, 0x00000041,
-0xa0b0b742, 0xc78d17d3, 0x00010040,
+0xa0b0b742, 0xc78d17d3, 0x00010040,		// Super Mario Bros. 3 (rev0) (U)
 0xa0c31a57, 0x5ceb1256, 0x00010040,
 0xa0ddf884, 0xa0ddf884, 0x00010021,
 0xa0df4b8f, 0x026a41ee, 0x00010041,
@@ -3273,24 +3273,29 @@ unsigned int romdb[] = {
 };
 unsigned int crctable[256];
 
-unsigned int romcrc(const unsigned char *c, int size)
+unsigned int compoundcrc(unsigned int r, const unsigned char *c, int size)
 {
-	unsigned int r = 0xFFFFFFFFUL;
-	while( --size >= 0 ) {
+	r ^= 0xFFFFFFFFUL;
+	while (--size >= 0) {
 		r = (r >> 8) ^ crctable[(unsigned char)r ^ *c++];
 	}
 	return r ^ 0xFFFFFFFFUL;
 }
 
+unsigned int romcrc(const unsigned char *c, int size)
+{
+	return compoundcrc(0, c, size);
+}
+
 void crcinit()
 {
 	int	i, j;
-	unsigned int	r;
+	unsigned int r;
 
-	for( i = 0; i <= 255; i++ ) {
+	for (i = 0; i < 256; i++) {
 		r = i;
-		for( j = 0; j < 8; j++ ) {
-			if( r & 1 ) r = (r >> 1) ^ 0xEDB88320UL;
+		for (j = 0; j < 8; j++) {
+			if ( r & 1 ) r = (r >> 1) ^ 0xEDB88320UL;
 			else        r >>= 1;
 		}
 		crctable[i] = r;
@@ -3304,21 +3309,21 @@ void romcorrect(char *s)
 	unsigned char *rom = (unsigned char *)s;
 	int prgsize = rom[4] * 16 * 1024;
 	int chrsize = rom[5] * 8 * 1024;
-	int crcall = romcrc(rom + 16, prgsize + chrsize);
-	int crc = romcrc(rom + 16, prgsize);
+	int crcprg = romcrc(rom + 16, prgsize);
+	int crcall = compoundcrc(crcprg, rom + 16 + prgsize, chrsize);
 	int i = 0;
-	
-	for(i = 0; i < sizeof(romdb); i += 3) {	
-		if((i + 2) <= sizeof(romdb)){
-			if(romdb[i] == crcall || romdb[i + 1] == crc) {
+
+	for (i = 0; i < sizeof(romdb); i += 3) {
+		if ((i + 2) <= sizeof(romdb)){
+			if (romdb[i] == crcall || romdb[i + 1] == crcprg) {
 				unsigned int tmp = romdb[i + 2];
 				int oldmapper = (rom[6] >> 4) | (rom[7] & 0xf0);
 				int newmapper = ((tmp & 0xff) >> 4) | ((tmp >> 8) & 0xf0);
-				if(oldmapper == newmapper) {
-					rom[6] = tmp & 0xff;			
+				if (oldmapper == newmapper) {
+					rom[6] = tmp & 0xff;
 					rom[7] = (tmp >> 8) & 0xff;	
 					__emuflags &= ~PALTIMING;
-					if(! (tmp & (1 << 16)))
+					if (!(tmp & (1 << 16)))
 						__emuflags |= PALTIMING;
 				}
 				break;

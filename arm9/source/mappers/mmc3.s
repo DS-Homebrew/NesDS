@@ -80,51 +80,30 @@ sbc1:
 ;@----------------------------------------------------------------------------
 mmc3SetBankPpu:
 ;@----------------------------------------------------------------------------
-	stmfd sp!, {lr}
+	stmfd sp!, {r4,lr}
 
-	ldrb_ r0, reg0
-	tst r0, #0x80
-	beq 0f
+	ldrb_ r4, reg0
+	ands r4,r4,#0x80		;@ Swap CHR A12
+	movne r4,#4
 
-	mov r1,#0
-	ldrb_ r0,chr4
-	bl chr1k
-	mov r1,#1
-	ldrb_ r0,chr5
-	bl chr1k
-	mov r1,#2
-	ldrb_ r0,chr6
-	bl chr1k
-	mov r1,#3
-	ldrb_ r0,chr7
-	bl chr1k
-	mov r1,#4
+	eor r1,r4,#0
 	ldrb_ r0,chr01
 	bl chr2k1k
-	ldmfd sp!,{lr}
-	mov r1,#6
-	ldrb_ r0,chr23
-	b chr2k1k
-
-0:
-	mov r1,#0
-	ldrb_ r0,chr01
-	bl chr2k1k
-	mov r1,#2
+	eor r1,r4,#2
 	ldrb_ r0,chr23
 	bl chr2k1k
-	mov r1,#4
+	eor r1,r4,#4
 	ldrb_ r0,chr4
 	bl chr1k
-	mov r1,#5
+	eor r1,r4,#5
 	ldrb_ r0,chr5
 	bl chr1k
-	mov r1,#6
+	eor r1,r4,#6
 	ldrb_ r0,chr6
 	bl chr1k
-	ldmfd sp!,{lr}
-	mov r1,#7
+	eor r1,r4,#7
 	ldrb_ r0,chr7
+	ldmfd sp!,{r4,lr}
 	b chr1k
 
 ;@----------------------------------------------------------------------------
@@ -137,15 +116,21 @@ mmc3Mapping0W:
 	ldrb_ r1,reg0
 	strb_ r0,reg0
 	eor r1,r1,r0
-	tst r1,#0xC0
+	tst r1,#0x80			;@ Swap CHR A12
+	beq noChrSwap
+	adr_ r0,nesChrMap
+	stmfd sp!,{r1,r3,r4}
+	ldmia r0,{r1-r4}
+	stmia r0!,{r3,r4}
+	stmia r0!,{r1,r2}
+	ldmfd sp!,{r1,r3,r4}
+noChrSwap:
+	tst r1,#0x40
 	bxeq lr
-	stmfd sp!,{lr}
-	bl mmc3SetBankCpu
-	ldmfd sp!,{lr}
-	b mmc3SetBankPpu
+	b mmc3SetBankCpu
 
 mmc3Mapping1W:
-	strb_ r0,reg1
+//	strb_ r0,reg1			;@ Unused?
 	ldrb_ r2,reg0
 	mov r2,r2,ror#3
 	adrl_ r1,chr01
