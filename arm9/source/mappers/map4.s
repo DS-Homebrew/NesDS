@@ -4,13 +4,10 @@
 #define	MMC3_IRQ_SHOUGIMEIKAN	2
 #define	MMC3_IRQ_DAI2JISUPER	3
 #define	MMC3_IRQ_DBZ2		4
-#define	MMC3_IRQ_ROCKMAN3	5
 ;@----------------------------------------------------------------------------
 	.global mapper4init
 
 	.struct mmc3Extra
-vs_patch:	.byte 0
-vs_index:	.byte 0
 irq_type:	.byte 0
 
 ;@----------------------------------------------------------------------------
@@ -32,8 +29,6 @@ mapper4init:
 	@ldrb_ r0, irq_type
 	@cmp r0, #MMC3_IRQ_KLAX
 	@ldreq r2,=hSyncRAMBO1
-	@cmp r0, #MMC3_IRQ_ROCKMAN3
-	@ldreq r2,=hSyncRockman3
 	@cmp r2, #MMC3_IRQ_DAI2JISUPER
 	@ldreq r2,=mmc3HSync___
 	@str_ r2,scanlineHook

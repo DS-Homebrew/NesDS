@@ -67,13 +67,7 @@ setBankPPU:
 write0:				;@ 8000-9FFF
 ;@----------------------------------------------------------------------------
 	tst addy, #1
-	bne w8001
-
-	stmfd sp!, {lr}
-	strb_ r0, reg0
-	bl mmc3SetBankCpu
-	ldmfd sp!, {lr}
-	b setBankPPU
+	beq mmc3Mapping0W
 
 w8001:
 	strb_ r0, reg1
