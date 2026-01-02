@@ -105,7 +105,7 @@ mappertbl:
 	.word 207,mapper207init
 	.word 210,mapper210init
 	.word 216,mapper216init
-	.word 224,mapper268init
+	.word 224,mapper224init
 	.word 225,mapper225init
 	.word 226,mapper226init
 	.word 227,mapper227init
