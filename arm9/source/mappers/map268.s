@@ -16,46 +16,58 @@ mapper268init:
 	.word write8, mmc3MirrorW, mmc3CounterW, mmc3IrqEnableW
 
 	// Set Depending on sub mapper.
-	adr r0, write5
-	str_ r0, rp2A03MemWrite
-	adr r1, write6
-	adr r1, write7
-	str_ r1,m6502WriteTbl+12
+	ldrb_ r0,subMapper
+	movs r0,r0,lsr#1
+	teq r0,#1
+	adreq r1,write7
+	streq_ r1,m6502WriteTbl+12
+	beq sub23
 
-	b mmc3Init
+	adrcs r1,write5
+	adrcc r1,write6
+	strcs_ r1,rp2A03MemWrite
+	strcc_ r1,m6502WriteTbl+12
+sub23:
+	stmfd sp!,{lr}
+	bl mmc3Init
+	ldmfd sp!,{lr}
+	mov r0,#0
+	b register1_0
 ;@----------------------------------------------------------------------------
 ;@ MMC3 with outer banking, subset of mapper 268
 mapper224init:
 ;@----------------------------------------------------------------------------
 	.word write8, mmc3MirrorW, mmc3CounterW, mmc3IrqEnableW
-	adr r0, write5
-	str_ r0, rp2A03MemWrite
+	adr r0,write5
+	str_ r0,rp2A03MemWrite
 
 	b mmc3Init
 
 ;@----------------------------------------------------------------------------
 write5:		;@ ($5000-$5FFF)
 ;@----------------------------------------------------------------------------
-	cmp addy, #0x5000
+	cmp addy,#0x5000
 	bcc empty_W
 	b doBanking
 ;@----------------------------------------------------------------------------
 write6:		;@ ($6000-$6FFF)
 ;@----------------------------------------------------------------------------
-	cmp addy, #0x7000
+	cmp addy,#0x7000
 	bcs empty_W
 	b doBanking
 ;@----------------------------------------------------------------------------
 write7:		;@ ($7000-$7FFF)
 ;@----------------------------------------------------------------------------
-	cmp addy, #0x7000
+	cmp addy,#0x7000
 	bcc empty_W
 doBanking:
-	and r2,addy,#7
-	cmp r2,#1
+	ands r1,addy,#7
+	beq register0_0
+	cmp r1,#1
 	beq register1_0
-	cmp r2,#0
-	bxne lr
+	cmp r1,#3
+	beq register3
+	bx lr
 ;@----------------------------------------------------------------------------
 register0_0:				;@ Submappers 0/1/2/3
 	ldrb_ r1,prgMask
@@ -94,7 +106,16 @@ register1_0:				;@ Submappers 0/1/6/7/10/11
 	tst r0,#0x04			;@ PRG offset A21
 	orrne r1,r1,#0x10
 	strb_ r2,outerPRG
-//	b updatePRG
+
+	b updatePRG
+;@----------------------------------------------------------------------------
+register3:
+	and r1,r0,#0x90
+	cmp r1,#0x80			;@ Lock out?
+	bxne lr
+	ldr r0,=sram_W
+	str_ r0,m6502WriteTbl+12
+	bx lr
 ;@----------------------------------------------------------------------------
 updatePRG:
 ;@----------------------------------------------------------------------------
@@ -126,13 +147,13 @@ updatePRG:
 ;@----------------------------------------------------------------------------
 write8:			;@($8000-$9FFF)
 ;@----------------------------------------------------------------------------
-	tst addy, #1
+	tst addy,#1
 	beq mmc3Mapping0W
 
 w8001:
-	ldrb_ r1, reg0
-	and r1, r1, #6
-	cmp r1, #6				;@ PRG or CHR?
+	ldrb_ r1,reg0
+	and r1,r1,#6
+	cmp r1,#6				;@ PRG or CHR?
 	ldreqb_ r1,prgMask
 	ldreqb_ r2,outerPRG
 	biceq r0,r0,r1,lsl#4

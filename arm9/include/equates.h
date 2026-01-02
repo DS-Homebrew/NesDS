@@ -91,7 +91,7 @@ romMask:		.word 0
 prgSize8k:		.word 0
 prgSize16k:		.word 0
 prgSize32k:		.word 0
-mapperInitPtr:	.word 0
+mapperNr:		.word 0
 emuFlags:		.word 0
 prgcrc:			.word 0
 
@@ -101,7 +101,8 @@ renderCount:	.word 0
 tempData:		.space 20*4
 
 cartFlags:		.byte 0
-padding:		.skip 3 ;@ Align
+subMapper:		.byte 0
+padding:		.skip 2 ;@ Align
 nesMachineSize:
 
 ;@-----------------------joyflags

@@ -118,12 +118,16 @@ mmc3Mapping0W:
 	eor r1,r1,r0
 	tst r1,#0x80			;@ Swap CHR A12
 	beq noChrSwap
+	stmfd sp!,{r1,r3-r8}
 	adr_ r0,nesChrMap
-	stmfd sp!,{r1,r3,r4}
 	ldmia r0,{r1-r4}
 	stmia r0!,{r3,r4}
 	stmia r0!,{r1,r2}
-	ldmfd sp!,{r1,r3,r4}
+	ldr r0,=vram_map
+	ldmia r0,{r1-r8}
+	stmia r0!,{r5-r8}
+	stmia r0!,{r1-r4}
+	ldmfd sp!,{r1,r3-r8}
 noChrSwap:
 	tst r1,#0x40
 	bxeq lr
