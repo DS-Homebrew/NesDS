@@ -18,26 +18,26 @@ char tmpname[] = "dszip.tmp";
 char diskbios[8192];
 const int diskbios_size = sizeof(diskbios);
 
-int romsize;	//actual rom size
-int freemem_start;	//points to unused mem (end of loaded rom)
+int romsize;	// actual rom size
+int freemem_start;	// points to unused mem (end of loaded rom)
 int freemem_end;
 u32 oldinput;
 
-char romfilename[256];	//name of current rom.  null when there's no file (rom was embedded)
-char *romfileext;	//points to file extension
+char romfilename[256];	// name of current rom.  null when there's no file (rom was embedded)
+char *romfileext;	// points to file extension
 
-//extern u8 autostate;			//from ui.c
+//extern u8 autostate;			// from ui.c
 int active_interface = 0;
 
 void rommenu(int roms);
-void drawmenu(int sel,int roms);
+void drawmenu(int sel, int roms);
 int getinput(void);
 
 int init_rommenu(void);
-void listrom(int line,int rom,int highlight); //print rom title
-int loadrom();	//return -1 on success
-int selectrom(int rom);	//return -1 on success, or rom count (from directory change)
-void stringsort(char**);
+void listrom(int line, int rom, int highlight); // print rom title
+int loadrom();	// return -1 on success
+int selectrom(int rom);	// return -1 on success, or rom count (from directory change)
+void stringsort(const char **s);
 
 char *adjust_fds(const char *name, char *rom, int romSize)
 {
@@ -91,19 +91,19 @@ int global_roms = 0;
 void do_rommenu() {
 	int roms = global_roms;
 
-	ips_stat = false;		//disable ips first.
+	ips_stat = false;		// disable ips first.
 
-	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE);			//disable sound when selecting a rom.
+	fifoSendValue32(FIFO_USER_08, FIFO_APU_PAUSE); // disable sound when selecting a rom.
 
 	if (!global_roms) {
-		roms=init_rommenu();
+		roms = init_rommenu();
 		global_roms = roms;
 	}
 
 	if (!roms) {
-		if (!active_interface) {			//another driver is present, but init failed
+		if (!active_interface) {			// another driver is present, but init failed
 			consoletext(64*3,"Device failed.",0);
-		} else {						//no DLDI error, no files
+		} else {						// no DLDI error, no files
 			consoletext(64*3,"No roms found.",0);
 		}
 		while(1) swiWaitForVBlank();
@@ -133,7 +133,7 @@ void rommenu(int roms) {
 	if (romfilename[0] != '\0')
 		save_sram();
 
-	oldinput=IPC_KEYS;
+	oldinput = IPC_KEYS;
 
 	if (roms == 1)
 		key = KEY_START;
@@ -147,7 +147,7 @@ void rommenu(int roms) {
 			case KEY_A:
 			case KEY_Y:
 				loaded = selectrom(sel);
-				if (loaded > 0) {	//didn't load (it was a directory) loaded == 0 means that ips file is loaded.
+				if (loaded > 0) {	// didn't load (it was a directory) loaded == 0 means that ips file is loaded.
 					sel = 0;
 					roms = loaded;
 					global_roms = roms;
@@ -186,29 +186,29 @@ void rommenu(int roms) {
 			roms: count of roms
 * description:		called by rommenu.
 ******************************/
-void drawmenu(int sel,int roms) {
+void drawmenu(int sel, int roms) {
 	int i,j,topline,rom;
 	
 	clearconsole();
-	if(roms>ROWS) {
-		topline=8*(roms-ROWS)*sel/(roms-1);
-		rom=topline/8;
-		j=(rom<roms-ROWS)?ROWS+1:ROWS;
+	if (roms > ROWS) {
+		topline = 8*(roms-ROWS)*sel/(roms-1);
+		rom = topline/8;
+		j = (rom<roms-ROWS)?ROWS+1:ROWS;
 	} else {
-		topline=0;
-		rom=0;
-		j=roms;
+		topline = 0;
+		rom = 0;
+		j = roms;
 	}
 	
-	for(i=0;i<j;i++) {
+	for (i=0;i<j;i++) {
 		listrom(i+OFFSET,rom,sel==rom);
 		rom++;
 	}
 
-//	if(roms>ROWS)
-		REG_BG0VOFS_SUB=topline%8;
+//	if (roms>ROWS)
+		REG_BG0VOFS_SUB = topline%8;
 //	else
-//		SUB_BG0_Y0=-(ROWS*4)+roms*4;
+//		SUB_BG0_Y0 = -(ROWS*4)+roms*4;
 }
 
 /*****************************
@@ -223,18 +223,18 @@ int getinput() {
 	int keyhit;
 	scanKeys();
 	IPC_KEYS = keysCurrent();
-	keyhit=(oldinput^IPC_KEYS)&IPC_KEYS;
-	oldinput=IPC_KEYS;
-	dpad=IPC_KEYS&(KEY_UP+KEY_DOWN+KEY_LEFT+KEY_RIGHT);
-	if(lastdpad==dpad) {
+	keyhit = (oldinput^IPC_KEYS) & IPC_KEYS;
+	oldinput = IPC_KEYS;
+	dpad = IPC_KEYS & (KEY_UP+KEY_DOWN+KEY_LEFT+KEY_RIGHT);
+	if (lastdpad == dpad) {
 		repeatcount++;
-		if(repeatcount<25 || repeatcount&3)	//delay/repeat
-			dpad=0;
+		if (repeatcount<25 || repeatcount&3) // delay/repeat
+			dpad = 0;
 	} else {
-		repeatcount=0;
-		lastdpad=dpad;
+		repeatcount = 0;
+		lastdpad = dpad;
 	}
-	return dpad|(keyhit&(KEY_Y+KEY_X+KEY_A+KEY_B+KEY_START));
+	return dpad|(keyhit & (KEY_Y+KEY_X+KEY_A+KEY_B+KEY_START));
 }
 
 /*****************************
@@ -245,13 +245,13 @@ int getinput() {
 			highlight: if the rom is selected(highlighted).
 * description:		called by rommenu.
 ******************************/
-void listrom(int line,int rom,int highlight) {
-	char *s;
-	char **files=(char**)rom_files;
-	s=files[rom];
-	if(*s==1) {	//dir
+void listrom(int line, int rom, int highlight) {
+	const char *s;
+	char **files = (char **)rom_files;
+	s = files[rom];
+	if (*s == 1) {	// dir
 		menutext(line,s+1,highlight?2:0);
-	} else		//file
+	} else		// file
 		menutext(line,s+1,highlight);
 }
 
@@ -306,10 +306,10 @@ int loadrom() {
 		romcorrect(roms);
 	}
 	initcart(roms);
-	IPC_MAPPER = debuginfo[MAPPER];
+	IPC_MAPPER = globals.mapperNr;
 
 	load_sram();
-	//if(autostate) loadstate(..);
+	//if (autostate) loadstate(..);
 
 	return -1;	//(-1 on success)
 }
@@ -321,12 +321,12 @@ int loadrom() {
 * description:		called by rommenu.
 ******************************/
 int selectrom(int rom) {
-	char **files=(char**)rom_files;
+	char **files = (char **)rom_files;
 
 	if (*files[rom] == 1) {	// directory
 		chdir(files[rom]+1);
 		return init_rommenu();
-	} else {	//file
+	} else {	// file
 		if (strstr(files[rom]+1, ".ips") || strstr(files[rom]+1, ".IPS")) {	// a ips file is loaded.
 			load_ips(files[rom]+1);
 			return 0;
@@ -347,24 +347,24 @@ int selectrom(int rom) {
 ******************************/
 // return number of file entries (roms+dirs)
 int init_rommenu() {
-	char **files;
+	const char **files;
 	char *nextfile;
-	int idx=0;
+	int idx = 0;
 	DIR *dir = NULL;
 	struct dirent *cnt = NULL;
 	struct stat statbuf;
 
-	if(!active_interface) {		//DLDI trouble
+	if (!active_interface) {		// DLDI trouble
 		return 0;
 	}
-	files = (char**)rom_files;
-	nextfile=(char*)&files[MAXFILES];
-	dir=opendir(".");			//chdir to root
-	cnt=readdir(dir);
+	files = (const char **)rom_files;
+	nextfile = (char *)&files[MAXFILES];
+	dir = opendir(".");			// chdir to root
+	cnt = readdir(dir);
 	stat(cnt->d_name,&statbuf);
 
-	while(cnt != NULL && (idx<MAXFILES - 1) && dir != NULL) {
-		if(((strstr(cnt->d_name, ".NES") || strstr(cnt->d_name, ".nes")) 
+	while (cnt != NULL && (idx < MAXFILES-1) && dir != NULL) {
+		if (((strstr(cnt->d_name, ".NES") || strstr(cnt->d_name, ".nes"))
 			|| (strstr(cnt->d_name, ".FDS") || strstr(cnt->d_name, ".fds"))
 			|| (strstr(cnt->d_name, ".IPS") || strstr(cnt->d_name, ".ips"))
 			|| (strstr(cnt->d_name, ".GZ") || strstr(cnt->d_name, ".gz"))
@@ -372,21 +372,21 @@ int init_rommenu() {
 			|| (strstr(cnt->d_name, ".nsf") || strstr(cnt->d_name, ".nsf"))
 			|| (S_ISDIR(statbuf.st_mode)) 
 			|| strcmp("..", cnt->d_name) == 0) && strcmp(".", cnt->d_name) != 0) {
-			if(S_ISDIR(statbuf.st_mode) || strcmp("..", cnt->d_name) == 0)
+			if (S_ISDIR(statbuf.st_mode) || strcmp("..", cnt->d_name) == 0)
 				*nextfile = 1;
 			else 
 				*nextfile = 2;
 			strcpy(nextfile + 1, cnt->d_name);
-			files[idx]=nextfile;
-			nextfile+=strlen(nextfile)+1;
+			files[idx] = nextfile;
+			nextfile += strlen(nextfile)+1;
 			idx++;
 		}
-		cnt=readdir(dir);
+		cnt = readdir(dir);
 		stat(cnt->d_name,&statbuf);
 	}
-	files[idx]=0;
+	files[idx] = 0;
 	stringsort(files);
-	if(dir)
+	if (dir)
 		closedir(dir);
 	return idx;
 }
@@ -399,15 +399,15 @@ int init_rommenu() {
 * description:		cmpare to strings.for sorting.
 ******************************/
 // case insensitive string compare
-inline int less(char *s1,char *s2) {
+inline int less(const char *s1, const char *s2) {
 	int c1,c2;
 	do {
-		c1=*s1++;
-		c2=*s2++;
-		if(c1>='a') c1=c1-'a'+'A';
-		if(c2>='a') c2=c2-'a'+'A';
-	} while(c1==c2);
-	return c1<c2;
+		c1 = *s1++;
+		c2 = *s2++;
+		if (c1 >= 'a') c1 = c1-'a'+'A';
+		if (c2 >= 'a') c2 = c2-'a'+'A';
+	} while (c1 == c2);
+	return c1 < c2;
 }
 
 /*****************************
@@ -417,14 +417,14 @@ inline int less(char *s1,char *s2) {
 * description:		none
 ******************************/
 // lazy man's string sorter
-void stringsort(char **p1) {
-	char **p2;
-	char *s1,*s2;
-	do {	//next s1
+void stringsort(const char **p1) {
+	const char **p2;
+	const char *s1,*s2;
+	do {	// next s1
 		s1 = *p1;
 		if (s1) {
 			p2 = p1;
-			do {	//next s2
+			do {	// next s2
 				p2++;
 				s2 = *p2;
 				if (s2 && less(s2,s1)) {
@@ -446,22 +446,22 @@ char ininame[768];
 char defaultDisksyspath[] = "/disksys.rom";
 
 char *findpath(int argc, char **argv, const char *name){
-	int i=0;
+	int i = 0;
 	for (;i<argc;i++){
 		strcpy(ininame,argv[i]);
-		if (ininame[strlen(ininame)-1]!='/')strcat(ininame,"/");
+		if (ininame[strlen(ininame)-1] != '/') strcat(ininame,"/");
 		strcat(ininame,name);
-		if (!access(ininame,0))return ininame;
+		if (!access(ininame,0)) return ininame;
 	}
 	// create at root on next save
-	ininame[0]='/';
+	ininame[0] = '/';
 	strcpy(&ininame[0]+1,name);
 	return NULL;
 }
 
 char none[] = " ";
 
-int keystr2int(char *buf)
+int keystr2int(const char *buf)
 {
 	int i;
 	int ret = 0;
@@ -475,45 +475,45 @@ int keystr2int(char *buf)
 }
 
 int bootext() {
-	//interrupt 0: set my dir (inibuf)
+	// interrupt 0: set my dir (inibuf)
 	int i;
 	strcpy(inibuf,"/");
-	if (argc>0){
+	if (argc > 0){
 		strcpy(inibuf,argv[0]);
 		i = strlen(inibuf)+1;
 		for (;i>0;i--) if (inibuf[i-1] == '/') {inibuf[i] = 0;break;}
 	}
 
 	memset(shortcuts_tbl, 0, sizeof(shortcuts_tbl));
-	if (findpath(8,(char*[]){"/","/_dstwoplug/","/ismartplug/","/moonshl2/extlink/","/_iMenu/_ini/","/_plugin_/","/_nds/",inibuf},"nesDS.ini")){
-		//interrupt 1: read config
+	if (findpath(8,(char *[]){"/","/_dstwoplug/","/ismartplug/","/moonshl2/extlink/","/_iMenu/_ini/","/_plugin_/","/_nds/",inibuf},"nesDS.ini")){
+		// interrupt 1: read config
 		int iniret;
-		if ((iniret=ini_getl("nesDSrev2","BASwap",0,ininame)) != 0) joyflags|=B_A_SWAP;
+		if ((iniret = ini_getl("nesDSrev2","BASwap",0,ininame)) != 0) joyflags |= B_A_SWAP;
 
-		if ((iniret=ini_getl("nesDSrev2","LRDisable",0,ininame)) != 0) joyflags|=L_R_DISABLE;
-		if ((iniret=ini_getl("nesDSrev2","Blend",0,ininame)) != 0) __emuflags|=iniret&3;
-		if ((iniret=ini_getl("nesDSrev2","PALTiming",0,ininame)) != 0) __emuflags|=PALTIMING;
-		if ((iniret=ini_getl("nesDSrev2","FollowMem",0,ininame)) != 0) __emuflags|=FOLLOWMEM;
-		if ((iniret=ini_getl("nesDSrev2","ScreenSwap",0,ininame)) != 0) __emuflags|=SCREENSWAP;
-		if ((iniret=ini_getl("nesDSrev2","AllPixelOn",0,ininame)) != 0) __emuflags|=ALLPIXELON;
-		if ((iniret=ini_getl("nesDSrev2","Render",0,ininame)) != 0)  {
-			if (iniret == 1)	__emuflags|=SPLINE;
-			else __emuflags|=SOFTRENDER;
+		if ((iniret = ini_getl("nesDSrev2","LRDisable",0,ininame)) != 0) joyflags |= L_R_DISABLE;
+		if ((iniret = ini_getl("nesDSrev2","Blend",0,ininame)) != 0) __emuflags |= iniret&3;
+		if ((iniret = ini_getl("nesDSrev2","PALTiming",0,ininame)) != 0) __emuflags |= PALTIMING;
+		if ((iniret = ini_getl("nesDSrev2","FollowMem",0,ininame)) != 0) __emuflags |= FOLLOWMEM;
+		if ((iniret = ini_getl("nesDSrev2","ScreenSwap",0,ininame)) != 0) __emuflags |= SCREENSWAP;
+		if ((iniret = ini_getl("nesDSrev2","AllPixelOn",0,ininame)) != 0) __emuflags |= ALLPIXELON;
+		if ((iniret = ini_getl("nesDSrev2","Render",0,ininame)) != 0)  {
+			if (iniret == 1) __emuflags |= SPLINE;
+			else __emuflags |= SOFTRENDER;
 		}
-		if ((iniret=ini_getl("nesDSrev2","AutoSRAM",0,ininame)) != 0) __emuflags|=AUTOSRAM;
-		if ((iniret=ini_getl("nesDSrev2","Screen_Scale",0,ininame)) != 0) ad_scale=iniret;
-		if ((iniret=ini_getl("nesDSrev2","Screen_Offset",0,ininame)) != 0) ad_ypos=iniret;
-		if ((iniret=ini_getl("nesDSrev2","Screen_Gamma",0,ininame)) != 0) gammavalue=iniret;
-		if ((iniret=ini_getl("nesDSrev2","Screen_Palette",0,ininame)) != 0) palette_value=iniret;
+		if ((iniret = ini_getl("nesDSrev2","AutoSRAM",0,ininame)) != 0) __emuflags |= AUTOSRAM;
+		if ((iniret = ini_getl("nesDSrev2","Screen_Scale",0,ininame)) != 0) ad_scale = iniret;
+		if ((iniret = ini_getl("nesDSrev2","Screen_Offset",0,ininame)) != 0) ad_ypos = iniret;
+		if ((iniret = ini_getl("nesDSrev2","Screen_Gamma",0,ininame)) != 0) gammavalue = iniret;
+		if ((iniret = ini_getl("nesDSrev2","Screen_Palette",0,ininame)) != 0) palette_value = iniret;
 		palset();
-		if ((iniret=ini_getl("nesDSrev2","AutoFire",2,ininame)) != 0) autofire_fps=iniret;
-		if ((iniret=ini_getl("nesDSrev2","UseSavesDir",0,ininame)) != 0) use_saves_dir=true;
+		if ((iniret = ini_getl("nesDSrev2","AutoFire",2,ininame)) != 0) autofire_fps = iniret;
+		if ((iniret = ini_getl("nesDSrev2","UseSavesDir",0,ininame)) != 0) use_saves_dir = true;
 		__af_start = ((autofire_fps >> 1) << 8) + (autofire_fps >> 1) + (autofire_fps & 1);
 
 		rescale(ad_scale, ad_ypos);
 
 		for (i = 0 ; i < MAX_SC; i++) {
-			if ((iniret=ini_getl("nesDSrev2",ishortcuts[i],0,ininame)) != 0) shortcuts_tbl[i]=iniret;
+			if ((iniret = ini_getl("nesDSrev2",ishortcuts[i],0,ininame)) != 0) shortcuts_tbl[i] = iniret;
 			else {
 				ini_gets("nesDSrev2", ishortcuts[i], none, inibuf, 512, ininame);
 				shortcuts_tbl[i] = keystr2int(inibuf);
@@ -529,8 +529,8 @@ int bootext() {
 		strcpy(inibuf,"/");
 	}*/
 
-	if (!*inibuf||inibuf[strlen(inibuf)-1]!='/')strcat(inibuf,"/");
-	chdir(inibuf); //might be overwritten in readFrontend()
+	if (!*inibuf||inibuf[strlen(inibuf)-1] != '/') strcat(inibuf,"/");
+	chdir(inibuf); // might be overwritten in readFrontend()
 
 	// if we didn't have an ini, this'll be blank
 	if (disksyspath[0] == 0) {
@@ -560,9 +560,7 @@ int bootext() {
 int load_gz(const char *fname)
 {
 #if 1
-	int ret;
-	ret = do_decompression(fname, tmpname);
-	return ret;
+	return do_decompression(fname, tmpname);
 #endif
 	return 0;
 }

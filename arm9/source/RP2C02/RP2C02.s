@@ -5,6 +5,15 @@
 //	#include "RP2C02.i"
 	#include "equates.h"
 ;@-----------------------------------------------------------------------------
+	.global agb_nt_map
+	.global vram_map
+	.global vram_write_tbl
+	.global agb_pal
+	.global writeCHRTBL
+	.global currentBG
+	.global agb_bg_map
+	.global agb_obj_map
+
 	.global PPU_init
 	.global PPU_reset
 	.global PPU_R
@@ -13,13 +22,9 @@
 	.global updateINTPin
 	.global ppuDoScanline
 	.global rp2C02SetRevision
-	.global agb_nt_map
-	.global vram_map
-	.global vram_write_tbl
 	.global VRAM_chr
 	.global paletteinit
 	.global newframe
-	.global agb_pal
 	.global writeBG
 	.global ctrl1_W
 	.global EMU_VBlank
@@ -50,13 +55,9 @@
 	.global mirrorKonami_
 	.global setNameTables
 	.global resetCHR
-	.global writeCHRTBL
 	.global chr1k
 	.global chr2k
 	.global chr2k1k
-	.global currentBG
-	.global agb_bg_map
-	.global agb_obj_map
 	.global vromNT1k
 
 ;@-----------------------------------------------------------------------------
@@ -2214,7 +2215,8 @@ ntData:
 obj_tileset:
 	.skip 240
 ;@-----------------------------------------------------------------------------
-nes_maps:	.skip 240*16
+nes_maps:
+	.skip 240*16
 ;@-----------------------------------------------------------------------------
 	.end
 #endif // #ifdef __arm__

@@ -18,7 +18,7 @@ typedef struct {
 	u32 prgSize8k;
 	u32 prgSize16k;
 	u32 prgSize32k;
-	u32 mapperInitPtr;
+	u32 mapperNr;
 	u32 emuFlags;
 	u32 prgCrc;
 
@@ -28,7 +28,8 @@ typedef struct {
 	u32 tempData[20];
 
 	u8 cartFlags;
-	u8 padding[3];
+	u8 subMapper;
+	u8 padding[2];
 } NESCore;
 
 extern RP2A03 rp2A03;

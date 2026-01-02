@@ -4,16 +4,16 @@
 
 extern u32 agb_bg_map[];
 u32 debuginfo[48];
-char *debugtxt[]={
+const char *debugtxt[]={
 "ERR0","ERR1","READ","WRITE","BRK","BAD OP","VBLS","FPS",
 "BGMISS","cartflg","a","b","c","ALIVE","TMP0","TMP1",
 "mapper#", "PRGCRC", "diskno", "makeid", "gameid", "emuflag"};
 #define DLINE 4
 
 extern int shortcuts_tbl[];
-extern char *ishortcuts[];
+extern const char *ishortcuts[];
 
-char *fdsdbg[]={
+const char *fdsdbg[]={
 "ienable", "irepeat", "ioccur", "itran",
 "denable", "senable", "RWstart", "RWmode",
 "motormd", "eject", "ready", "reset",
@@ -29,21 +29,21 @@ int debugdump() {
 /*
 	int i;
 	u32 *p;
-	char **cc;
+	const char **cc;
 
 	debuginfo[ALIVE]=IPC_ALIVE;
 	debuginfo[TMP0]=IPC_TMP0;
 	debuginfo[TMP1]=IPC_TMP1;
 	
-	p=debuginfo;
-	cc=debugtxt;
-	for(i=64*DLINE;i<64*(DLINE+16);i+=64) {
+	p = debuginfo;
+	cc = debugtxt;
+	for (i=64*DLINE;i<64*(DLINE+16);i+=64) {
 		consoletext(i,*cc++,0);
 		hex32(i+14,*p++);
 	}
 
-	p=agb_bg_map;
-	for(i=64*DLINE;i<64*(DLINE+16);i+=64) {
+	p = agb_bg_map;
+	for (i=64*DLINE;i<64*(DLINE+16);i+=64) {
 		hex32(i+32,*p++);
 	}
 	
@@ -56,7 +56,7 @@ int debugdump() {
 
 	int i;/*
 	static int count = 0;
-	if(count++ != 20)
+	if (count++ != 20)
 		return 0;*/
 
 	debuginfo[EMUFLAG] = __emuflags;
@@ -95,14 +95,14 @@ int debugdump() {
 			hex32(64 * 20 + i * 32, (u32)rp2A03.m6502.memTbl[i + 4] + 0x2000 * i + 0x8000);
 		}
 	}
-	else if (debuginfo[MAPPER] == 20) {
+	else if (globals.mapperNr == 20) {
 		u8 *p = (u8*)&globals.mapperData;//0x7000000;
 		u32 *ip = (u32*)&globals.mapperData;//0x7000000;
 		for (i=0; i<18; i++) {
 			consoletext(64 * 4 + i * 32, fdsdbg[i], 0);
 			hex8(64*4+i*32 + 18,p[i]);
 		}
-		for (i=6;i<19;i++) {
+		for (i=6; i<19; i++) {
 			consoletext(64*12 + (i-6) * 32, fdsdbg[i + 12], 0);
 			hex32(64*12 + (i-6) * 32 + 16,ip[i]);
 		}

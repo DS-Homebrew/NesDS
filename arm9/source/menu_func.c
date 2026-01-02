@@ -36,7 +36,7 @@ u8 nes_rgb[] = {
 	0xf3,0xbf,0x3f, 0x83,0xd3,0x13, 0x4f,0xdf,0x4b, 0x58,0xf8,0x98, 0x00,0xeb,0xdb, 0x00,0x00,0x00, 0x00,0x00,0x00, 0x00,0x00,0x00,
 	0xff,0xff,0xff, 0xab,0xe7,0xff, 0xc7,0xd7,0xff, 0xd7,0xcb,0xff, 0xff,0xc7,0xff, 0xff,0xc7,0xdb, 0xff,0xbf,0xb3, 0xff,0xdb,0xab,
 	0xff,0xe7,0xa3, 0xe3,0xff,0xa3, 0xab,0xf3,0xbf, 0xb3,0xff,0xcf, 0x9f,0xff,0xf3, 0xd1,0xd1,0xd1, 0x11,0x11,0x11, 0x11,0x11,0x11
-	};
+};
 
 
 void menu_hide(void)
@@ -75,14 +75,14 @@ void menu_file_savesram(void)
 
 void menu_file_slot(void)
 {
-	if(lastbutton_cnt < 6) {
-		if(lastbutton_cnt & 1)
+	if (lastbutton_cnt < 6) {
+		if (lastbutton_cnt & 1)
 			slots_num--;
 		else
 			slots_num++;
-		if(slots_num < 0)
+		if (slots_num < 0)
 			slots_num = 9;
-		if(slots_num > 9)
+		if (slots_num > 9)
 			slots_num = 0;
 		hex8(64*18 + 4 + 10, slots_num);
 	}
@@ -126,7 +126,7 @@ void show_all_pixel(void)
 {
 	menu_stat = 3;
 	__emuflags ^= ALLPIXELON;
-	if(__emuflags & ALLPIXELON) {
+	if (__emuflags & ALLPIXELON) {
 		consoletext(64*18 + 32, "YES", 0x1000);
 	}
 	else
@@ -148,25 +148,25 @@ int menu_touchcontroller() {
 	u32 flags, i;
 
 	flags=joyflags;
-	if(flags&B_A_SWAP) {
-		*B_btn='B';
-		*A_btn='A';
+	if (flags&B_A_SWAP) {
+		*B_btn = 'B';
+		*A_btn = 'A';
 	} else {
-		*B_btn='Y';
-		*A_btn='B';
+		*B_btn = 'Y';
+		*A_btn = 'B';
 	}
-	if(!(flags&LOCK))
-		flags&=~0xffff;
-		
-	i=do_touchstrings(controls,joystate | (flags&0x70000));
-	if(touchstate==4) {
-		flags^=1<<i;
+	if (!(flags&LOCK))
+		flags &= ~0xffff;
+
+	i = do_touchstrings(controls,joystate | (flags&0x70000));
+	if (touchstate == 4) {
+		flags ^= 1<<i;
 	} else {
-		if(i<16 && !(flags&LOCK))
-			flags|=1<<i;
+		if (i<16 && !(flags&LOCK))
+			flags |= 1<<i;
 	}
 	
-	joyflags=flags;
+	joyflags = flags;
 	return 0;
 }
 
@@ -204,10 +204,10 @@ struct button button_intput[] = {
 
 void do_top_menu(void)
 {
-	if(touchstate > 1) {
-		if(!(lastbutton != NULL && last_x >= lastbutton->x * 8 + 4 && last_x <= (lastbutton->x + lastbutton->w + 2) * 8 - 3 
+	if (touchstate > 1) {
+		if (!(lastbutton != NULL && last_x >= lastbutton->x * 8 + 4 && last_x <= (lastbutton->x + lastbutton->w + 2) * 8 - 3
 			&& last_y >= lastbutton->y * 8 + 4 && last_y <= (lastbutton->y + lastbutton->h + 2) * 8 - 3)) {
-			if(lastbutton != NULL) {
+			if (lastbutton != NULL) {
 				draw_button(lastbutton->name, lastbutton->x, lastbutton->y, lastbutton->w, lastbutton->h, 0);
 				lastbutton->stat = 0;
 				lastbutton = NULL;
@@ -215,19 +215,21 @@ void do_top_menu(void)
 			check_button_group(0);
 			check_button_group(2);
 		}
-	} else if(lastbutton != NULL) {
+	}
+	else if (lastbutton != NULL) {
 		draw_button(lastbutton->name, lastbutton->x, lastbutton->y, lastbutton->w, lastbutton->h, 0);
 		lastbutton->stat = 0;
 		lastbutton = NULL;
 	}
 
-	if(lastbutton && touchstate == 4) {
-		if(lastbutton_type == 0) {
-			if(menu_depth == lastbutton_cnt + 1) { //use this to hide menu
+	if (lastbutton && touchstate == 4) {
+		if (lastbutton_type == 0) {
+			if (menu_depth == lastbutton_cnt + 1) { // use this to hide menu
 				menu_stat = 0;
 				menu_draw = 0;
 				hideconsole();
-			} else { //change menu depth
+			}
+			else { // change menu depth
 				lastbutton->stat = 0;
 				lastbutton = NULL;
 				menu_depth = lastbutton_cnt + 1;
@@ -265,7 +267,7 @@ void autofire_fresh(void)
 void menu_game_input(void)
 {
 	do_top_menu();
-	if(menu_stat == 5) {
+	if (menu_stat == 5) {
 		add_buttonp(2, &button_intput[0]);
 		add_buttonp(2, &button_intput[1]);
 		add_buttonp(2, &button_intput[2]);
@@ -275,8 +277,8 @@ void menu_game_input(void)
 		menu_stat = 6;
 	}
 
-	if(lastbutton && touchstate == 4) {
-		if(lastbutton_type == 2) {
+	if (lastbutton && touchstate == 4) {
+		if (lastbutton_type == 2) {
 			switch(lastbutton_cnt) {
 			case 0:
 				draw_button(lastbutton->name, lastbutton->x, lastbutton->y, lastbutton->w, lastbutton->h, 0);
@@ -285,13 +287,13 @@ void menu_game_input(void)
 				joyflags ^= B_A_SWAP;
 				break;
 			case 1:
-				if(autofire_fps > 2) {
+				if (autofire_fps > 2) {
 					autofire_fps--;
 					autofire_fresh();
 				}
 				break;
 			case 2:
-				if(autofire_fps < 30) {
+				if (autofire_fps < 30) {
 					autofire_fps++;
 					autofire_fresh();
 				}
@@ -319,20 +321,19 @@ void menu_input_start(void)
 	lastbutton = NULL;
 }
 
-
-char *blendnames[] = {
+const char *blendnames[] = {
 	"Flicker", "None   ", "","\x7F-lerp ",
 };
 
-char *rendernames[] = {
+const char *rendernames[] = {
 	"SP-Perframe", "SP-Pertile ", "Pure-Soft   "
 };
 
-char *brightxt[] = {
+const char *brightxt[] = {
 	"I    ","II   ","III  ","IIII ","IIIII"
 };
 
-char *paltxt[] = {
+const char *paltxt[] = {
 	"Loopys Orig","AsquireReal","ChrisCovell","CrashMan   ","MattConte  ","MESS Pal   ","PasoFami/99","Quor's Pal ","FireBrandX ","FBXDigiPrim","FBX NES PVM","Wii NES VC ","NES Classic","3DS NES VC "
 };
 
@@ -352,66 +353,67 @@ void menu_display_start(void)
 }
 
 void menu_preset_func(void) {
-	if(lastbutton_cnt == 0) {
-	ad_scale=0x10000;
-	ad_ypos=-0x00090000;
-	rescale(ad_scale,ad_ypos);
+	if (lastbutton_cnt == 0) {
+	ad_scale = 0x10000;
+	ad_ypos = -0x00090000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 1) {
-	ad_scale=0x10000;
-	ad_ypos=-0x00290000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 1) {
+	ad_scale = 0x10000;
+	ad_ypos = -0x00290000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 2) {
-	ad_scale=0x10000;
-	ad_ypos=-0x00190000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 2) {
+	ad_scale = 0x10000;
+	ad_ypos = -0x00190000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 3) {
-	ad_scale=0x10000;
-	ad_ypos=-0x00210000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 3) {
+	ad_scale = 0x10000;
+	ad_ypos = -0x00210000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 4) {
-	ad_scale=0xc000;
-	ad_ypos=0x00062000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 4) {
+	ad_scale = 0xc000;
+	ad_ypos = 0x00062000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 5) {
-	ad_scale=0xce00;
-	ad_ypos=-0x00010000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 5) {
+	ad_scale = 0xce00;
+	ad_ypos = -0x00010000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 6) {
-	ad_scale=0xf000;
-	ad_ypos=-0x000d0000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 6) {
+	ad_scale = 0xf000;
+	ad_ypos = -0x000d0000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 7) {
-	ad_scale=0xf000;
-	ad_ypos=-0x00110000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 7) {
+	ad_scale = 0xf000;
+	ad_ypos = -0x00110000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 8) {
-	ad_scale=0xe000;
-	ad_ypos=-0x00060000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 8) {
+	ad_scale = 0xe000;
+	ad_ypos = -0x00060000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 9) {
-	ad_scale=0xe000;
-	ad_ypos=-0x000c0000;
-	rescale(ad_scale,ad_ypos);
+	else if (lastbutton_cnt == 9) {
+	ad_scale = 0xe000;
+	ad_ypos = -0x000c0000;
+	rescale(ad_scale, ad_ypos);
 	}
-	else if(lastbutton_cnt == 10) {
-	ad_scale=0xf000;
-	ad_ypos=-0x00150000;
-	rescale(ad_scale,ad_ypos);
-	}	
-	else if(lastbutton_cnt == 11) {
-	ad_scale=0xf000;
-	ad_ypos=-0x00190000;
-	rescale(ad_scale,ad_ypos);
-	}	menu_stat = 3;
+	else if (lastbutton_cnt == 10) {
+	ad_scale = 0xf000;
+	ad_ypos = -0x00150000;
+	rescale(ad_scale, ad_ypos);
+	}
+	else if (lastbutton_cnt == 11) {
+	ad_scale = 0xf000;
+	ad_ypos = -0x00190000;
+	rescale(ad_scale, ad_ypos);
+	}
+	menu_stat = 3;
 }
 
 struct menu_item menu_preset_items[] = {
@@ -444,74 +446,74 @@ int adjustdisplay(void)
 	return 0;
 }
 
-int ad_scale=0xe000, ad_ypos=-0x00060000;
+int ad_scale = 0xe000;
+int ad_ypos = -0x00060000;
 void menu_display_adjust(void) {
 
-	int i,j;
-	u32 dts;
-	static int dragging=0;
-	
+	static int dragging = 0;
+
 	do_top_menu();
 
 	consoletext(64*5+0,"Touch anywhere to adjust screen.",0);
 	consoletext(64*6+4,"Use arrows for fine control.",0);
 
-	dts=do_touchstrings(scaleopts,0);
-	if(touchstate==2 && dts==-1 && !(last_x>88 && last_x<168 && last_y>72 && last_y<128) && last_y>24) {	//pen down, no strings hit, outside of arrow box
-		dragging=1;
+	u32 dts = do_touchstrings(scaleopts,0);
+	if (touchstate == 2 && dts == -1 && !(last_x > 88 && last_x < 168 && last_y > 72 && last_y < 128) && last_y > 24) {	// pen down, no strings hit, outside of arrow box
+		dragging = 1;
 	}
 
-	if(dragging) {
-		if(touchstate==4) {
-			dragging=0;
-			touchstate=1;	//hide touch input from tab+exit text
-		} else {
-			i=IPC_TOUCH_X-24;
-			if(i<0) i=0;
-			if(i>207) i=207;
-			i*=48;
-			i/=208;
-			i+=192;			//i=192..239
+	if (dragging) {
+		if (touchstate == 4) {
+			dragging = 0;
+			touchstate = 1;	// hide touch input from tab+exit text
+		}
+		else {
+			int i = IPC_TOUCH_X-24;
+			if (i<0) i=0;
+			if (i>207) i=207;
+			i *= 48;
+			i /= 208;
+			i += 192;		// i=192..239
 
-			j=IPC_TOUCH_Y;
-			j*=(239-i);
-			j/=192;
-			j=-j;
+			int j = IPC_TOUCH_Y;
+			j *= (239-i);
+			j /= 192;
+			j = -j;
 
-			i=(192*65536)/i;
-			
-			ad_scale=i;
-			ad_ypos=j<<16;
-			touchstate=3;	//hide touch input from tab+exit text
+			i = (192*65536)/i;
+
+			ad_scale = i;
+			ad_ypos = j<<16;
+			touchstate = 3;	// hide touch input from tab+exit text
 		}
 	} else {
-		switch(dts) {
-			case 0: //left
-				ad_scale+=0x100;
+		switch (dts) {
+			case 0: // left
+				ad_scale += 0x100;
 				break;
-			case 1: //right
-				ad_scale-=0x100;
+			case 1: // right
+				ad_scale -= 0x100;
 				break;
-			case 2: //up
-				ad_ypos+=0x2000;
+			case 2: // up
+				ad_ypos += 0x2000;
 				break;
-			case 3: //down
-				ad_ypos-=0x2000;
+			case 3: // down
+				ad_ypos -= 0x2000;
 				break;
 		}
 	}
 
-	if(touchstate>1) {
+	if (touchstate > 1) {
 		rescale(ad_scale,ad_ypos);
 		REG_BG3PD = 512 - (ad_scale >> 8);
-		if(ad_ypos >= 0)
+		if (ad_ypos >= 0)
 			REG_BG3Y = -(ad_ypos >> 8);
 		else 
 			REG_BG3Y = ((-ad_ypos) >> 8);
 	}
 	hex16(64*12+28,ad_scale);
 	hex16(64*13+28,ad_ypos>>8);
-	if(lastbutton_cnt == 0) {
+	if (lastbutton_cnt == 0) {
 		menu_array[menu_depth] = &menu_preset;
 		menu_depth++;
 		menu_stat = 1;
@@ -522,17 +524,17 @@ void menu_display_adjust(void) {
 
 void menu_display_br(void)
 {
-	if(lastbutton_cnt > 0 && lastbutton_cnt <= 6) {
-		if(lastbutton_cnt <= 3) {
+	if (lastbutton_cnt > 0 && lastbutton_cnt <= 6) {
+		if (lastbutton_cnt <= 3) {
 			__emuflags &= ~3;
-			switch(lastbutton_cnt) {
+			switch (lastbutton_cnt) {
 				case 1:
-					__emuflags |= 3;//alpha lerp
+					__emuflags |= 3; // alpha lerp
 					break;
 				case 2:
 					break;
 				case 3:
-					__emuflags |= 1;//noflicker
+					__emuflags |= 1; // noflicker
 					break;
 			}
 			rescale(ad_scale,ad_ypos);
@@ -548,21 +550,21 @@ void menu_display_br(void)
 				{
 					videoSetMode(MODE_0_2D);
 					videoBgDisable(3);
-					for(i = 0; i < 4*8/4; i++) {
+					for (i = 0; i < 4*8/4; i++) {
 						agb_bg_map[i] = -1;
 					}
 				}
 				break;
-			case 1: //sp-perline
+			case 1: // sp-perline
 				{
 					videoSetMode(MODE_0_2D);
 					videoBgDisable(3);
-					for(i = 0; i < 4*8/4; i++) {
+					for (i = 0; i < 4*8/4; i++) {
 						agb_bg_map[i] = -1;
 					}
 				}
 				break;
-			case 2: //pure-soft
+			case 2: // pure-soft
 				{
 					videoSetMode(MODE_5_2D);
 					videoBgEnable(3);
@@ -588,24 +590,25 @@ void menu_display_br(void)
 		consoletext(64*12 + 16, blendnames[__emuflags&3], 0x1000);
 		//consoletext(64*19 + 4, "Render Type:", 0);
 		consoletext(64*19 + 28, rendernames[(__emuflags >> 6)&3], 0x1000);
-	} else if(lastbutton_cnt < 9) {
-		if(lastbutton_cnt & 1) {
-			if(soft_frameskip > 1)
+	}
+	else if (lastbutton_cnt < 9) {
+		if (lastbutton_cnt & 1) {
+			if (soft_frameskip > 1)
 				soft_frameskip--;
 		}
 		else {
-			if(soft_frameskip < 0xf)
+			if (soft_frameskip < 0xf)
 				soft_frameskip++;
 		}
 		hex8(64*5 + 30*2, soft_frameskip - 1);
 	}
-	else if(lastbutton_cnt == 9) {
+	else if (lastbutton_cnt == 9) {
 		__emuflags ^= PALSYNC;
-		if(__emuflags & (SOFTRENDER | PALTIMING))
+		if (__emuflags & (SOFTRENDER | PALTIMING))
 			__emuflags &= ~PALSYNC;
 		consoletext(64*12 + 28*2, __emuflags&PALSYNC ? "On " : "Off", 0x1000);
 	}
-	else if(lastbutton_cnt == 10) {
+	else if (lastbutton_cnt == 10) {
 		gammavalue++;
 		if (gammavalue > 4) {
 			gammavalue = 0;
@@ -613,7 +616,7 @@ void menu_display_br(void)
 		consoletext(64*5 + 32, brightxt[gammavalue], 0x1000);
 		brightset();
 	}
-	else if(lastbutton_cnt == 11) {
+	else if (lastbutton_cnt == 11) {
 		palette_value++;
 			if (palette_value > 0xd) {
 				palette_value = 0;
@@ -635,46 +638,46 @@ void brightset(void) {
 }
 
 void palset(void) {
-	if(palette_value == 0) {
+	if (palette_value == 0) {
 	memcpy(nes_rgb,nes_rgb_0,192);
 	}
-	else if(palette_value == 1) {
+	else if (palette_value == 1) {
 	memcpy(nes_rgb,nes_rgb_1,192);
 	}
-	else if(palette_value == 2) {
+	else if (palette_value == 2) {
 	memcpy(nes_rgb,nes_rgb_2,192);
 	}
-	else if(palette_value == 3) {
+	else if (palette_value == 3) {
 	memcpy(nes_rgb,nes_rgb_3,192);
 	}
-	else if(palette_value == 4) {
+	else if (palette_value == 4) {
 	memcpy(nes_rgb,nes_rgb_4,192);
 	}
-	else if(palette_value == 5) {
+	else if (palette_value == 5) {
 	memcpy(nes_rgb,nes_rgb_5,192);
 	}
-	else if(palette_value == 6) {
+	else if (palette_value == 6) {
 	memcpy(nes_rgb,nes_rgb_6,192);
 	}
-	else if(palette_value == 7) {
+	else if (palette_value == 7) {
 	memcpy(nes_rgb,nes_rgb_7,192);
 	}
-	else if(palette_value == 8) {
+	else if (palette_value == 8) {
 	memcpy(nes_rgb,nes_rgb_8,192);
 	}
-	else if(palette_value == 9) {
+	else if (palette_value == 9) {
 	memcpy(nes_rgb,nes_rgb_9,192);
 	}
-	else if(palette_value == 10) {
+	else if (palette_value == 10) {
 	memcpy(nes_rgb,nes_rgb_10,192);
 	}
-	else if(palette_value == 11) {
+	else if (palette_value == 11) {
 	memcpy(nes_rgb,nes_rgb_11,192);
 	}
-	else if(palette_value == 12) {
+	else if (palette_value == 12) {
 	memcpy(nes_rgb,nes_rgb_12,192);
 	}
-	else if(palette_value == 13) {
+	else if (palette_value == 13) {
 	memcpy(nes_rgb,nes_rgb_13,192);
 	}
 };
@@ -703,7 +706,7 @@ struct button button_nifi[] = {
 	{.name = "\rClose Nifi", .x = 1, .y = 12, .w = 10, .h = 3},
 };
 
-const char *nifi_chars[] = 
+const char *nifi_chars[] =
 {
 	"Single player. IDLE.        ",
 	"Waiting for 2P.             ",
@@ -733,15 +736,15 @@ void menu_nifi_action(void)
 {
 	do_top_menu();
 
-	if(lastbutton && touchstate == 4) {
-		if(lastbutton_type == 2) {
-			switch(lastbutton_cnt) {
+	if (lastbutton && touchstate == 4) {
+		if (lastbutton_type == 2) {
+			switch (lastbutton_cnt) {
 			case 0:
-				if(!nifi_stat)
+				if (!nifi_stat)
 					nifi_stat = 1;
 				break;
 			case 1:
-				if(!nifi_stat)
+				if (!nifi_stat)
 					nifi_stat = 2;
 				break;
 			case 2:
@@ -819,9 +822,9 @@ void menu_extra_action(void)
 {
 	do_top_menu();
 
-	if(lastbutton && touchstate == 4) {
-		if(lastbutton_type == 2) {
-			switch(lastbutton_cnt) {
+	if (lastbutton && touchstate == 4) {
+		if (lastbutton_type == 2) {
+			switch (lastbutton_cnt) {
 			case 0:
 				setLightGun(true);
 				menu_stat = 0;
@@ -856,15 +859,13 @@ void menu_extra_action(void)
 				break;
 			case 5:
 				{
-					FILE *f;
-
-					if(active_interface || debuginfo[MAPPER] == 20) {
-						romfileext[0]='f';
-						romfileext[1]='d';
-						romfileext[2]='s';
-						romfileext[3]=0;
-						f=fopen(romfilename,"w");
-						if(f) {
+					if (active_interface || globals.mapperNr == 20) {
+						romfileext[0] = 'f';
+						romfileext[1] = 'd';
+						romfileext[2] = 's';
+						romfileext[3] = 0;
+						FILE *f = fopen(romfilename,"w");
+						if (f) {
 							fwrite((u8*)rom_start,1,16 + (65500 * (globals.prgSize16k >> 2)),f);
 							fflush(f);
 							fclose(f);
@@ -876,9 +877,9 @@ void menu_extra_action(void)
 		}
 	}	
 
-	if(lastbutton && touchstate == 3) {
-		if(lastbutton_type == 2) {
-			if(lastbutton_cnt == 2) {
+	if (lastbutton && touchstate == 3) {
+		if (lastbutton_type == 2) {
+			if (lastbutton_cnt == 2) {
 				__emuflags |= MICBIT;
 			}
 		}
@@ -899,27 +900,27 @@ void menu_extra_barcode_start(void)
 void menu_extra_barcode(void)
 {
 	menu_stat = 3;
-	if(lastbutton_cnt < 10) {
-		if(barpos < 13) {
+	if (lastbutton_cnt < 10) {
+		if (barpos < 13) {
 			barstr[barpos++] = lastbutton_cnt + '0';
-			if(barpos == 8) {
+			if (barpos == 8) {
 				barstr[8] = '_';
 			}
 		}
 	}
-	else switch(lastbutton_cnt) {
-		case 10:	//transfer
-			if(barpos == 8 || barpos == 13) {
+	else switch (lastbutton_cnt) {
+		case 10:	// transfer
+			if (barpos == 8 || barpos == 13) {
 				memcpy(barstr_bk, barstr, 16);
 				setbarcodedata(barstr_bk, barpos);
 			}
 			return;
 			break;
-		case 11:	//random
+		case 11:	// random
 			{
 				int	digit, sum, i;
 				sum = 0;
-				for( i = 0; i < 12; i++ ) {
+				for (i = 0; i < 12; i++) {
 					digit = rand()%10;
 					barstr[i] = '0'+digit;
 					sum += digit*((i&1)?3:1);
@@ -929,18 +930,18 @@ void menu_extra_barcode(void)
 				barpos = 13;
 			}
 			break;
-		case 12:	//clear
+		case 12:	// clear
 			memset(barstr, '_', 16);
 			barstr[13] = 0;
 			barpos = 0;
 			break;
-		case 13:	//del
-			if(barpos > 0) {
+		case 13:	// del
+			if (barpos > 0) {
 				barstr[--barpos] = '_';
 			}
 			break;
 	}
-	if(barpos < 9) {
+	if (barpos < 9) {
 		barstr[8] = 0;
 		consoletext(64 * 6 + 28, "]", 0);
 		consoletext(64 * 6 + 30, "      ", 0);
@@ -949,7 +950,7 @@ void menu_extra_barcode(void)
 		barstr[13] = 0;
 		consoletext(64 * 6 + 38, "]", 0);
 	}
-	if(barpos == 8 || barpos == 13)
+	if (barpos == 8 || barpos == 13)
 		consoletext(64 * 6 + 12, barstr, 0x1000);
 	else
 		consoletext(64 * 6 + 12, barstr, 0);
@@ -984,7 +985,7 @@ void menu_list_action(void)
 void menu_cht_action(void)
 {
 	menu_stat = 3;
-	if(lastbutton_cnt & 1)
+	if (lastbutton_cnt & 1)
 		load_cheat();
 	else
 		save_cheat();
@@ -1028,25 +1029,25 @@ void menu_shortcut_fresh(void)
 	consoletext(64 * 7, hshortcuts[sc], 0);
 	consoletext(64 * 11 + 16, gestures_tbl[sc], 0x1000);
 
-	if(shortcuts_tbl[sc] & (1 << 3)) {
+	if (shortcuts_tbl[sc] & (1 << 3)) {
 		consoletext(64 * 9, "Start", 0x1000);
 		len += 6;
 	}
-	if(shortcuts_tbl[sc] & (1 << 2)) {
+	if (shortcuts_tbl[sc] & (1 << 2)) {
 		consoletext(64 * 9 + len * 2, "Select", 0x1000);
 		len += 7;
 	}
 	len = (len + 31) & ~31;
 
-	for(i = 0; i < 2; i++) {
-		if(shortcuts_tbl[sc] & (1 << i)) {
+	for (i = 0; i < 2; i++) {
+		if (shortcuts_tbl[sc] & (1 << i)) {
 			scbuf[0] = sckeys[i];
 			consoletext(64 * 9 + len * 2, scbuf, 0x1000);
 			len += 2;
 		}
 	}
-	for(i = 4; i < sizeof(sckeys); i++) {
-		if(shortcuts_tbl[sc] & (1 << i)) {
+	for (i = 4; i < sizeof(sckeys); i++) {
+		if (shortcuts_tbl[sc] & (1 << i)) {
 			scbuf[0] = sckeys[i];
 			consoletext(64 * 9 + len * 2, scbuf, 0x1000);
 			len += 2;
@@ -1064,9 +1065,9 @@ void menu_gesture_func(void)
 {
 	int ret;
 	memset(gestures_tbl[sc], 0, 17);
-	if(!(ret = get_gesture(64 * 11 + 16)))
+	if (!(ret = get_gesture(64 * 11 + 16)))
 		return;
-	if(ret > 0) {
+	if (ret > 0) {
 		memcpy(gestures_tbl[sc], gesture_combo, 17);
 	}
 	menu_stat = 3;
@@ -1077,22 +1078,22 @@ void menu_gesture_func(void)
 void menu_shortcut_func(void)
 {
 	menu_stat = 3;
-	if(lastbutton_cnt < 12)
+	if (lastbutton_cnt < 12)
 		shortcuts_tbl[sc] ^= sckeyvs[lastbutton_cnt];
 	else {
-		switch(lastbutton_cnt) {
+		switch (lastbutton_cnt) {
 		case 12:
 			shortcuts_tbl[sc] = 0;
 			memset(gestures_tbl[sc], 0, 17);
 			break;
 		case 13:
 			sc++;
-			if(sc >= MAX_SC)
+			if (sc >= MAX_SC)
 				sc = 0;
 			break;
 		case 14:
 			sc--;
-			if(sc < 0)
+			if (sc < 0)
 				sc = MAX_SC - 1;
 			break;
 		case 15:
@@ -1122,26 +1123,26 @@ void menu_config_start(void)
 void menu_config_func(void)
 {
 	menu_stat = 3;
-	switch(lastbutton_cnt) {
-	case 0:	//auto
+	switch (lastbutton_cnt) {
+	case 0:	// auto
 		__emuflags |= AUTOSRAM;
 		break;
-	case 1: //manual
+	case 1: // manual
 		__emuflags &= ~AUTOSRAM;
 		break;
-	case 2: //On top
+	case 2: // On top
 		__emuflags &=~SCREENSWAP;
 		break;
-	case 3: //On sub
+	case 3: // On sub
 		__emuflags |= SCREENSWAP;
 		break;
-	case 4: //Use Saves Subdir
+	case 4: // Use Saves Subdir
 		use_saves_dir = true;
 		break;
 	case 5: // No Saves Subdir
 		use_saves_dir = false;
 		break;
-	case 6: //Sound reset
+	case 6: // Sound reset
 		fifoSendValue32(FIFO_USER_08, FIFO_SOUND_RESET);
 		break;
 	}
@@ -1164,7 +1165,7 @@ void menu_about_action(void)
 void menu_extra_fds(void)
 {
 	menu_stat = 3;
-	if(lastbutton_cnt < 4)
+	if (lastbutton_cnt < 4)
 		fdscmdwrite(lastbutton_cnt);
 }
 
@@ -1182,17 +1183,17 @@ void menu_saveini(void)
 	inibuf[0] = 0;
 	getcwd(inibuf, 512);
 
-	//StartIn
-	for(i = 0; i < strlen(inibuf); i++) {
-		if(inibuf[i] == '/')
+	// StartIn
+	for (i = 0; i < strlen(inibuf); i++) {
+		if (inibuf[i] == '/')
 			break;
 	}
-	if(i >= strlen(inibuf))
+	if (i >= strlen(inibuf))
 		i = 0;
 
 	ini_puts("nesDSrev2", "StartIn", inibuf + i, ininame);
 
-	if(joyflags & B_A_SWAP)	i = 1;
+	if (joyflags & B_A_SWAP)	i = 1;
 	else i = 0;
 	ini_putl("nesDSrev2", "BASwap", i, ininame);
 
@@ -1221,18 +1222,18 @@ void menu_saveini(void)
 	ini_putl("nesDSrev2", "AutoFire", autofire_fps, ininame);
 	ini_putl("nesDSrev2", "UseSavesDir", use_saves_dir, ininame);
 
-	//short-cuts
-	for(i = 0; i < MAX_SC; i++) {
+	// short-cuts
+	for (i = 0; i < MAX_SC; i++) {
 		pos = 0;
 		k = 0;
 		nesdsini[0] = 0;
-		for(j = 0; j < 12; j++) {
-			if(shortcuts_tbl[i] & (1 << j)) {
+		for (j = 0; j < 12; j++) {
+			if (shortcuts_tbl[i] & (1 << j)) {
 				pos += sprintf(nesdsini + pos, "%s, ", keystrs[j]);
 				k++;
 			}
 		}
-		if(k != 0)
+		if (k != 0)
 			ini_puts("nesDSrev2", ishortcuts[i], nesdsini, ininame);
 		else
 			ini_putl("nesDSrev2", ishortcuts[i], 0, ininame);

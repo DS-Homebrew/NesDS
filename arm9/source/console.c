@@ -4,7 +4,7 @@
 
 extern u16 font;
 extern u16 fontpal;
-char cusfont[] = {
+const char cusfont[] = {
 	0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 
 	0x00, 0x00, 0x00, 0x00,
@@ -58,7 +58,6 @@ char cusfont[] = {
 	0x00, 0x45, 0x00, 0x00,
 	0x00, 0x50, 0x04, 0x00, 
 	0x00, 0x50, 0x04, 0x00, 
-
 };
 
 /*****************************
@@ -69,7 +68,7 @@ char cusfont[] = {
 ******************************/
 void showconsole() {
 	//clearconsole();
-	if(__emuflags & ALLPIXEL) {
+	if (__emuflags & ALLPIXEL) {
 		videoSetModeSub(MODE_0_2D);
 		videoBgDisableSub(3);
 		dmaFillWords(0, BG_GFX_SUB , 192 * 256);		//clear the sub screen
@@ -83,22 +82,22 @@ void showconsole() {
 	powerOn(PM_BACKLIGHT_BOTTOM | PM_BACKLIGHT_TOP);
 	lcdMainOnTop();
 	screen_swap = 0;
-	REG_DISPCNT_SUB=MODE_0_2D|DISPLAY_BG0_ACTIVE|DISPLAY_BG1_ACTIVE|DISPLAY_WIN0_ON;
-	REG_BG0CNT_SUB=BG_TILE_BASE(1)|BG_64x32;
-	REG_BG1CNT_SUB=BG_TILE_BASE(1)|BG_64x32;
-	REG_BG0HOFS_SUB=0;
-	REG_BG0VOFS_SUB=0;
-	REG_BG1HOFS_SUB=0;
-	REG_BG1VOFS_SUB=0;
+	REG_DISPCNT_SUB = MODE_0_2D|DISPLAY_BG0_ACTIVE|DISPLAY_BG1_ACTIVE|DISPLAY_WIN0_ON;
+	REG_BG0CNT_SUB = BG_TILE_BASE(1)|BG_64x32;
+	REG_BG1CNT_SUB = BG_TILE_BASE(1)|BG_64x32;
+	REG_BG0HOFS_SUB = 0;
+	REG_BG0VOFS_SUB = 0;
+	REG_BG1HOFS_SUB = 0;
+	REG_BG1VOFS_SUB = 0;
 
 	REG_BG3Y_SUB = 0;
 
-	SUB_WIN0_X0=0;
-	SUB_WIN0_X1=255;
-	SUB_WIN0_Y0=24;
-	SUB_WIN0_Y1=191;
-	SUB_WIN_IN=1;
-	SUB_WIN_OUT=2;
+	SUB_WIN0_X0 = 0;
+	SUB_WIN0_X1 = 255;
+	SUB_WIN0_Y0 = 24;
+	SUB_WIN0_Y1 = 191;
+	SUB_WIN_IN  = 1;
+	SUB_WIN_OUT = 2;
 
 	swiWaitForVBlank();
 }
@@ -112,10 +111,10 @@ void showconsole() {
 void hideconsole() {
 	swiWaitForVBlank();
 	//powerOff(POWER_2D_B);
-	if((!(__emuflags & ALLPIXELON))) {
+	if (!(__emuflags & ALLPIXELON)) {
 		__emuflags &= ~ALLPIXEL;
-		if(!(__emuflags & SCREENSWAP)) {
-			powerOff(PM_BACKLIGHT_BOTTOM);			//This cannot be accessed directly.
+		if (!(__emuflags & SCREENSWAP)) {
+			powerOff(PM_BACKLIGHT_BOTTOM);			// This cannot be accessed directly.
 			powerOn(PM_BACKLIGHT_TOP);
 			lcdMainOnTop();
 		} else {
@@ -127,12 +126,12 @@ void hideconsole() {
 		int pos = ad_ypos / (1 << 16);
 
 		__emuflags |= ALLPIXEL;
-		dmaFillWords(0, BG_GFX_SUB , 192 * 256);		//clear the sub screen
-		dmaCopy(BG_PALETTE, BG_PALETTE_SUB, 0x400);		//copy the palette
+		dmaFillWords(0, BG_GFX_SUB , 192 * 256);		// clear the sub screen
+		dmaCopy(BG_PALETTE, BG_PALETTE_SUB, 0x400);		// copy the palette
 		powerOn(PM_BACKLIGHT_BOTTOM);
 		powerOn(PM_BACKLIGHT_TOP);
 
-		if(pos < -(240 - 192)/2) {
+		if (pos < -(240 - 192)/2) {
 			__emuflags |= SCREENSWAP;
 			all_pix_start = 0;
 			all_pix_end = 1 - pos;
@@ -140,7 +139,7 @@ void hideconsole() {
 		} else {
 			__emuflags &= ~SCREENSWAP;
 			all_pix_start = 192 - pos;
-			if(all_pix_start > 239)
+			if (all_pix_start > 239)
 				all_pix_start = 239;
 			all_pix_end = 240;
 			lcdMainOnTop();
@@ -164,7 +163,7 @@ void hideconsole() {
 ******************************/
 void clearconsole() {
 	memset((void *)(SUB_BG+64*4),0,64*20);
-	REG_BG0VOFS=0;
+	REG_BG0VOFS = 0;
 }
 
 /*****************************
@@ -191,24 +190,24 @@ void consoleinit() {
 				2 for dir selected
 * description:		none
 ******************************/
-void menutext(int line,const char *s,int selected) {
-	int color=selected?0x1000:0;
-	u16 *p=(u16*)(SUB_BG+line*64);
-	u16 *p2=p+32;
+void menutext(int line, const char *s, int selected) {
+	int color = selected?0x1000:0;
+	u16 *p = (u16*)(SUB_BG+line*64);
+	u16 *p2 = p+32;
 	u16 c = 0;
 	
-	if(!selected) c=' ';
-	else if(selected==1) c='*'|0x1000;	//normal selected look
-	else if(selected==2) c='<'|0x1000;	//directory selected
-	*p++=c;
-	
-	while(*s && p<p2) {
+	if (!selected) c = ' ';
+	else if (selected == 1) c = '*'|0x1000;	// normal selected look
+	else if (selected == 2) c = '<'|0x1000;	// directory selected
+	*p++ = c;
+
+	while (*s && p<p2) {
 		*p++ = (*s++)|color;
 	}
-	if(selected==2)
+	if (selected == 2)
 		*p++ = '>'|color;
-	while(p<p2)
-		*p++=' ';
+	while (p < p2)
+		*p++ = ' ';
 }
 
 /*****************************
@@ -219,22 +218,21 @@ void menutext(int line,const char *s,int selected) {
 			color: difine the color
 * description:		none
 ******************************/
-void consoletext(int offset,const char *s,int color) {
-	u16 *p;
-	p = (u16*)(SUB_BG + offset);
+void consoletext(int offset, const char *s, int color) {
+	u16 *p = (u16*)(SUB_BG + offset);
 	while (*s) {
 		if (*s == '\n') {
 			p = (u16 *)(((int)p + 62) & (~63));
 			s++;
 		} else if (*s == '\t') {
-			p = (u16 *)(((int)p + 14)&(~15));
+			p = (u16 *)(((int)p + 14) & (~15));
 			s++;
 		} else if (*s == '\r') {
-			p = (u16 *)((((int)p)&~63) + (offset & 63) + 64);
+			p = (u16 *)((((int)p) & ~63) + (offset & 63) + 64);
 			s++;
 		}
 
-		if(!*s)
+		if (!*s)
 			break;
 		*p++ = (*s++)|color;
 	}
@@ -248,18 +246,15 @@ void consoletext(int offset,const char *s,int color) {
 			n: amount of characters
 * description:		none
 ******************************/
-void hex(int offset,int d,int n) {
-	u16 *p;
-	u16 c;
-	p = (u16*)(SUB_BG + offset);
+void hex(int offset, int d, int n) {
+	u16 *p = (u16*)(SUB_BG + offset);
 	do {
-		c = d & 0x0f;
-		if(c < 10)
+		u16 c = d & 0x0f;
+		if (c < 10)
 			c += '0';
 		else
 			c = c - 10 + 'A';
-
-		d>>=4;
+		d >>= 4;
 		p[n--] = c;
-	} while(n >= 0);
+	} while (n >= 0);
 }
