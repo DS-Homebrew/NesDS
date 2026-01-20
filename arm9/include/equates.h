@@ -8,7 +8,7 @@ DEBUGSTEP	= 0
 @----------------------------------------------------------------------------
 
 wram = NES_DRAM	//64k ram is reserved here.
-ROM_MAX_SIZE = 0x2b0000		//2,7MB free rom space
+ROM_MAX_SIZE = 0x280000		//2,5MB free rom space
 MAXFILES	 = 1024
 
 IPC			= ipc_region

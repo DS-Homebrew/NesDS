@@ -225,12 +225,8 @@ initcart: @called from C:  r0=rom, (r1=emuFlags?)
 	mov r1,m6502zpage		@ m6502zpage,=NES_RAM
 	mov r2,#0x800/4			
 	bl filler				@ reset NES RAM
-	mov r0,#0				@ clear nes sram
-	ldr r1,=CART_SRAM
+	ldr r1,=CART_SRAM		@ clear nes sram
 	mov r2,#0x2000/4
-	bl filler
-	adrl_ r1,mapperData		@ clear mapperData so we dont have to do that in every MapperInit.
-	mov r2,#96/4
 	bl filler
 
 	ldr r0, =0x4000004
@@ -418,17 +414,16 @@ ls0:	ldr r5,[r6],#4
 	subs r0,r0,#1
 	bne ls1
 
-	ldr_ r2,romBase		@adjust ptr shit (see savestate above)
+	ldr_ r2,romBase		@ adjust ptr shit (see savestate above)
 	bl fixromptrs
 @---
-	ldr r3,=CART_VRAM+0x2000	@ write all nametbl + attrib
+	ldr r3,=NES_NTRAM	@ write all nametbl + attrib
 	ldr r4,=NDS_BG
 ls4:	mov r5,#0
 ls3:	mov r1,r3
 	mov r2,r4
 	mov addy,r5
 	ldrb r0,[r1,addy]
-	@sub sp, sp, #4			@This is because writeBG will use ldmfd sp!,{addy}, out of date
 	bl writeBG
 	add r5,r5,#1
 	cmp r5,#0x400
@@ -455,8 +450,12 @@ NES_reset:
 	ldr globalptr,=globals
 	ldr m6502zpage,=NES_RAM
 
+	mov r0,#0
+	adrl_ r1,mapperData		@ Clear mapperData so we dont have to do that in every MapperInit.
+	mov r2,#96/4
+	bl filler
 	ldr r0,mapperInitPtr
-	blx r0						@ Go mapper_init
+	blx r0					@ Go mapper_init
 
 	ldrb_ r1,cartFlags
 	tst r1,#MIRROR		;@ Set default mirror, horizontal mirroring
@@ -603,7 +602,7 @@ map89ABCDEF_:
 @---------------------------------------------------------------------------------
 mapperInitPtr:	.word 0
 
-.section .dtcm, "aw"
+	.section .sbss				;@ This is DTCM on NDS with devkitARM
 globals:
 nesMachine:
 rp2A03:
