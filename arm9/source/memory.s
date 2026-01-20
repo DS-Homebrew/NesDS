@@ -26,6 +26,7 @@
 	.global BGCNTBUFFB
 	.global NES_RAM
 	.global NES_NTRAM
+	.global CART_WRAM
 	.global CART_SRAM
 	.global CART_VRAM
 	.global NES_XRAM
@@ -161,8 +162,8 @@ hblankinterrupt:
 @ all below is for memory pre-alloc.
 .pool
 
-.section .bss, "aw"
-.align 4
+	.section .bss, "aw"
+	.align 4
 ipc_region:
 	.skip 8192
 
@@ -172,60 +173,54 @@ BGCNTBUFF:
 	.skip 256 * 16
 BGCNTBUFFB:
 	.skip 512 * 8
+CHR_DECODE:
+	.skip 0x400
+MAPPED_RGB:
+	.skip 0x100
 
-.align 10				@0x400 aligned
+rom_files:
+	.skip MAXFILES * 64 + MAXFILES * 4	@this will take a lot of memory. filename should not be longer than 64 in average.
+
+	.align 8			@ 0x100 aligned
 ;@ Internal NES RAM
-NES_RAM:				@NES_RAM should be 0x400 bytes aligned....
+NES_RAM:				@ NES_RAM should be 0x100 bytes aligned....
 	.skip 0x800
 NES_NTRAM:
 	.skip 0x800
 
 ;@ Different kinds of Cartridge RAM
 CART_SRAM:
-	.skip 0x2000
-CART_VRAM:
+CART_WRAM:
+NES_DRAM:
 	.skip 0x8000
 NES_XRAM:
 	.skip 0x2000
-
-CHR_DECODE:
-	.skip 0x400
-MAPPED_RGB:
-	.skip 0x100
+CART_VRAM:
+//	.skip 0x8000
+	.skip 0x40000		@ Up to 256kB VRAM
 
 #ifdef ROM_EMBEDED
 
-.section .text, "aw"
-.align 4
-rom_files:				@not used when testing
-rom_start:				@not used when testing
+	.section .text, "aw"
+	.align 8
+	.skip 0xF0
+rom_start:				@ not used when testing
 romebd_s:
 	.incbin "fm.nes"
 
-.section .bss, "aw"
-.align 4
-NES_DRAM:
-	.skip 0x8000
+	.section .bss, "aw"
+	.align 4
 NES_DISK:
 	.skip 0x40000
 
 @-----------
 #else
 
-.section .bss, "aw"
-.align 4
-
-rom_files:
-	.skip MAXFILES * 64 + MAXFILES * 4	@this will take a lot of memory. filename should not be longer than 64 in average.
-
 	.align 8
 	.skip 0xF0
 rom_start:
-	.skip 0x40000 + 16		@this is the bigest size for FDS game.
-NES_DRAM:				@if the game is a FDS one, this is available. otherwise not.
-	.skip 0x8000
-NES_DISK:				@same to NES_DRAM
+	.skip ROM_MAX_SIZE - 0x40000		@ the rest room for rom file.
+NES_DISK:
 	.skip 0x40000
-	.skip ROM_MAX_SIZE - 0x40000 - 16 - 0x8000 - 0x40000		@the rest room for rom file.
 
 #endif

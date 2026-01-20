@@ -7,6 +7,8 @@
 	.struct mmc3Extra
 prgMask:	.byte 0
 outerPRG:	.byte 0
+chrMask:	.byte 0
+outerCHR:	.byte 0
 ;@----------------------------------------------------------------------------
 .section .text,"ax"
 ;@----------------------------------------------------------------------------
@@ -18,7 +20,7 @@ mapper268init:
 	// Set Depending on sub mapper.
 	ldrb_ r0,subMapper
 	movs r0,r0,lsr#1
-	teq r0,#1
+	teq r0,#1			;@ Submapper 2/3?
 	adreq r1,write7
 	streq_ r1,m6502WriteTbl+12
 	beq sub23

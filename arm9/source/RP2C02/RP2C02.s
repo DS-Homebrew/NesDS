@@ -1090,7 +1090,7 @@ writeBG:		;@ loadcart jumps here
 	strb r0,[r1,addy]
 	cmp addy,#0x3c0
 	bhs writeAttrib
-@writeNT
+@writeNT:
 	add addy,addy,addy	;@ lsl#1
 	ldrh r1,[r2,addy]	;@ Use old color
 	and r1,r1,#0xf000
@@ -1275,14 +1275,14 @@ nfsoft:
 agb_pal:		.skip 32*2	;@ Copy this to real AGB palette every frame
 
 vram_write_tbl:	;@ For vmdata_W, r0=data, addy=vram addr
-	.word void
-	.word void
-	.word void
-	.word void
-	.word void
-	.word void
-	.word void
-	.word void
+	.word void			;@ $0000
+	.word void			;@ $0400
+	.word void			;@ $0800
+	.word void			;@ $0c00
+	.word void			;@ $1000
+	.word void			;@ $1400
+	.word void			;@ $1800
+	.word void			;@ $1c00
 	.word VRAM_name0	;@ $2000
 	.word VRAM_name1	;@ $2400
 	.word VRAM_name2	;@ $2800
@@ -1293,22 +1293,22 @@ vram_write_tbl:	;@ For vmdata_W, r0=data, addy=vram addr
 	.word VRAM_pal		;@ $3c00
 
 vram_map:	@for vmdata_R
-	.word 0			;@ 0000
-	.word 0			;@ 0400
-	.word 0			;@ 0800
-	.word 0			;@ 0c00
-	.word 0			;@ 1000
-	.word 0			;@ 1400
-	.word 0			;@ 1800
-	.word 0			;@ 1c00
+	.word 0				;@ 0000
+	.word 0				;@ 0400
+	.word 0				;@ 0800
+	.word 0				;@ 0c00
+	.word 0				;@ 1000
+	.word 0				;@ 1400
+	.word 0				;@ 1800
+	.word 0				;@ 1c00
 nes_nt0: .word NES_NTRAM+0x000	;@ 2000
 nes_nt1: .word NES_NTRAM+0x000	;@ 2400
 nes_nt2: .word NES_NTRAM+0x400	;@ 2800
 nes_nt3: .word NES_NTRAM+0x400	;@ 2c00
-		.word NES_NTRAM+0x000	;@ 3000
-		.word NES_NTRAM+0x000	;@ 3400
-		.word NES_NTRAM+0x400	;@ 3800
-		.word NES_NTRAM+0x400	;@ 3c00
+	.word NES_NTRAM+0x000	;@ 3000
+	.word NES_NTRAM+0x000	;@ 3400
+	.word NES_NTRAM+0x400	;@ 3800
+	.word NES_NTRAM+0x400	;@ 3c00
 
 agb_nt_map:
 	.word 0,0,0,0
@@ -2210,7 +2210,7 @@ ntData:
 	.skip 8*8*2*2
 
 ;@-----------------------------------------------------------------------------
-.section .dtcm,"aw"
+	.section .sbss				;@ This is DTCM on NDS with devkitARM
 ;@-----------------------------------------------------------------------------
 obj_tileset:
 	.skip 240
